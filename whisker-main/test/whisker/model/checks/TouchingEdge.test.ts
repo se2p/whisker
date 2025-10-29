@@ -19,8 +19,7 @@ describe('TouchingEdge tests', () => {
         c.registerComponents(t, cu, graphID);
         sprite.touchingVerticalEdge = true;
         sprite.touchingHorizontalEdge = false;
-        const reason = {message: `Expected sprite "${sprite._name}" to touch a horizontal edge`};
-        expect(c.check()).toStrictEqual(fail(reason));
+        expect(c.check()).toStrictEqual(fail({}));
         sprite.touchingHorizontalEdge = true;
         expect(c.check()).toStrictEqual(pass());
         sprite.touchingVerticalEdge = false;
@@ -32,8 +31,7 @@ describe('TouchingEdge tests', () => {
         c.registerComponents(t, cu, graphID);
         sprite.touchingVerticalEdge = false;
         sprite.touchingHorizontalEdge = true;
-        const reason = {message: `Expected sprite "${sprite._name}" to touch a vertical edge`};
-        expect(c.check()).toStrictEqual(fail(reason));
+        expect(c.check()).toStrictEqual(fail({}));
         sprite.touchingVerticalEdge = true;
         expect(c.check()).toStrictEqual(pass());
         sprite.touchingHorizontalEdge = false;
@@ -45,8 +43,7 @@ describe('TouchingEdge tests', () => {
         c.registerComponents(t, cu, graphID);
         sprite.touchingVerticalEdge = false;
         sprite.touchingHorizontalEdge = false;
-        const reason = {message: `Expected sprite "${sprite._name}" to touch an edge`};
-        expect(c.check()).toStrictEqual(fail(reason));
+        expect(c.check()).toStrictEqual(fail({}));
         sprite.touchingVerticalEdge = true;
         expect(c.check()).toStrictEqual(pass());
         sprite.touchingVerticalEdge = false;
