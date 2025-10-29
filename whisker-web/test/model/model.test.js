@@ -113,6 +113,7 @@ describe('Model tests without inputs', () => {
         ['output event listener', 'OutputEvent', 'OutputEvent'],
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange'],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents'],
+        ['stop models', 'StopOtherScripts', 'StopOtherScripts'],
     ]
 
     it.each(table)('%s', async (name, projectFileName, modelFileName) => {

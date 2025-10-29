@@ -1,0 +1,268 @@
+[
+    {
+        "usage": "program",
+        "id": "combined Init",
+        "startNodeId": "start",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
+            }
+        ],
+        "edges": [
+            {
+                "id": "edge1",
+                "label": "init",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "y",
+                            "==",
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "direction",
+                            "==",
+                            90
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "size",
+                            "==",
+                            100
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "x",
+                            "==",
+                            10
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "edge2",
+                "label": "running",
+                "from": "running",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "x",
+                            10
+                        ]
+                    }
+                ]
+            }
+        ],
+        "initialStorage": {}
+    },
+    {
+        "usage": "program",
+        "id": "combined start loops Apple",
+        "startNodeId": "start",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
+        ],
+        "edges": [
+            {
+                "id": "edge1",
+                "label": "edge2",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Apple",
+                            "direction",
+                            -15
+                        ]
+                    }
+                ]
+            }
+        ],
+        "initialStorage": {}
+    },
+    {
+        "usage": "program",
+        "id": "Figur1_m2",
+        "startNodeId": "start",
+        "stopAllNodeIds": [
+            "q4"
+        ],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "q2",
+                "label": "q2"
+            },
+            {
+                "id": "q4",
+                "label": "q4"
+            }
+        ],
+        "edges": [
+            {
+                "id": "edge1",
+                "label": "some conditions",
+                "from": "start",
+                "to": "q2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Figur1', 'x')>50"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "StopModels",
+                        "negated": false,
+                        "args": [
+                            "combined Init"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "direction",
+                            "==",
+                            -90
+                        ]
+                    },
+                    {
+                        "name": "SetStorage",
+                        "negated": false,
+                        "args": [
+                            "loopVar1",
+                            "number",
+                            4
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "y",
+                            10
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "edge2",
+                "label": "enter loop 1",
+                "from": "q2",
+                "to": "q2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$$('loopVar1')>0"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "ChangeStorageBy",
+                        "negated": false,
+                        "args": [
+                            "loopVar1",
+                            -1
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "y",
+                            10
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "edge3",
+                "label": "leave loop 1",
+                "from": "q2",
+                "to": "q4",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Figur1",
+                            "size",
+                            "==",
+                            50
+                        ]
+                    }
+                ]
+            }
+        ],
+        "initialStorage": {
+            "loopVar1": [
+                "number",
+                5
+            ]
+        }
+    }
+]
