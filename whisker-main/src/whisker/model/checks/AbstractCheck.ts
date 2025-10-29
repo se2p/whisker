@@ -196,6 +196,14 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
         return evaluateExpression(this._t, expr, this.graphID, log, this._newTargetSprite);
     }
 
+    protected removeEffectsOfModels(modelIds: Set<string>): void {
+        this._cu.removeEffectsOfModels(modelIds);
+    }
+
+    protected _debug(...msg: string[]) {
+        this._cu.debug(...msg);
+    }
+
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});
         this._lastStepExecuted = -1;
@@ -235,5 +243,9 @@ export abstract class PureCheck<J extends CheckJSON, C extends CheckFun = CheckF
 export abstract class ImpureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
+    }
+
+    protected _contradicts(_that: ImpureCheck<J, C>): boolean {
+        return false; // side effects can even depend on another check to be executed before
     }
 }

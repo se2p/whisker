@@ -16,6 +16,7 @@ import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, pass, Reason, result} from "../checks/CheckResult";
+import {OracleModel} from "../components/AbstractModel";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -31,6 +32,7 @@ export const MOUSE_NAME = "_mouse_";
 
 const DEFAULT_CYCLIC_DELTA = 3.0;
 const _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
+const _modelMap: Map<string, OracleModel> = new Map<string, OracleModel>();
 const _clonesCreated: Map<number, string[]> = new Map<number, string[]>();
 
 /**
@@ -533,8 +535,42 @@ export function currentMaxLayer(t: TestDriver): number {
 }
 
 export function clearAllModels(): void {
+    _modelMap.clear();
     _graphStorage.clear();
     _clonesCreated.clear();
+}
+
+export function doesModelExist(id: string): boolean {
+    return _modelMap.has(id);
+}
+
+export function addModelToMap(model: OracleModel): void {
+    _modelMap.set(model.id, model);
+}
+
+function _getModel(id: string): OracleModel {
+    const model = _modelMap.get(id);
+    if (!model) {
+        throw new Error(`Model with id ${id} does not exist`);
+    }
+    return model;
+}
+
+export function stopModel(id: string): void {
+    _getModel(id).stop();
+}
+
+export function markModelAsRestartable(id: string): boolean {
+    const model = _modelMap.get(id);
+    if (!model) {
+        return true;
+    }
+    model.enableRestarting();
+    return false;
+}
+
+export function restartModel(id: string, currentStep: number): void {
+    _getModel(id).restart(currentStep);
 }
 
 function wasCloneEventAroundStep(spriteName: string, step: number, map: Map<number, string[]>, msgPart: "created" | "removed"): CheckResult {

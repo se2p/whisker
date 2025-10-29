@@ -202,6 +202,10 @@ export class CheckUtility extends EventEmitter {
         this._addErrorOutput(e, edgeLabelAndIdToIdentifier(graphID, edgeLabel));
     }
 
+    removeEffectsOfModels(modelIds: Set<string>): void {
+        this._effectChecks = this._effectChecks.filter(c => !modelIds.has(c.edge.graphID));
+    }
+
     /**
      * Make outputs for the failed effects of the last step
      */
@@ -212,6 +216,10 @@ export class CheckUtility extends EventEmitter {
             this._addFailOutput(output, e.reason, step);
         }
         this._effectChecks = [];
+    }
+
+    public debug(...msg: string[]): void {
+        this.emit(CheckUtility.CHECK_LOG_FAIL, `Step ${this._testDriver.getTotalStepsExecuted()}: ${msg.join(" ")}`);
     }
 
     private _doesEffectFail(check: EffectCheck): boolean {
@@ -243,7 +251,7 @@ export class CheckUtility extends EventEmitter {
     private _addFailOutput(output: string, reason: Reason, step = -1) {
         this._modelResult.addFail(output);
         if (step === -1) {
-            this._debug(output, getReasonAppendix(reason));
+            this.debug(output, getReasonAppendix(reason));
         } else {
             this.emit(CheckUtility.CHECK_LOG_FAIL, `Step ${step}: ${output}${getReasonAppendix(reason)}`);
         }
@@ -252,12 +260,8 @@ export class CheckUtility extends EventEmitter {
     private _addErrorOutput(e: Error, id: string): void {
         const message = getErrorMessage(e);
         const output = `Error ${id}: ${message}`;
-        this._debug(output);
+        this.debug(output);
         this._modelResult.addError(output);
-    }
-
-    private _debug(...msg: string[]): void {
-        this.emit(CheckUtility.CHECK_LOG_FAIL, `Step ${this._testDriver.getTotalStepsExecuted()}: ${msg.join(" ")}`);
     }
 }
 

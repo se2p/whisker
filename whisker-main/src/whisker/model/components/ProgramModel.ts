@@ -123,6 +123,12 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         };
     }
 
+    /**
+     * Stops this model.
+     */
+    stop(): void {
+        this._manuallyStopped = true;
+    }
 
     enableRestarting(): void {
         this._restartable = true;

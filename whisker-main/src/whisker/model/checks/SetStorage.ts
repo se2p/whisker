@@ -78,8 +78,4 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
             return result(true, log, this.negated);
         };
     }
-
-    protected _contradicts(_that: SetStorage): boolean {
-        return false;
-    }
 }

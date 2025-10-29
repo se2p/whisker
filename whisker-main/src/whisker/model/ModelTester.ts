@@ -18,7 +18,7 @@ import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
 import {Model, OracleModel} from "./components/AbstractModel";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
-import {registerCloneCreatedEvent} from "./util/ModelUtil";
+import {addModelToMap, clearAllModels, registerCloneCreatedEvent} from "./util/ModelUtil";
 
 export class ModelTester extends EventEmitter {
 
@@ -238,6 +238,8 @@ export class ModelTester extends EventEmitter {
         this._checkUtility.on(CheckUtility.CHECK_LOG_FAIL, this._onLogEvent.bind(this));
 
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
+        clearAllModels();
+        this._programModels.forEach(addModelToMap);
         allModels.forEach(model => {
             model.reset();
             model.registerComponents(this._checkUtility!, t);
