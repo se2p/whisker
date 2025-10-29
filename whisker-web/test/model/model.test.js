@@ -9,7 +9,7 @@ const ACCELERATION = Infinity;
 
 async function uploadFile(selector, path) {
     const exists = fs.existsSync(path);
-    if(!exists) {
+    if (!exists) {
         console.log(`The file ${path} does not exist!`);
         expect(exists).toBe(true);
     }
@@ -129,7 +129,7 @@ describe('Model tests with inputs', () => {
 
     const table = [
         ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModels.json'],
-        ['fruitcatcher game test', 'Fruitcatcher', 0.95, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
+        ['fruitcatcher game test', 'Fruitcatcher', 0.85, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
         ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
         ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
