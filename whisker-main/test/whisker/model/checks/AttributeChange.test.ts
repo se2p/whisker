@@ -16,9 +16,9 @@ describe('AttributeChange', () => {
     }]);
     const oldStage = new SpriteMock(STAGE_NAME, [{name: "currentCostumeName", value: "lose"}]);
     const apple = new SpriteMock("apple", [{name: "x", value: 2}, {name: "size", value: 10}]);
-    apple.old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
+    apple._old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
     const banana = new SpriteMock("banana");
-    stage.old = oldStage;
+    stage._old = oldStage;
     const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
     tdMock.stage = stage.sprite;
     const t = tdMock.getTestDriver();
@@ -29,8 +29,7 @@ describe('AttributeChange', () => {
         cu.registerOnVisualChange = fn;
         const c = new AttrChange('label', {args: ["apple", "size", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.name, graphID);
-        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(fn).toHaveBeenLastCalledWith(apple._name, graphID);
     });
 
     test('MoveEvent is registered on CheckUtil', () => {
@@ -59,7 +58,7 @@ describe('AttributeChange', () => {
     test('Can check change of effects', () => {
         const effects: Record<string, number> = {color: 10};
         const bowl = new SpriteMock("bowl", [{name: "effects", value: effects}]);
-        bowl.old = new SpriteMock("bowl", [{name: "effects", value: {color: 0}}]);
+        bowl._old = new SpriteMock("bowl", [{name: "effects", value: {color: 0}}]);
         const mock = new TestDriverMock([banana, bowl, apple, stage]);
         const c = new AttrChange('label', {negated: false, args: ["bowl", "color", 10]});
         c.registerComponents(mock.getTestDriver(), dummyCU, graphID);

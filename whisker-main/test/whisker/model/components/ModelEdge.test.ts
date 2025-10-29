@@ -236,7 +236,7 @@ describe('Model edges', () => {
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock();
             const stage = new SpriteMock(STAGE_NAME);
-            stage.currentCostumeName = "stage";
+            stage._currentCostumeName = "stage";
             stage.updateSprite();
             tdMock.stage = stage.sprite;
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);

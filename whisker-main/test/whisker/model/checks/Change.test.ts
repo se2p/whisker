@@ -1,6 +1,5 @@
 import {fc, it, test} from "@fast-check/jest";
-import {ChangingCheck, newChange, newQuantifiedChange} from "../../../../src/whisker/model/checks/Change";
-import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
+import {newChange} from "../../../../src/whisker/model/checks/Change";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/model/checks/CheckTypes";
 import {EPSILON} from "../../../../src/whisker/model/checks/Comparison";
@@ -177,27 +176,6 @@ describe("A change", () => {
                 expect(change.apply(x, y).passed).toStrictEqual(change.apply(y, x).passed);
             });
         }
-    });
-});
-
-function changingCheck(negated: boolean): fc.Arbitrary<ChangingCheck> {
-    return fc.record({
-        change: numOp,
-        negated: fc.constantFrom(negated),
-    });
-}
-
-describe("newQuantifiedChange", () => {
-    it.prop([changingCheck(false)])("returns an Existential when not negated", (c) => {
-        const q = newQuantifiedChange(c);
-        expect(q).toBeInstanceOf(Existential);
-        expect(q.wrapped).toStrictEqual(newChange(c));
-    });
-
-    it.prop([changingCheck(true)])("returns a Universal when negated", (c) => {
-        const q = newQuantifiedChange(c);
-        expect(q).toBeInstanceOf(Universal);
-        expect(q.wrapped).toStrictEqual(newChange({...c, negated: true}));
     });
 });
 

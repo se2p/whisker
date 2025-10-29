@@ -12,7 +12,8 @@ describe('Model node', () => {
             checkConditions: checkConditions,
             registerComponents: registerComponents,
             checkConditionsOnEvent: checkConditionsOnEvent,
-            lastTransition: lastTransition
+            lastTransition: lastTransition,
+            isTrueEdge: () => isTrueEdge,
         } as unknown as ModelEdge;
     }
 

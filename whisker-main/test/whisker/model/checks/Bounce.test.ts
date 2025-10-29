@@ -17,11 +17,11 @@ describe('Bounce tests', () => {
     it.each(table)('%s', (name, oldDir, dir, vertical, horizontal, expected) => {
         const oldSprite = new SpriteMock("s1", [{name: "direction", value: oldDir}]);
         const sprite = new SpriteMock("s1", [{name: "direction", value: dir}]);
-        sprite.old = oldSprite;
+        sprite._old = oldSprite;
         sprite.touchingVerticalEdge = vertical;
         sprite.touchingHorizontalEdge = horizontal;
         const tdMock = new TestDriverMock([sprite]);
-        const check = new Bounce("label", {args: [sprite.name]});
+        const check = new Bounce("label", {args: [sprite._name]});
         check.registerComponents(tdMock.getTestDriver(), getDummyCheckUtility(), "graphID");
         const res = check.check();
         if (res.passed !== expected) {

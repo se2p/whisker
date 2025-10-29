@@ -246,6 +246,6 @@ describe('Program model', () => {
         const t = getDummyTestDriver();
         model.registerComponents(cu, t);
         expect(fn).toBeCalledTimes(4);
-        expect(fn).toHaveBeenCalledWith(cu, t);
+        expect(fn).toHaveBeenCalledWith(cu, t, null);
     });
 });

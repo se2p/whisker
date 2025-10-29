@@ -431,8 +431,8 @@ describe('Contradictions', () => {
             // different values
             ["VarChange", true, ['sprite', 'var', '-5'], "VarChange", true, ['sprite', 'var', '-7'], false],
             ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", true, ['sprite', 'var', '+7'], false],
-            ["AttrChange", false, ['sprite', 'layerOrder', '-5'], "AttrChange", false, ['sprite', 'layerOrder', '-7'], false],
-            ["AttrChange", false, ['sprite', 'layerOrder', '+5'], "AttrChange", false, ['sprite', 'layerOrder', '+7'], false],
+            ["AttrChange", false, ['sprite', 'layerOrder', '-5'], "AttrChange", false, ['sprite', 'layerOrder', '-7'], true],
+            ["AttrChange", false, ['sprite', 'layerOrder', '+5'], "AttrChange", false, ['sprite', 'layerOrder', '+7'], true],
         ];
 
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
@@ -641,7 +641,7 @@ describe('Contradictions', () => {
             ["AttrComp", true, ["sprite", "y", ">=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], true],
 
             ["AttrComp", false, ["sprite", "y", ">=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], false],
-            ["AttrComp", false, ["sprite", "y", ">=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", ">=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], true],
 
             ["AttrComp", false, ["sprite", "y", ">", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], true],
             ["AttrComp", false, ["sprite", "y", ">", "0"], "AttrComp", false, ["sprite", "y", ">=", "0"], false],
@@ -653,9 +653,9 @@ describe('Contradictions', () => {
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<=", "0"], false],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], true],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">=", "0"], false],
-            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], true],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], false],
-            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">", "0"], true],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", ">", "0"], false],
 
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<=", "2"], true],

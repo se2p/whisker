@@ -54,9 +54,11 @@ describe('SpriteColor tests', () => {
         kiwi.touchingColor = true;
         const c = new SpriteColor('label', {negated: negated, args: ["kiwi", 255, 128, 64]});
         c.registerComponents(tdMock.getTestDriver(), dummyCU, graphID);
-        expect(c.check().passed).toEqual(!negated);
+        let result = c.check();
+        expect(result.passed).toEqual(!negated);
         kiwi.touchingColor = false;
         tdMock.nextStep();
-        expect(c.check().passed).toEqual(negated);
+        result = c.check();
+        expect(result.passed).toEqual(negated);
     });
 });

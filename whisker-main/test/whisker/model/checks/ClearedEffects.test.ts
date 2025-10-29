@@ -29,7 +29,7 @@ describe('ClearedEffectsTest', () => {
         const check = new ClearedEffect(edgeLabel, {negated: false, args: ['banana']});
         check.registerComponents(t, cu, graphID);
         expect(check.check()).toStrictEqual(pass());
-        effects["color"] = 10;
+        effects.color = 10;
         tdMock.nextStep();
         expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
