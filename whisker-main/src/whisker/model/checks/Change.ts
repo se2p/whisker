@@ -97,6 +97,11 @@ export class Change {
     }
 
     apply(after: number, before: number): CheckResult {
+        const result = this._apply(after, before)
+            .replace(this._extendReasonWithInterval({before, after}));
+        if (result.passed) {
+            return result;
+        }
         return this._apply(this._clampToBounds(after), this._clampToBounds(before))
             .replace(this._extendReasonWithInterval({before, after}));
     }
