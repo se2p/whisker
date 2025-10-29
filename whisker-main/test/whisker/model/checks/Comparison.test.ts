@@ -178,7 +178,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as a regular comparison", ([x, y, min, max]) => {
             const regular = newComparison({operator: op, value: y});
             const interval = newComparison({operator: op, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 
@@ -201,7 +201,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as the regular comparison otherwise", ([min, x, y, max]) => {
             const regular = newComparison({operator, value: y});
             const interval = newComparison({operator, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 
@@ -253,7 +253,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as the regular comparison otherwise", ([x, y, min, max]) => {
             const regular = newComparison({operator, value: y});
             const interval = newComparison({operator, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 });
