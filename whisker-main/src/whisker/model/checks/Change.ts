@@ -1,6 +1,6 @@
 import {Comparison, CONST_PASS, Interval, newComparison} from "./Comparison";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, result} from "./CheckResult";
+import {CheckResult, Reason, result} from "./CheckResult";
 
 import {ChangeOp, ComparisonOp, NumberOrChangeOp} from "./CheckTypes";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
@@ -97,7 +97,8 @@ export class Change {
     }
 
     apply(after: number, before: number): CheckResult {
-        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
+        return this._apply(this._clampToBounds(after), this._clampToBounds(before))
+            .replace(this._extendReasonWithInterval({before, after}));
     }
 
     contradicts(that: Change): boolean {
@@ -122,6 +123,10 @@ export class Change {
         // might not expect values outside the interval, so we clamp these values back to it.
         const {min, max} = this._bounds;
         return Math.max(min, Math.min(max, v));
+    }
+
+    protected _extendReasonWithInterval(reason: Reason): Reason {
+        return this._bounds === null ? reason : {...this._bounds, ...reason};
     }
 }
 
