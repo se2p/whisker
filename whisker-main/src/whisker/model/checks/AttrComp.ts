@@ -2,8 +2,7 @@ import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {AttributeType, ComparingCheck, Comparison, newQuantifiedComparison} from "./Comparison";
-import {Quantification} from "./Quantification";
+import {AttributeType, ComparingCheck, Comparison, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {
@@ -21,7 +20,7 @@ import {
     SpriteName,
     StringAttribute,
 } from "./CheckTypes";
-import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
+import {checkAttributeExistence, isAnEffect} from "../util/ModelUtil";
 
 const name = "AttrComp" as const;
 
@@ -49,14 +48,14 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
-    private readonly _comparison: Quantification<Comparison>;
+    private readonly _comparison: Comparison;
     private readonly _isForEffect: boolean;
     private readonly _attrName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
         this._attrName = this._args[1];
-        this._comparison = newQuantifiedComparison(this);
+        this._comparison = newComparison(this);
         this._isForEffect = isAnEffect(this._attrName);
     }
 
@@ -84,7 +83,7 @@ export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements Comp
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const pSpriteName = this._args[0];
 
-        const sprite = getStageOrSprite(t, pSpriteName);
+        const sprite = this._getStageOrSprite(pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
             checkAttributeExistence(t, spriteName, this._attrName);
@@ -105,7 +104,7 @@ export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements Comp
             const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
 
             try {
-                return this._comparison.apply(sprites.map(s => this._getAttr(s)));
+                return this._comparison.apply(this._getAttr(sprite));
             } catch (e) {
                 throw new Exception(pSpriteName, this._attrName, e);
             }

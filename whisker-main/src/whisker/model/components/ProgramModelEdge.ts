@@ -3,6 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
 import {Check, PureCheck} from "../checks/newCheck";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
@@ -57,10 +58,10 @@ export class ProgramModelEdge extends AbstractEdge {
     /**
      * Register the check listener and test driver on the conditions and effects.
      */
-    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(cu, testDriver);
+    override registerComponents(cu: CheckUtility, testDriver: TestDriver, newTarget: RenderedTarget | null = null): void {
+        super.registerComponents(cu, testDriver, newTarget);
         this._effects.forEach(effect => {
-            effect.registerComponents(testDriver, cu, this.graphID);
+            effect.registerComponents(testDriver, cu, this.graphID, newTarget);
         });
     }
 

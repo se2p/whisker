@@ -1,5 +1,4 @@
 import {Comparison, CONST_PASS, Interval, newComparison} from "./Comparison";
-import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 
@@ -23,7 +22,7 @@ export type Bounds =
     | CyclicBounds
     ;
 
-export class Change implements Quantifiable<Change> {
+export class Change {
     protected constructor(
         protected readonly _comparison: Comparison,
         protected readonly _bounds: Bounds | null = null,
@@ -264,15 +263,4 @@ export function newChange(
 export interface ChangingCheck {
     change: NumberOrChangeOp;
     negated: boolean;
-}
-
-export function newQuantifiedChange(
-    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>,
-    bounds: Bounds | null = null,
-): Quantification<Change> {
-    const change = newChange({change: numOp, negated: false}, bounds);
-
-    return negated
-        ? new Universal(change.negate())
-        : new Existential(change);
 }

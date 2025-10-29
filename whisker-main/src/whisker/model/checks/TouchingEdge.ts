@@ -2,11 +2,11 @@ import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {any, CheckResult, fail, pass} from "./CheckResult";
+import {CheckResult, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence} from "../util/ModelUtil";
+
 
 export type TouchingEdgeArgs = [
     /**
@@ -39,23 +39,17 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
      * @param t Instance of the test driver for checking if a sprite or its clones is touching an edge.
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const [pSpriteName] = this._args;
-        const negated = this.negated;
-        const spriteName = checkSpriteExistence(t, pSpriteName).name;
-        const touchingEdgeCheck = this._getCheck();
+        const sprite = this._checkSpriteExistence(this._args[0]);
+        const spriteName = sprite.name;
         this._registerOnMoveEvent(spriteName);
-
-        return () => {
-            const sprites = t.getSprite(spriteName).getClones(true);
-            return any(touchingEdgeCheck, negated, sprites);
-        };
+        return this._getCheck(sprite);
     }
 
     protected override _contradicts(_that: AbstractTouchingEdge): boolean {
         return false;
     }
 
-    protected abstract _getCheck(): (sprite: Sprite) => CheckResult;
+    protected abstract _getCheck(sprite: Sprite): () => CheckResult;
 }
 
 const touchingEdgeName = "TouchingEdge" as const;
@@ -79,8 +73,8 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
         return TouchingEdgeJSON.parse(checkJSON) as TouchingEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => CheckResult {
-        return (sprite: Sprite) => {
+    protected _getCheck(sprite: Sprite): () => CheckResult {
+        return () => {
             if (!sprite.visible) {
                 return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }
@@ -116,8 +110,8 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
         return TouchingHorizEdgeJSON.parse(checkJSON) as TouchingHorizEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => CheckResult {
-        return (sprite: Sprite) => {
+    protected _getCheck(sprite: Sprite): () => CheckResult {
+        return () => {
             if (!sprite.visible) {
                 return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }
@@ -152,8 +146,8 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
         return TouchingVerticalEdgeJSON.parse(checkJSON) as TouchingVerticalEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => CheckResult {
-        return (sprite: Sprite) => {
+    protected _getCheck(sprite: Sprite): () => CheckResult {
+        return () => {
             if (!sprite.visible) {
                 return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }

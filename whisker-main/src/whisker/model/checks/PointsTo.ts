@@ -1,15 +1,15 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
-import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, result} from "./CheckResult";
-import {ArgType} from "../util/schema";
+import {result} from "./CheckResult";
+import {ArgType, Position} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {
     checkDirectionWithinDelta,
-    checkSpriteExistence,
     getExpectedDirectionForSprite1LookingAtSprite2,
-    getExpectedDirectionForSpriteLookingAtMouse
+    getExpectedDirectionForSprite1LookingAtTarget,
+    MOUSE_NAME,
+    numberToReasonString
 } from "../util/ModelUtil";
 
 const name = "PointsTo" as const;
@@ -23,12 +23,12 @@ export type PointsToArgs = [
     /**
      * Key of the object the first sprite should be looking to.
      */
-    otherObject: SpriteName | "_mouse_",
+    otherObject: SpriteName | typeof MOUSE_NAME,
 ];
 
 const PointsToArgs = z.tuple([
     SpriteName,
-    SpriteName.or(z.literal("_mouse_")),
+    SpriteName.or(z.literal(MOUSE_NAME)),
 ]);
 
 export interface PointsToJSON extends ICheckJSON {
@@ -59,35 +59,43 @@ export class PointsTo extends PureCheck<PointsToJSON, CheckFun0> {
      *
      * @param t Instance of the test driver for retrieving the direction attribute of a sprite and its clones.
      */
-    protected _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const spriteNameRotate = checkSpriteExistence(t, this._args[0]).name;
-        if (this._args[1] != "_mouse_") {
-            checkSpriteExistence(t, this._args[1]).name;
-        }
-
-        const check = (s: Sprite) => {
-            let expectedDirection: number, hasCorrectDirection: boolean;
-            if (this._args[1] == "_mouse_") {
-                expectedDirection = getExpectedDirectionForSpriteLookingAtMouse(s, t);
-                hasCorrectDirection = checkDirectionWithinDelta(s, expectedDirection);
-            } else {
-                const target = t.getSprite(this._args[1]);
-                expectedDirection = getExpectedDirectionForSprite1LookingAtSprite2(s, target);
-                hasCorrectDirection = checkDirectionWithinDelta(s, expectedDirection);
-                if (!hasCorrectDirection) {
-                    // maybe the sprite just moved so it did point to the sprite
-                    const dirOld = getExpectedDirectionForSprite1LookingAtSprite2(s, target.old);
-                    hasCorrectDirection = checkDirectionWithinDelta(s, dirOld);
-                }
-            }
-            return result(hasCorrectDirection, {actual: s.direction, expected: expectedDirection});
-        };
-
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
+        const sprite = this._checkSpriteExistence(this._args[0]);
+        const spriteNameRotate = sprite.name;
+        const targetName = this._args[1] === MOUSE_NAME ? MOUSE_NAME : this._checkSpriteExistence(this._args[1]).name;
         this._registerOnVisualChange(spriteNameRotate);
-
         return () => {
-            const sprites = t.getSprite(spriteNameRotate).getClones(true);
-            return any(check, this.negated, sprites);
+            let expectedValues: number[];
+            let target: Position;
+            if (targetName == MOUSE_NAME) {
+                target = t.getMousePos();
+                if (Number.isNaN(target.x) || Number.isNaN(target.y)) {
+                    return result(true, {msg: "mouse position is NaN"}, this.negated);
+                }
+                expectedValues = [
+                    getExpectedDirectionForSprite1LookingAtTarget(sprite, target.x, target.y),
+                    getExpectedDirectionForSprite1LookingAtTarget(sprite.old, target.x, target.y)
+                ];
+            } else {
+                const actualTarget = t.getSprite(targetName);
+                expectedValues = [
+                    getExpectedDirectionForSprite1LookingAtSprite2(sprite, actualTarget),
+                    getExpectedDirectionForSprite1LookingAtSprite2(sprite, actualTarget.old),
+                    getExpectedDirectionForSprite1LookingAtSprite2(sprite.old, actualTarget),
+                ];
+                target = actualTarget;
+            }
+            const reason = {
+                actual: numberToReasonString(sprite.direction),
+                expected: `[${expectedValues.map(numberToReasonString).join(",")}]`,
+                s_x: numberToReasonString(sprite.x),
+                s_y: numberToReasonString(sprite.y),
+                t_x: numberToReasonString(target.x),
+                t_y: numberToReasonString(target.y),
+            };
+            const hasCorrectDirection = expectedValues.some(e => checkDirectionWithinDelta(sprite, e))
+                || sprite.x === target.x && sprite.direction === 90; // 90 and 180 should both be fine
+            return result(hasCorrectDirection, reason, this.negated);
         };
     }
 

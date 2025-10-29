@@ -1,21 +1,25 @@
 import Sprite from "../../../../src/vm/sprite";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 export class SpriteMock {
-    public readonly name: string;
+    public readonly _name: string;
     public touchingMouse: boolean;
     public touchingColor: boolean;
     public touchingSprite: boolean;
     public variables: any[];
-    public currentCostumeName: string;
-    public old: SpriteMock;
-    public sayText: string;
+    public _currentCostumeName: string;
+    public _old: SpriteMock;
+    public _sayText: string;
     public touchingVerticalEdge: boolean;
     public touchingHorizontalEdge: boolean;
     public _original: boolean;
+    public _clones: SpriteMock[];
+    private _visible: boolean;
+    private _sprite: Sprite;
 
     constructor(name: string, variables = null, isOriginal = true, isTouchingMouse = true, visible = true,
                 isTouchingColor = true, touchingSprite = true, clones: SpriteMock[] = []) {
-        this.name = name;
+        this._name = name;
         this._original = isOriginal;
         this.touchingMouse = isTouchingMouse;
         this._visible = visible;
@@ -26,8 +30,6 @@ export class SpriteMock {
         this.updateSprite();
     }
 
-    public _clones: SpriteMock[];
-
     get clones(): SpriteMock[] {
         return this._clones;
     }
@@ -37,16 +39,76 @@ export class SpriteMock {
         this._clones = value;
     }
 
-    private _visible: boolean;
+    get visible(): boolean {
+        return this._visible;
+    }
 
     set visible(value: boolean) {
         this._visible = value;
     }
 
-    private _sprite: Sprite;
-
     get sprite(): Sprite {
         return this._sprite;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get x(): number {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x") as number;
+    }
+
+    get y(): number {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y") as number;
+    }
+
+    get layerOrder(): number {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("layerOrder") as number;
+    }
+
+    get effects(): unknown {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("effects");
+    }
+
+    get rotationStyle(): string {
+        return this.variables == null ? "" : this.getValueOfVariableOrUndefined("rotationStyle") as string;
+    }
+
+    get direction(): number {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("direction") as number;
+    }
+
+    get size(): number {
+        return this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size") as number;
+    }
+
+    get sayText(): string {
+        return this._sayText || this.variables == null ? this._sayText : this.getValueOfVariableOrUndefined("sayText") as string;
+    }
+
+    get currentCostumeName(): string {
+        return this._currentCostumeName || this.variables == null ? this._currentCostumeName : this.getValueOfVariableOrUndefined("currentCostumeName") as string;
+    }
+
+    get isOriginal(): boolean {
+        return this._original;
+    }
+
+    get old(): Sprite {
+        return this._old._sprite;
+    }
+
+    get Sprite(): Sprite {
+        return this._sprite;
+    }
+
+    get _target(): { sprite: Sprite; isOriginal: boolean } {
+        return {sprite: this._sprite, isOriginal: this._original};
+    }
+
+    get isStage(): boolean {
+        return this._name == STAGE_NAME;
     }
 
     public static toSpriteArray(array: SpriteMock[]): Sprite[] {
@@ -58,41 +120,49 @@ export class SpriteMock {
     }
 
     public updateSprite(): Sprite {
-        if (this.old != null) {
-            this.old.updateSprite();
+        if (this._old != null) {
+            this._old.updateSprite();
         }
-        this._sprite = {
-            name: this.name,
-            x: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x"),
-            y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
-            layerOrder: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("layerOrder"),
-            effects: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("effects"),
-            rotationStyle: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("rotationStyle"),
-            direction: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("direction"),
-            size: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size"),
-            sayText: this.sayText || this.variables == null ? this.sayText : this.getValueOfVariableOrUndefined("sayText"),
-            currentCostumeName: this.currentCostumeName || this.variables == null ? this.currentCostumeName : this.getValueOfVariableOrUndefined("currentCostumeName"),
-            isOriginal: this._original,
-            visible: this._visible,
-            old: this.old == null ? null : this.old._sprite,
-            sprite: this._sprite,
-            _target: {sprite: this._sprite, isOriginal: this._original},
-            isStage: this.name == "_stage_",
-            isTouchingMouse: () => this.touchingMouse,
-            isTouchingColor: () => this.touchingColor,
-            isTouchingSprite: () => this.touchingSprite,
-            isTouchingVerticalEdge: () => this.touchingVerticalEdge,
-            isTouchingHorizEdge: () => this.touchingHorizontalEdge,
-            isTouchingEdge: () => this.touchingVerticalEdge || this.touchingHorizontalEdge,
-            getVariables: (predicate: any) => !this.variables ? this.variables : this.variables.filter(v => predicate(v)),
-            getVariable: (key: string) => !this.variables ? this.variables : this.variables.filter(v => v.name == key)[0],
-            getClones: (withClones: boolean) => {
-                return withClones
-                    ? [this._sprite, ...this.clones.map(c => c._sprite)]
-                    : [...this.clones.map(c => c._sprite)];
-            }
-        } as unknown as Sprite;
+        this._sprite = this as unknown as Sprite;
         return this._sprite;
+    }
+
+    isTouchingMouse(): boolean {
+        return this.touchingMouse;
+    }
+
+    isTouchingColor(): boolean {
+        return this.touchingColor;
+    }
+
+    isTouchingSprite(): boolean {
+        return this.touchingSprite;
+    }
+
+    isTouchingVerticalEdge(): boolean {
+        return this.touchingVerticalEdge;
+    }
+
+    isTouchingHorizEdge(): boolean {
+        return this.touchingHorizontalEdge;
+    }
+
+    isTouchingEdge(): boolean {
+        return this.touchingVerticalEdge || this.touchingHorizontalEdge;
+    }
+
+    getVariables(predicate: (u: unknown) => boolean): unknown[] {
+        return !this.variables ? this.variables : this.variables.filter(v => predicate(v));
+    }
+
+    getVariable(key: string): unknown {
+        return !this.variables ? this.variables : this.variables.filter(v => v.name == key)[0];
+    }
+
+    getClones(withClones: boolean): Sprite[] {
+        return withClones
+            ? [this._sprite, ...this.clones.map(c => c._sprite)]
+            : [...this.clones.map(c => c._sprite)];
     }
 
     private getValueOfVariableOrUndefined(key: string): number | string {

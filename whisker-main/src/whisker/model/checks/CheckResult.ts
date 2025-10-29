@@ -1,5 +1,3 @@
-import Sprite from "../../../vm/sprite";
-
 export type Reason = Record<string, unknown>;
 
 interface ICheckResult {
@@ -70,36 +68,4 @@ export function fail(reason: Reason): FailedCheck {
 
 export function result(b: boolean, reason: Reason, negated = false): CheckResult {
     return (negated !== b) ? pass() : fail(reason);
-}
-
-export function any(
-    check: (sprite: Sprite) => CheckResult,
-    negated: boolean,
-    sprites: Sprite[],
-): CheckResult {
-    function _any() {
-        let res: CheckResult = fail({message: "There are no sprites!"});
-
-        for (const s of sprites) {
-            res = check(s);
-
-            if (res.passed) {
-                return res;
-            }
-        }
-
-        return res;
-    }
-
-    const res = _any();
-
-    if (!negated) {
-        return res;
-    }
-
-    if (!res.passed) {
-        return pass();
-    }
-
-    return fail({});
 }

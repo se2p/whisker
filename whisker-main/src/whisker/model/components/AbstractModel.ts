@@ -6,6 +6,7 @@ import {UserModel} from "./UserModel";
 import {EndModel, ProgramModel} from "./ProgramModel";
 import {ModelJSON, ModelUsage, StorageValueType} from "../util/schema";
 import {evaluateExpression, getExpressionForEval, initialiseStorage} from "../util/ModelUtil";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export type OracleModel =
     | ProgramModel
@@ -98,7 +99,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
     /**
      * Initializes the storage for this model
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, newTarget: RenderedTarget | null = null): void {
         // even if no initial storage is provided, the storage still must be reset
         const initialStorage = new Map<string, unknown>();
         initialiseStorage(this.id, initialStorage);
@@ -113,7 +114,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
             }
         }
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver);
+            node.registerComponents(checkListener, testDriver, newTarget);
         });
     }
 

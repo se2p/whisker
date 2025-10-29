@@ -2,6 +2,7 @@ import {z} from "zod";
 import {CheckJSON, ConditionJSON} from "../checks/newCheck";
 import {UserInputJSON} from "../inputs/newUserInput";
 
+export type Position = { x: number; y: number; }
 export type ArgType = string | number | string[] | boolean;
 
 export type EdgeID = string;
@@ -121,14 +122,30 @@ const UserModelJSON = IModelJSON.extend({
     edges: z.array(UserModelEdgeJSON),
 });
 
+export type StartType = "GreenFlag" | "Event" | "CloneCreated" | "Backdrop" | "Key" | "Click" | "Loudness";
+
+const StartType = z.union([
+    z.literal("GreenFlag"),
+    z.literal("Event"),
+    z.literal("CloneCreated"),
+    z.literal("Backdrop"),
+    z.literal("Key"),
+    z.literal("Click"),
+    z.literal("Loudness"),
+]);
+
 export interface ProgramModelJSON extends IModelJSON {
     usage: "program";
     edges: ProgramModelEdgeJSON[];
+    type?: StartType;
+    param?: string;
 }
 
 const ProgramModelJSON = IModelJSON.extend({
     usage: z.literal("program"),
     edges: z.array(ProgramModelEdgeJSON),
+    type: StartType.optional().default("GreenFlag"),
+    param: z.string().optional().default(""),
 });
 
 export interface EndModelJSON extends IModelJSON {

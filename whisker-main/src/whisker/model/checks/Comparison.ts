@@ -1,4 +1,3 @@
-import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
@@ -27,7 +26,7 @@ export interface Interval {
     max: number;
 }
 
-abstract class AbstractComparison<T extends Interval | null> implements Quantifiable<Comparison<T>> {
+abstract class AbstractComparison<T extends Interval | null> {
     protected constructor(
         private readonly _operand2: AttributeType,
         private readonly _interval: T | null,
@@ -297,15 +296,4 @@ export interface ComparingCheck {
     operator: ComparisonOp;
     value: AttributeType;
     negated: boolean;
-}
-
-export function newQuantifiedComparison<T extends Interval | null>(
-    {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    interval: T | null = null,
-): Quantification<Comparison<T>> {
-    const comparison = newComparison({operator, value}, interval);
-
-    return negated
-        ? new Universal(comparison.negate())
-        : new Existential(comparison);
 }

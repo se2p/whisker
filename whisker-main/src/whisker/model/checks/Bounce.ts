@@ -1,16 +1,10 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
-import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, Reason, result} from "./CheckResult";
+import {result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {
-    checkCyclicValueWithinDelta,
-    checkSpriteExistence,
-    flipDirectionHorizontally,
-    flipDirectionVertically
-} from "../util/ModelUtil";
+import {checkCyclicValueWithinDelta, flipDirectionHorizontally, flipDirectionVertically} from "../util/ModelUtil";
 
 const name = "Bounce" as const;
 
@@ -55,43 +49,41 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
      * @param t Instance of the test driver for retrieving the direction attribute of a sprite and its clones.
      */
     protected _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const spriteName = checkSpriteExistence(t, this._args[0]).name;
+        const sprite = this._checkSpriteExistence(this._args[0]);
+        const spriteName = sprite.name;
 
-        const check = (s: Sprite) => {
+        this._registerOnVisualChange(spriteName);
+
+        return () => {
             const isDirFlipped = (expected: number) =>
-                checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
-            const reason: Reason = {direction: s.direction, oldDirection: s.old.direction};
+                checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, 5);
+            // delta of 5 to minimize false positives
+
+            const reason: Record<string, unknown> = {direction: sprite.direction, oldDirection: sprite.old.direction};
             let touchingEdge = false;
             let dirFlipped = false;
 
-            if (s.isTouchingVerticalEdge()) {
+            if (sprite.isTouchingVerticalEdge()) {
                 touchingEdge = true;
-                const expected = flipDirectionVertically(s.old.direction);
+                const expected = flipDirectionVertically(sprite.old.direction);
                 reason.isTouchingVerticalEdge = true;
                 reason.expectedVerticalFlip = expected;
                 dirFlipped = isDirFlipped(expected);
             }
 
-            if (s.isTouchingHorizEdge()) {
+            if (sprite.isTouchingHorizEdge()) {
                 touchingEdge = true;
-                const expected = flipDirectionHorizontally(s.old.direction);
+                const expected = flipDirectionHorizontally(sprite.old.direction);
                 reason.isTouchingHorziEdge = true;
                 reason.expectedHorizFlip = expected;
                 dirFlipped ||= isDirFlipped(expected);
             }
 
-            return result(!touchingEdge || dirFlipped, reason);
-        };
-
-        this._registerOnVisualChange(spriteName);
-
-        return () => {
-            const sprites = t.getSprite(spriteName).getClones(true);
-            return any(check, this.negated, sprites);
+            return result(!touchingEdge || dirFlipped, reason, this.negated);
         };
     }
 
     protected _contradicts(that: Bounce): boolean {
-        return false; // a sprite and a clone can touch both edges at the same time
+        return false; // there is neither a contradiction for different sprites nor a contradiction with the same
     }
 }

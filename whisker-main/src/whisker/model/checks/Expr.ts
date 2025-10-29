@@ -1,5 +1,5 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import {Dependencies, evaluateExpression, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
+import {Dependencies, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -50,12 +50,12 @@ export class Expr extends PureCheck<ExprJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const e = getExpressionForEval(t, this._code, this.graphID);
-        const check = () => {
-            const log = {};
-            return result(Boolean(evaluateExpression(t, e.expr, this.graphID, log)), log, this.negated);
-        };
         this._setupAllDependenciesForExpressions(e, this._code);
-        return check;
+        return () => {
+            const log = {};
+            const res = this.evaluateExpression(e.expr, log);
+            return result(Boolean(res), log, this.negated);
+        };
     }
 
     protected _contradicts(_that: Expr): boolean {

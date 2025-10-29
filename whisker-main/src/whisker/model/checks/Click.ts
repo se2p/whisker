@@ -1,11 +1,9 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence} from "../util/ModelUtil";
+import {result} from "./CheckResult";
 
 const name = "Click" as const;
 
@@ -48,29 +46,13 @@ export class Click extends PureCheck<ClickJSON, CheckFun0> {
      * @param t Instance of the test driver for retrieving if a sprite or its clones are clicked
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const [pSpriteName] = this._args;
-        const spriteName = checkSpriteExistence(t, pSpriteName).name;
-
-        const clickCheck = (s: Sprite) => {
-            if (!s.visible) {
-                return fail({message: `Expected sprite "${spriteName}" to be visible`});
-            }
-
-            if (!s.isTouchingMouse()) {
-                return fail({message: `Expected sprite "${spriteName}" to touch the mouse pointer`});
-            }
-
-            if (!t.isMouseDown()) {
-                return fail({message: `Expected sprite "${spriteName}" to be clicked`});
-            }
-
-            return pass();
-        };
-
+        const sprite = this._checkSpriteExistence(this._args[0]);
         return () => {
-            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            return any(clickCheck, this.negated, sprites)
-                .enhance({message: `Expected sprite "${spriteName}" not to be clicked`});
+            const spriteVisible = sprite.visible;
+            const spriteIsTouchingMouse = sprite.isTouchingMouse();
+            const mouseDown = t.isMouseDown();
+            const res = spriteVisible && spriteIsTouchingMouse && mouseDown;
+            return result(res, {spriteVisible, spriteIsTouchingMouse, mouseDown}, this.negated);
         };
     }
 

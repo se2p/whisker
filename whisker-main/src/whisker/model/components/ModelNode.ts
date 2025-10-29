@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelNodeJSON} from "../util/schema";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;
 export type UserModelNode = ModelNode<UserModelEdge>;
@@ -96,9 +97,9 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, newTarget: RenderedTarget | null = null): void {
         this.edges.forEach(edge => {
-            edge.registerComponents(checkListener, testDriver);
+            edge.registerComponents(checkListener, testDriver, newTarget);
         });
     }
 

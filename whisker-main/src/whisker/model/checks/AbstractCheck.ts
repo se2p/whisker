@@ -4,7 +4,11 @@ import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, fail} from "./CheckResult";
+import {CheckResult, fail, Reason} from "./CheckResult";
+import Sprite from "../../../vm/sprite";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {STAGE_NAME} from "../../../assembler/utils/selectors";
+import {checkSpriteExistence, evaluateExpression} from "../util/ModelUtil";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -47,6 +51,8 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     private _graphId: string | null;
     private _t: TestDriver | null;
     private _cu: CheckUtility | null;
+    private _newTarget: RenderedTarget | null;
+    private _newTargetSprite: Sprite | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -103,11 +109,15 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     /**
      * Register the check listener and test driver and check for errors.
      */
-    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
+    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string, newTarget: RenderedTarget | null = null): void {
         this._reset();
         this._t = t;
         this._cu = cu;
         this._graphId = graphID;
+        this._newTarget = newTarget;
+        this._newTargetSprite = newTarget !== null
+            ? t.getSprite(newTarget.getName()).getClones().filter((s: Sprite) => s.id === newTarget.id)[0]
+            : null;
         try {
             const check = this._checkArgsWithTestDriver(t);
             this._check = this._wrapCheck(check) as C;
@@ -123,7 +133,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
      * @param that The other effect.
      */
     contradicts(that: AbstractCheck): boolean {
-        if (this.name !== that.name || this.equals(that)) {
+        if (this.name !== that.name || this.equals(that) || this._newTarget !== that._newTarget) {
             return false;
         }
 
@@ -171,6 +181,20 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     protected abstract _checkArgsWithTestDriver(t: TestDriver): C;
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
+
+
+    protected _checkSpriteExistence(pSpriteName: ArgType): Sprite {
+        const sprite = checkSpriteExistence(this._t, pSpriteName);
+        return this._newTarget === null || sprite.name !== this._newTarget.getName() ? sprite : this._newTargetSprite;
+    }
+
+    protected _getStageOrSprite(spriteName: ArgType): Sprite {
+        return spriteName == STAGE_NAME ? this._t.getStage() : this._checkSpriteExistence(spriteName);
+    }
+
+    protected evaluateExpression(expr: string, log: Reason): unknown {
+        return evaluateExpression(this._t, expr, this.graphID, log, this._newTargetSprite);
+    }
 
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});

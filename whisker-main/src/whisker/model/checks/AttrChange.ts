@@ -1,9 +1,8 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
+import {checkAttributeExistence, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {z} from "zod";
-import {Bounds, Change, ChangingCheck, newQuantifiedChange} from "./Change";
-import {Quantification} from "./Quantification";
+import {Bounds, Change, ChangingCheck, newChange} from "./Change";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
@@ -75,14 +74,14 @@ export const AttrChangeJSON = ICheckJSON.extend({
 });
 
 export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
-    private readonly _change: Quantification<Change>;
+    private readonly _change: Change;
     private readonly _isForEffect: boolean;
     private readonly _attributeName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
         this._attributeName = this._args[1];
-        this._change = newQuantifiedChange(this, bounds[this._attributeName]);
+        this._change = newChange(this, bounds[this._attributeName]);
         this._isForEffect = isAnEffect(this._attributeName);
     }
 
@@ -107,7 +106,7 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
-        const sprite = getStageOrSprite(t, pSpriteName);
+        const sprite = this._getStageOrSprite(pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
             checkAttributeExistence(t, spriteName, attrName);
@@ -130,7 +129,7 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
 
             try {
-                return this._change.apply(sprites.map((s: Sprite) => this._getAttr(s)));
+                return this._change.apply(...this._getAttr(sprite));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
             }
@@ -148,7 +147,7 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
         return this._change.contradicts(that._change);
     }
 
-    private _getAttr(s: Sprite) {
+    private _getAttr(s: Sprite): [number, number] {
         return this._isForEffect
             ? [s.effects[this._attributeName], s.old.effects[this._attributeName]]
             : [s[this._attributeName], s.old[this._attributeName]];
