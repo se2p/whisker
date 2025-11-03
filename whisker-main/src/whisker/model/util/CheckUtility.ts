@@ -8,6 +8,7 @@ import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Check} from "../checks/newCheck";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Reason} from "../checks/CheckResult";
+import {addToMultiMap, MultiMap} from "./ModelUtil";
 
 type EffectCheck = {
     effect: Check,
@@ -16,17 +17,6 @@ type EffectCheck = {
     programEndStep: number,
     stepsSinceTransition: number,
 };
-
-export type MultiMap<K, V> = Map<K, Set<V>>;
-
-export function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
-    const set = map.get(key);
-    if (set) {
-        set.add(value);
-    } else {
-        map.set(key, new Set([value]));
-    }
-}
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.

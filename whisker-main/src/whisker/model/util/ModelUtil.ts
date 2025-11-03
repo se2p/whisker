@@ -17,7 +17,6 @@ import {STAGE_NAME} from "../../../assembler/utils/selectors";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, pass, Reason, result} from "../checks/CheckResult";
 import {OracleModel} from "../components/AbstractModel";
-import {addToMultiMap} from "./CheckUtility";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -30,11 +29,21 @@ export interface Expression extends Dependencies {
 
 export const MOUSE_NAME = "_mouse_";
 
+export type MultiMap<K, V> = Map<K, Set<V>>;
 
 const DEFAULT_CYCLIC_DELTA = 3.0;
 const _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
 const _modelMap: Map<string, OracleModel> = new Map<string, OracleModel>();
 const _clonesCreated: Map<number, Set<string>> = new Map<number, Set<string>>();
+
+export function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
+    const set = map.get(key);
+    if (set) {
+        set.add(value);
+    } else {
+        map.set(key, new Set([value]));
+    }
+}
 
 /**
  * Check the existence of a sprite.
