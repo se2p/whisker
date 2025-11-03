@@ -44,9 +44,6 @@ export class CloneRemoved extends PureCheck<CloneRemovedJSON, CheckFun0> {
 
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const sprite = this._checkSpriteExistence(this._args[0]);
-        // const spriteName = sprite.name;
-        // return () => wasCloneRemovedAroundStep(spriteName, t.getTotalStepsExecuted()).enhance({id: sprite.id});
-        // return () => result(true, {message: "there is no real implementation yet"}, this.negated); // dummy
         return () => result(t.getSprites(s => s.id === sprite.id).length === 0, {message: "this sprite was not deleted"}, this.negated);
     }
 
