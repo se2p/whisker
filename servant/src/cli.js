@@ -337,9 +337,9 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionSpritesTraces(){
+    optionSpritesTraces() {
         return this.option(
-            '-tr, --trace <Path>',
+            '--trace <Path>',
             'create JSON file with results',
             (tracePath) => util.processFilePathNotExists(tracePath)
         )

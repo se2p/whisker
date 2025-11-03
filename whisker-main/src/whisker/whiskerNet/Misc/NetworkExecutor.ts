@@ -88,7 +88,7 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
         const spritesTrace: SpriteTrace = {pass: false, positions: []};
 
-        // Set up the Scratch-VM and start the game   _onRunStop: callback when the vm stops
+        // Set up the Scratch-VM and start the game
         const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
