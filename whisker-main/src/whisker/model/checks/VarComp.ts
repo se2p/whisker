@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -58,6 +58,10 @@ export class VarComp extends PureCheck<VarCompJSON, CheckFun0> implements Compar
         return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"}, e => e.issues.length);
     }
 
+    protected _validate(checkJSON: VarCompJSON): VarCompJSON {
+        return VarCompJSON.parse(checkJSON) as VarCompJSON;
+    }
+
     /**
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
@@ -84,10 +88,6 @@ export class VarComp extends PureCheck<VarCompJSON, CheckFun0> implements Compar
 
         this._registerVarEvent(variableName);
         return check;
-    }
-
-    protected _validate(checkJSON: VarCompJSON): VarCompJSON {
-        return VarCompJSON.parse(checkJSON) as VarCompJSON;
     }
 
     protected override _contradicts(that: VarComp): boolean {

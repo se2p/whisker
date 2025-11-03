@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {z} from "zod";
@@ -94,6 +94,10 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
         return parseAttributeError(AttrChangeArgs.safeParse(args), attrNameIndex);
     }
 
+    protected _validate(checkJSON: AttrChangeJSON): AttrChangeJSON {
+        return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
+    }
+
     /**
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
@@ -131,10 +135,6 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
                 throw new Exception(pSpriteName, attrName, e);
             }
         };
-    }
-
-    protected _validate(checkJSON: AttrChangeJSON): AttrChangeJSON {
-        return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
     }
 
     protected override _contradicts(that: AttrChange): boolean {

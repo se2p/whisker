@@ -42,6 +42,10 @@ export class ChangeStorageBy extends ImpureCheck<ChangeStorageByJSON, CheckFun0>
         return parseNonUnionError(ChangeStorageByArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: ChangeStorageByJSON): ChangeStorageByJSON {
+        return ChangeStorageByJSON.parse(checkJSON) as ChangeStorageByJSON;
+    }
+
     /**
      * Get a method for increasing/decreasing a value in the storage of the graph.
      * @param t Instance of the test driver for evaluating expression.
@@ -56,10 +60,6 @@ export class ChangeStorageBy extends ImpureCheck<ChangeStorageByJSON, CheckFun0>
             setStorageValue(this.graphID, this.key, nextValue);
             return result(true, {}, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: ChangeStorageByJSON): ChangeStorageByJSON {
-        return ChangeStorageByJSON.parse(checkJSON) as ChangeStorageByJSON;
     }
 
     protected _contradicts(_that: ChangeStorageBy): boolean {

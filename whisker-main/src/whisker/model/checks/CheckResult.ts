@@ -1,11 +1,13 @@
 import Sprite from "../../../vm/sprite";
 
+export type Reason = Record<string, unknown>;
+
 interface ICheckResult {
     passed: boolean;
 
-    enhance(reason: Record<string, unknown>): CheckResult;
+    enhance(reason: Reason): CheckResult;
 
-    replace(reason: Record<string, unknown>): CheckResult;
+    replace(reason: Reason): CheckResult;
 }
 
 interface PassedCheck extends ICheckResult {
@@ -14,7 +16,7 @@ interface PassedCheck extends ICheckResult {
 
 interface FailedCheck extends ICheckResult {
     passed: false;
-    reason: Record<string, unknown>;
+    reason: Reason;
 }
 
 class PassedCheckImpl implements PassedCheck {
@@ -22,17 +24,17 @@ class PassedCheckImpl implements PassedCheck {
         return true;
     }
 
-    enhance(_reason: Record<string, unknown>): PassedCheck {
+    enhance(_reason: Reason): PassedCheck {
         return this;
     }
 
-    replace(_reason: Record<string, unknown>): PassedCheck {
+    replace(_reason: Reason): PassedCheck {
         return this;
     }
 }
 
 class FailedCheckImpl implements FailedCheck {
-    constructor(private readonly _reason: Record<string, unknown>) {
+    constructor(private readonly _reason: Reason) {
 
     }
 
@@ -40,15 +42,15 @@ class FailedCheckImpl implements FailedCheck {
         return false;
     }
 
-    get reason(): Record<string, unknown> {
+    get reason(): Reason {
         return this._reason;
     }
 
-    enhance(reason: Record<string, unknown>): FailedCheck {
+    enhance(reason: Reason): FailedCheck {
         return fail({...this._reason, ...reason});
     }
 
-    replace(reason: Record<string, unknown>): FailedCheck {
+    replace(reason: Reason): FailedCheck {
         return fail(reason);
     }
 }
@@ -62,11 +64,11 @@ export function pass(): PassedCheck {
     return new PassedCheckImpl();
 }
 
-export function fail(reason: Record<string, unknown>): FailedCheck {
+export function fail(reason: Reason): FailedCheck {
     return new FailedCheckImpl(reason);
 }
 
-export function result(b: boolean, reason: Record<string, unknown>, negated = false): CheckResult {
+export function result(b: boolean, reason: Reason, negated = false): CheckResult {
     return (negated !== b) ? pass() : fail(reason);
 }
 

@@ -18,16 +18,7 @@
                 "to": "n1",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "id": "c0",
-                        "name": "Expr",
-                        "args": [
-                            "true"
-                        ],
-                        "negated": false
-                    }
-                ],
+              "conditions": [],
                 "effects": [
                     {
                         "name": "InputEffect",

@@ -46,7 +46,7 @@ export class UserModelEdge extends AbstractEdge {
     }
 
     checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number): boolean {
-        return this.conditions.length === 0;
+        return false;
     }
 
     override toJSON(): UserModelEdgeJSON {
@@ -55,8 +55,8 @@ export class UserModelEdge extends AbstractEdge {
             label: this.label,
             from: this.from,
             to: this.to,
-            forceTestAfter: this.forceTestAfter,
-            forceTestAt: this.forceTestAt,
+            forceTestAfter: this.forceAfter,
+            forceTestAt: this.forceAt,
             conditions: this.conditions.map((c) => c.toJSON()),
             effects: this._userInputs.map(input => input.toJSON())
         };

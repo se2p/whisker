@@ -64,11 +64,6 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
 
     abstract get isPure(): boolean;
 
-    private _reset(): void {
-        this._lastResult = fail({message: "The check has not been called yet!"});
-        this._lastStepExecuted = -1;
-    }
-
     get check(): C {
         return this._check;
     }
@@ -176,6 +171,11 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     protected abstract _checkArgsWithTestDriver(t: TestDriver): C;
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
+
+    private _reset(): void {
+        this._lastResult = fail({message: "The check has not been called yet!"});
+        this._lastStepExecuted = -1;
+    }
 
     private _wrapCheck<T extends unknown[]>(check: (...args: T) => CheckResult): (...args: T) => CheckResult {
         return (...args: T) => {

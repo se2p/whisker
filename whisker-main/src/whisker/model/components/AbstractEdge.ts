@@ -25,12 +25,11 @@ export abstract class AbstractEdge {
     readonly from: string;
     /* Id of the target node*/
     readonly to: string;
+    readonly forceAfter: number;
+    readonly forceAt: number;
     conditions: Condition[] = [];
-    readonly forceTestAfter: number;
-    readonly forceTestAt: number;
-    protected failedForcedTest: boolean;
-    private _forceTestAfterSteps: number;
-    private _forceTestAtSteps: number;
+    private readonly _forceAfterSteps: number;
+    private readonly _forceAtSteps: number;
 
     protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
                           forceTestAt: number) {
@@ -42,31 +41,10 @@ export abstract class AbstractEdge {
         this.graphID = graphID;
         this.from = from;
         this.to = to;
-        this.forceTestAfter = forceTestAfter;
-        if (this.forceTestAfter < -1) {
-            this.forceTestAfter = -1;
-        } else if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter;
-        }
-        this.forceTestAt = forceTestAt;
-        if (this.forceTestAt < -1) {
-            this.forceTestAt = -1;
-        } else if (this.forceTestAt != -1) {
-            this.forceTestAt = forceTestAt;
-        }
-        this.failedForcedTest = false;
-        this._forceTestAfterSteps = -1;
-        this._forceTestAtSteps = -1;
-    }
-
-    _lastTransition = 0;
-
-    get lastTransition(): number {
-        return this._lastTransition;
-    }
-
-    set lastTransition(transition: number) {
-        this._lastTransition = transition;
+        this.forceAfter = Math.max(-1, forceTestAfter);
+        this._forceAfterSteps = this._convertTimeToSteps(this.forceAfter);
+        this.forceAt = Math.max(-1, forceTestAt);
+        this._forceAtSteps = this._convertTimeToSteps(this.forceAt);
     }
 
     /**
@@ -77,49 +55,38 @@ export abstract class AbstractEdge {
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      * @Returns the failed conditions.
      */
-    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): Check[] {
-        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
-            return this.conditions;
-        }
-        if (this.failedForcedTest) {
-            return this.conditions;
-        }
-
-        const failedConditions: Check[] = [];
-
+    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this._forceTestAtSteps !== -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this._forceTestAfterSteps !== -1 && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
-
+        if (this._mustForceStart(t) || this._mustForceLastTransition(stepsSinceLastTransition)) {
+            let noneFailed = true;
             for (const c of this.conditions) {
                 try {
                     const res = c.check(stepsSinceLastTransition, stepsSinceEnd);
                     if (res.passed === false) {
-                        this.failedForcedTest = true;
-                        failedConditions.push(c);
-                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t, res.reason));
+                        noneFailed = false;
+                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t), res.reason);
                     }
                 } catch (e) {
                     cu.addErrorOutput(this.label, this.graphID, e);
-                    failedConditions.push(c);
+                    noneFailed = false;
                 }
             }
-            return failedConditions;
+            return noneFailed;
         }
 
         // time limit not reached
         for (const c of this.conditions) {
             try {
                 if (!c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
-                    failedConditions.push(c);
+                    return false;
                 }
             } catch (e) {
-                failedConditions.push(c);
                 cu.addErrorOutput(this.label, this.graphID, e);
+                return false;
             }
         }
 
-        return failedConditions;
+        return true;
     }
 
     abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean;
@@ -143,31 +110,30 @@ export abstract class AbstractEdge {
      * Register the check listener and test driver on the edge's conditions.
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver): void {
-        if (this.forceTestAt != -1) {
-            this._forceTestAtSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
-        }
-        if (this.forceTestAfter != -1) {
-            this._forceTestAfterSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
-        }
         this.conditions.forEach(cond => {
             cond.registerComponents(t, checkListener, this.graphID);
         });
     }
 
-    reset(): void {
-        this.failedForcedTest = false;
-        this._forceTestAtSteps = -1;
-        this._forceTestAfterSteps = -1;
-        this.lastTransition = 0;
-    }
-
     abstract toJSON(): ModelEdgeJSON;
 
-    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Record<string, unknown>): string {
-        if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver): string {
+        if (this._forceAtSteps != -1 && this._forceAtSteps <= t.getTotalStepsExecuted()) {
+            return getTimeLimitFailedAtOutput(this, condition, this.forceAt);
         } else {
-            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter, reason);
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceAfter);
         }
+    }
+
+    private _mustForceStart(t: TestDriver): boolean {
+        return this._forceAtSteps !== -1 && this._forceAtSteps <= t.getTotalStepsExecuted();
+    }
+
+    private _mustForceLastTransition(stepsSinceLastTransition: number): boolean {
+        return this._forceAfterSteps !== -1 && this._forceAfterSteps <= stepsSinceLastTransition;
+    }
+
+    private _convertTimeToSteps(value: number): number {
+        return value === -1 ? -1 : VMWrapper.convertFromTimeToSteps(value);
     }
 }

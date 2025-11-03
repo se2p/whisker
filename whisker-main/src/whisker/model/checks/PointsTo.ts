@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -50,6 +50,10 @@ export class PointsTo extends PureCheck<PointsToJSON, CheckFun0> {
         return parseNonUnionError(PointsToArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: PointsToJSON): PointsToJSON {
+        return PointsToJSON.parse(checkJSON) as PointsToJSON;
+    }
+
     /**
      * Get a method whether a sprite points to the mouse/another sprite.
      *
@@ -89,9 +93,5 @@ export class PointsTo extends PureCheck<PointsToJSON, CheckFun0> {
 
     protected _contradicts(that: PointsTo): boolean {
         return false; // two different objects can be at the same location
-    }
-
-    protected _validate(checkJSON: PointsToJSON): PointsToJSON {
-        return PointsToJSON.parse(checkJSON) as PointsToJSON;
     }
 }

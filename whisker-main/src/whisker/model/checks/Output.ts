@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, fail, pass} from "./CheckResult";
@@ -45,6 +45,10 @@ export class Output extends PureCheck<OutputJSON, CheckFun0> {
         return parseNonUnionError(OutputArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: OutputJSON): OutputJSON {
+        return OutputJSON.parse(checkJSON) as OutputJSON;
+    }
+
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
      * @param t Instance of the test driver for retrieving the sayText value of a sprite and its clones
@@ -83,10 +87,6 @@ export class Output extends PureCheck<OutputJSON, CheckFun0> {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             return any(sayTextCheck, this.negated, sprites);
         };
-    }
-
-    protected _validate(checkJSON: OutputJSON): OutputJSON {
-        return OutputJSON.parse(checkJSON) as OutputJSON;
     }
 
     protected override _contradicts(that: Output): boolean {

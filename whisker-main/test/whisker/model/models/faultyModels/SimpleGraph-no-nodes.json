@@ -75,16 +75,7 @@
                 "to": "hidden",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "id": "true",
-                        "name": "Expr",
-                        "args": [
-                            "true"
-                        ],
-                        "negated": false
-                    }
-                ],
+                "conditions": [],
                 "effects": [
                     {
                         "id": "star.x_DoesNotChange",
