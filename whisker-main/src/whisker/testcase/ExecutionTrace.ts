@@ -54,9 +54,9 @@ export class ExecutionTrace {
 
     private _events: EventAndParameters[];
 
-    private readonly _positionTrace?: SpriteTrace;
+    private readonly _positionTrace: SpriteTrace | null;
 
-    constructor(traces: CoverageTrace, events: EventAndParameters[], trace?: SpriteTrace) {
+    constructor(traces: CoverageTrace, events: EventAndParameters[], trace: SpriteTrace | null = null) {
         this._blockTraces = traces;
         this._events = events;
         this._positionTrace = trace;
@@ -65,8 +65,8 @@ export class ExecutionTrace {
 
     clone(): ExecutionTrace {
         return new ExecutionTrace(this.blockTraces, [...this.events], {
-            ...this._positionTrace,
-            positions: [...this._positionTrace.positions]
+            ...this._positionTrace ? {...this._positionTrace, positions: [...this._positionTrace.positions]}
+                : null
         });
     }
 
@@ -82,14 +82,14 @@ export class ExecutionTrace {
         this._events = value;
     }
 
-    get positionTrace(): SpriteTrace | undefined {
+    get positionTrace(): SpriteTrace | null {
         return this._positionTrace;
     }
 }
 
 export interface SpriteTrace {
-    pass: boolean,
-    positions: number[][]
+    pass: boolean;
+    positions: number[][];
 }
 
 export interface CoverageTrace {
