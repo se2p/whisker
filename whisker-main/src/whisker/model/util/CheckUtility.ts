@@ -17,9 +17,9 @@ type EffectCheck = {
     stepsSinceTransition: number,
 };
 
-type MultiMap<K, V> = Map<K, Set<V>>;
+export type MultiMap<K, V> = Map<K, Set<V>>;
 
-function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
+export function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
     const set = map.get(key);
     if (set) {
         set.add(value);

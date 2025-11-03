@@ -17,6 +17,7 @@ import {STAGE_NAME} from "../../../assembler/utils/selectors";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, pass, Reason, result} from "../checks/CheckResult";
 import {OracleModel} from "../components/AbstractModel";
+import {addToMultiMap} from "./CheckUtility";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -33,7 +34,7 @@ export const MOUSE_NAME = "_mouse_";
 const DEFAULT_CYCLIC_DELTA = 3.0;
 const _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
 const _modelMap: Map<string, OracleModel> = new Map<string, OracleModel>();
-const _clonesCreated: Map<number, string[]> = new Map<number, string[]>();
+const _clonesCreated: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 /**
  * Check the existence of a sprite.
@@ -429,15 +430,6 @@ export function flipDirectionVertically(direction: number): number {
     return -direction;
 }
 
-export function addToArrayMap<K extends string | number, V>(map: Map<K, V[]>, key: K, value: V): void {
-    const list = map.get(key);
-    if (list === undefined) {
-        map.set(key, [value]);
-    } else {
-        list.push(value);
-    }
-}
-
 function _isAnAttribute(attrName: string): boolean {
     return isAnAttribute(attrName) ||
         (attrName.startsWith('old.') && isAnAttribute(attrName.substring(4)));
@@ -573,28 +565,18 @@ export function restartModel(id: string, currentStep: number): void {
     _getModel(id).restart(currentStep);
 }
 
-function wasCloneEventAroundStep(spriteName: string, step: number, map: Map<number, string[]>, msgPart: "created" | "removed"): CheckResult {
-    const originalRes = wasCloneEventInStep(spriteName, step, map, msgPart);
-    if (originalRes.passed) {
-        return originalRes;
-    }
-    return wasCloneEventInStep(spriteName, step - 1, map, msgPart).passed ? pass() : originalRes;
-}
-
-function wasCloneEventInStep(spriteName: string, step: number, map: Map<number, string[]>, msgPart: "created" | "removed"): CheckResult {
-    const list = map.get(step);
-    if (!list) {
-        return fail({message: `there was no clone ${msgPart}`});
-    }
-    return list.includes(spriteName) ? pass() : fail({message: `there were only clones ${msgPart} for ${list}`});
-}
-
 export function registerCloneCreatedEvent(spriteName: string, step: number): void {
-    addToArrayMap(_clonesCreated, step, spriteName);
+    addToMultiMap(_clonesCreated, step, spriteName);
 }
 
 export function wasCloneCreatedAroundStep(spriteName: string, step: number): CheckResult {
-    return wasCloneEventAroundStep(spriteName, step, _clonesCreated, "created");
+    let list = _clonesCreated.get(step);
+    if (list && list.has(spriteName)) {
+        return pass();
+    }
+    const message = list ? `there were only clones created for ${list}` : 'there was no clone created';
+    list = _clonesCreated.get(step - 1);
+    return list.has(spriteName) ? pass() : fail({message});
 }
 
 export function convertToRgbNumbers(pR: ArgType, pG: ArgType, pB: ArgType): [number, number, number] {
