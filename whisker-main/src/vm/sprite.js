@@ -574,8 +574,8 @@ class Sprite {
     getRangeOfX() {
         try {
             if (this._target.renderer) {
-                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [-250, 0])[0];
-                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [250, 0])[0];
+                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [-1000, 0])[0];
+                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [1000, 0])[0];
                 return {min: min, max: max};
             }
         } catch (error) {
@@ -591,8 +591,8 @@ class Sprite {
     getRangeOfY() {
         try {
             if (this._target.renderer) {
-                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, -250])[1];
-                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, 250])[1];
+                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, -1000])[1];
+                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, 1000])[1];
                 return {min: min, max: max};
             }
         } catch (error) {
