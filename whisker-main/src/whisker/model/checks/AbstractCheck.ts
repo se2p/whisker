@@ -276,9 +276,6 @@ export abstract class BoundedCheck<J extends CheckJSON = CheckJSON, C extends Ch
             }
             case "layerOrder":
                 return true;
-            case "direction":
-            case "volume":
-            case "currentCostume":
             default:
                 return false;
         }
