@@ -19,7 +19,15 @@ export class InputExtraction {
      */
     static extractFeatures(vm: VirtualMachine): InputFeatures {
         const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
-        for (const target of vm.runtime.targets) {
+
+        // Sort targets by name so we have same order in the sprite positions tracing
+        const sortedTargets = [...vm.runtime.targets].sort((a, b) => {
+            if (a.isStage) return -1;
+            if (b.isStage) return 1;
+            return a.sprite.name.localeCompare(b.sprite.name);
+        });
+
+        for (const target of sortedTargets) {
             // We only consider targets that are visible and host blocks.
             if (Object.keys(target.blocks).length === 0 && !target.isvisible) {
                 continue;

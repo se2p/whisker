@@ -636,12 +636,16 @@ const runAllTests = async function () {
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
                 properties);
-            const [csv, mutantPrograms] = await dynamicSuite.execute(Whisker.modelTester);
+            const [csv, mutantPrograms, spriteTraces] = await dynamicSuite.execute(Whisker.modelTester);
 
             summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0){
                 await downloadMutants(mutantPrograms);
+            }
+
+            if (spriteTraces) {
+                document.querySelector('#container').spriteTraces = spriteTraces;
             }
 
             coverage = CoverageGenerator.getCoverage();

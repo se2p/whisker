@@ -18,14 +18,15 @@
  *
  */
 
-import { ScratchEvent } from "./events/ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import BranchDistanceTrace from "scratch-vm/src/tracing/branchCoverageTracer";
 
 export class EventAndParameters {
     constructor(
         private readonly _event: ScratchEvent,
         private readonly _parameters: number[]
-    ) { }
+    ) {
+    }
 
     get event(): ScratchEvent {
         return this._event;
@@ -40,7 +41,7 @@ export class EventAndParameters {
         return 1 + this._event.numSearchParameter();
     }
 
-    toString():string{
+    toString(): string {
         return `Event ${this._event} with parameter(s) ${this.parameters}`;
     }
 }
@@ -53,13 +54,20 @@ export class ExecutionTrace {
 
     private _events: EventAndParameters[];
 
-    constructor(traces: CoverageTrace, events: EventAndParameters[]) {
+    private readonly _positionTrace: SpriteTrace | null;
+
+    constructor(traces: CoverageTrace, events: EventAndParameters[], trace: SpriteTrace | null = null) {
         this._blockTraces = traces;
         this._events = events;
+        this._positionTrace = trace;
     }
 
+
     clone(): ExecutionTrace {
-        return new ExecutionTrace(this.blockTraces, [...this.events]);
+        return new ExecutionTrace(this.blockTraces, [...this.events], {
+            ...this._positionTrace ? {...this._positionTrace, positions: [...this._positionTrace.positions]}
+                : null
+        });
     }
 
     get blockTraces(): CoverageTrace {
@@ -73,6 +81,15 @@ export class ExecutionTrace {
     set events(value: EventAndParameters[]) {
         this._events = value;
     }
+
+    get positionTrace(): SpriteTrace | null {
+        return this._positionTrace;
+    }
+}
+
+export interface SpriteTrace {
+    pass: boolean;
+    positions: number[][];
 }
 
 export interface CoverageTrace {
