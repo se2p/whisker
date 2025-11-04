@@ -69,13 +69,15 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
         return () => {
-            let res: boolean;
+            let spritesTouching: boolean;
+            const s1Visible = sprite1.visible;
+            const s2Visible = sprite2.visible;
             try {
-                res = sprite1.isTouchingSprite(spriteName2);
+                spritesTouching = sprite1.isTouchingSprite(spriteName2);
             } catch (e) {
-                res = t.getSprite(spriteName1).isTouchingSprite(spriteName2);
+                spritesTouching = t.getSprite(spriteName1).isTouchingSprite(spriteName2);
             }
-            return result(res, {}, this.negated);
+            return result(spritesTouching, {spritesTouching, s1Visible, s2Visible}, this.negated);
         };
     }
 
