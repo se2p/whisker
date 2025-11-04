@@ -52,8 +52,8 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     private _graphId: string | null;
     private _t: TestDriver | null;
     private _cu: CheckUtility | null;
-    private _newTarget: RenderedTarget | null;
-    private _newTargetSprite: Sprite | null;
+    private _currentClone: RenderedTarget | null;
+    private _currentSprite : Sprite | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -115,8 +115,8 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
         this._t = t;
         this._cu = cu;
         this._graphId = graphID;
-        this._newTarget = newTarget;
-        this._newTargetSprite = newTarget !== null
+        this._currentClone = newTarget;
+        this._currentSprite  = newTarget !== null
             ? t.getSprite(newTarget.getName()).getClones().filter((s: Sprite) => s.id === newTarget.id)[0]
             : null;
         try {
@@ -134,7 +134,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
      * @param that The other effect.
      */
     contradicts(that: AbstractCheck): boolean {
-        if (this.name !== that.name || this.equals(that) || this._newTarget !== that._newTarget) {
+        if (this.name !== that.name || this.equals(that) || this._currentClone !== that._currentClone) {
             return false;
         }
 
@@ -186,7 +186,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
 
     protected _checkSpriteExistence(pSpriteName: ArgType): Sprite {
         const sprite = checkSpriteExistence(this._t, pSpriteName);
-        return this._newTarget === null || sprite.name !== this._newTarget.getName() ? sprite : this._newTargetSprite;
+        return this._currentClone === null || sprite.name !== this._currentClone.getName() ? sprite : this._currentSprite ;
     }
 
     protected _getStageOrSprite(spriteName: ArgType): Sprite {
@@ -194,7 +194,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     }
 
     protected evaluateExpression(expr: string, log: Reason): unknown {
-        return evaluateExpression(this._t, expr, this.graphID, log, this._newTargetSprite);
+        return evaluateExpression(this._t, expr, this.graphID, log, this._currentSprite );
     }
 
     protected removeEffectsOfModels(modelIds: Set<string>): void {
