@@ -8,9 +8,9 @@ describe('Output tests', () => {
     const graphID = "graphID";
     const dummyCU = getDummyCheckUtility();
     const banana = new SpriteMock("Banana");
-    banana.sayText = "this is some text";
+    banana._sayText = "this is some text";
     const kiwi = new SpriteMock("kiwi");
-    kiwi.sayText = "this is a text as well";
+    kiwi._sayText = "this is a text as well";
     const tdMock = new TestDriverMock([banana, kiwi]);
     const t = tdMock.getTestDriver();
 
@@ -20,7 +20,7 @@ describe('Output tests', () => {
         const c = new Output('label', {args: [spriteName, text]});
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
-        banana.sayText = "this is a different text";
+        banana._sayText = "this is a different text";
         tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
         const reason = {"actual": "this is a different text", "expected": "this is some text"};
         tdMock.nextStep();

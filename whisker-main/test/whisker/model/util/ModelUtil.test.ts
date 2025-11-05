@@ -253,7 +253,7 @@ describe('ModelUtil tests', function () {
             bowl.variables = [{name: "x", value: 10}, {name: "name", value: "Bowl"}];
             const oldBowl = new SpriteMock("Bowl");
             oldBowl.variables = [{name: "x", value: 5}];
-            bowl.old = oldBowl;
+            bowl._old = oldBowl;
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
             const expr = '$("Bowl", "name")!="ApPle"&&Math.abs($("Bowl", "old").x-$("Bowl", "x"))==10';
@@ -267,7 +267,7 @@ describe('ModelUtil tests', function () {
         test('Produces the correct sting for multiple variables and sprites', () => {
             const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
             const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-            bowl.old = new SpriteMock("Bowl", [{name: "x", value: 5}, {name: "y", value: 9}]);
+            bowl._old = new SpriteMock("Bowl", [{name: "x", value: 5}, {name: "y", value: 9}]);
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = '$("Kiwi", "name")+(-1*Math.abs($("Bowl", "old").y-$("Bowl", "x"))).toString()';
@@ -352,7 +352,7 @@ describe('ModelUtil tests', function () {
         test("finds the correct option if only one matches", () => {
             let res: Sprite;
             expect(() => {
-                res = checkSpriteExistence(t, [bowl.name + "someTypo", "boowl", bowl.name]);
+                res = checkSpriteExistence(t, [bowl._name + "someTypo", "boowl", bowl._name]);
             }).not.toThrow(SpriteNotFoundError);
             expect(res).toBe(bowl.sprite);
         });
@@ -360,7 +360,7 @@ describe('ModelUtil tests', function () {
         test("Does not throw but simply returns one if multiply match", () => {
             let res: Sprite;
             expect(() => {
-                res = checkSpriteExistence(t, [bowl.name, kiwi.name]);
+                res = checkSpriteExistence(t, [bowl._name, kiwi._name]);
             }).not.toThrow(SpriteNotFoundError);
             expect(res == bowl.sprite || res == kiwi.sprite).toBe(true);
         });

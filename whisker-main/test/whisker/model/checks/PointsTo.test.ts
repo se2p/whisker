@@ -13,11 +13,23 @@ describe('PointsToTest', () => {
             name: "direction",
             value: 135
         }, {name: "rotationStyle", value: "All round"}]),
+        new SpriteMock("banana", [{name: "x", value: 10}, {name: "y", value: 10}, {
+            name: "direction",
+            value: 135
+        }, {name: "rotationStyle", value: "All round"}]),
+        new SpriteMock("bowl", [{name: "x", value: 0}, {name: "y", value: 0}, {
+            name: "direction",
+            value: 45
+        }, {name: "rotationStyle", value: "All round"}]),
         new SpriteMock("bowl", [{name: "x", value: 0}, {name: "y", value: 0}, {
             name: "direction",
             value: 45
         }, {name: "rotationStyle", value: "All round"}])
     ];
+    mocks[0]._old = mocks[1];
+    mocks[1]._original = false;
+    mocks[2]._old = mocks[3];
+    mocks[3]._original = false;
     const cu = getDummyCheckUtility();
     const tdMock = new TestDriverMock(mocks);
     const t = tdMock.getTestDriver();

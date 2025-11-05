@@ -1,11 +1,10 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {checkSpriteExistence} from "../util/ModelUtil";
+import {result} from "./CheckResult";
 
 const name = "SpriteTouching" as const;
 
@@ -56,10 +55,11 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName1, pSpriteName2] = this._args;
-        const negated = this.negated;
 
-        const spriteName1 = checkSpriteExistence(t, pSpriteName1).name;
-        const spriteName2 = checkSpriteExistence(t, pSpriteName2).name;
+        const sprite1 = this._checkSpriteExistence(pSpriteName1);
+        const sprite2 = checkSpriteExistence(t, pSpriteName2);
+        const spriteName1 = sprite1.name;
+        const spriteName2 = sprite2.name;
 
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
@@ -69,22 +69,15 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
         return () => {
-            const touchingCheck = (s: Sprite) => {
-                if (!s.visible) {
-                    return fail({
-                        message: `Expected sprite "${s}" to be visible`
-                    });
-                }
-
-                if (!s.isTouchingSprite(spriteName2)) {
-                    return fail({message: `Expected sprite "${s.name}" to touch sprite "${spriteName2}"`});
-                }
-
-                return pass();
-            };
-
-            const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
-            return any(touchingCheck, negated, sprites);
+            let spritesTouching: boolean;
+            const s1Visible = sprite1.visible;
+            const s2Visible = sprite2.visible;
+            try {
+                spritesTouching = sprite1.isTouchingSprite(spriteName2);
+            } catch (e) {
+                spritesTouching = t.getSprite(spriteName1).isTouchingSprite(spriteName2);
+            }
+            return result(spritesTouching, {spritesTouching, s1Visible, s2Visible}, this.negated);
         };
     }
 

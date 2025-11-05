@@ -1,6 +1,5 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForVariable} from "../util/ModelError";
-import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
@@ -15,7 +14,7 @@ import {
     SpriteName,
     VariableName
 } from "./CheckTypes";
-import {checkVariableExistence, getStageOrSprite} from "../util/ModelUtil";
+import {checkVariableExistence} from "../util/ModelUtil";
 
 const name = "VarComp" as const;
 
@@ -72,22 +71,19 @@ export class VarComp extends PureCheck<VarCompJSON, CheckFun0> implements Compar
         const {
             sprite: foundSprite,
             variable: foundVar
-        } = checkVariableExistence(t, getStageOrSprite(t, pSpriteName), varName);
-        const spriteName = foundSprite.name;
+        } = checkVariableExistence(t, this._getStageOrSprite(pSpriteName), varName);
         const variableName = foundVar.name;
 
-        const check = () => {
-            const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
-            const variable = sprite.getVariable(variableName);
+        this._registerVarEvent(variableName);
+
+        return () => {
+            const variable = foundSprite.getVariable(variableName);
             try {
-                return this._comparison.apply(variable.value);
+                return this._comparison.apply(variable.value as string);
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }
         };
-
-        this._registerVarEvent(variableName);
-        return check;
     }
 
     protected override _contradicts(that: VarComp): boolean {

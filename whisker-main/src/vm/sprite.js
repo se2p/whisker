@@ -2,6 +2,7 @@ const Variable = require('./variable');
 const RenderedTarget = require('scratch-vm/src/sprites/rendered-target');
 const ScratchVariable = require('scratch-vm/src/engine/variable');
 const Scratch3LooksBlocks = require('scratch-vm/src/blocks/scratch3_looks');
+const {InputExtraction} = require("../whisker/whiskerNet/Misc/InputExtraction");
 
 /**
  * Represents a scratch {@link Sprite} by wrapping a {@link RenderedTarget} and gives the user basic functionality to
@@ -548,6 +549,68 @@ class Sprite {
         wrapper.updateOld();
         this._variables[variable.id] = wrapper;
         return wrapper;
+    }
+
+    /**
+     * Calculates the range of possible values for the size of this sprite
+     * @return {{min: number, max: number}}
+     */
+    getRangeOfSize() {
+        try {
+            if (this._target.renderer) {
+                const [min, max] = InputExtraction.getSizeBounds(this._target);
+                return {min, max};
+            }
+        } catch (error) {
+            // prevent errors of form: Cannot read properties of undefined (reading ''skin'')'
+        }
+        return {min: 1, max: 100};
+    }
+
+    /**
+     * Calculates the smallest and biggest possible value for the x-coordinate of this sprite. When the size of a sprite
+     * increases the range of possible x values also increases. So for size 100 the lowest possible value for x might be
+     * at -240. When updating the size to 200 the lowest possible value for the sprite could even be below -300. The
+     * bounds can also change dynamically during the runtime when the sprite changes its costume. This method considers
+     * all factors and returns the range in which the sprite can be positioned along the x-axis.
+     @return {{min: number, max: number}}
+     */
+    getRangeOfX() {
+        try {
+            if (this._target.renderer) {
+                // use -1000 and 1000 as values which should be outside the possible range for any costume and size.
+                // getFencedPositionOfDrawable maps both coordinates in the bounds so it should return the desired bound
+                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [-1000, 0])[0];
+                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [1000, 0])[0];
+                return {min: min, max: max};
+            }
+        } catch (error) {
+            // prevent errors of form: Cannot read properties of undefined (reading ''skin'')'
+        }
+        return {min: -240, max: 240};
+    }
+
+    /**
+     * Calculates the smallest and biggest possible value for the y-coordinate of this sprite. When the size of a sprite
+     * increases the range of possible y values also increases. So for size 100 the lowest possible value for y might be
+     * at -160. When updating the size to 200 the lowest possible value for the sprite could even be below -300. The
+     * bounds can also change dynamically during the runtime when the sprite changes its costume. This method considers
+     * all factors and returns the range in which the sprite can be positioned anlong the y-axis.
+     * @return {{min: number, max: number}}
+     */
+    getRangeOfY() {
+        try {
+            if (this._target.renderer) {
+                // use -1000 and 1000 as values which should be outside the possible range for any costume and size.
+                // getFencedPositionOfDrawable maps both coordinates in the bounds so it should return the desired bound
+                const min = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, -1000])[1];
+                const max = this._target.renderer.getFencedPositionOfDrawable(this._target.drawableID, [0, 1000])[1];
+                return {min: min, max: max};
+            }
+        } catch (error) {
+            // prevent errors of form: Cannot read properties of undefined (reading ''skin'')'
+        }
+        return {min: -180, max: 180};
     }
 }
 

@@ -5,9 +5,7 @@ import {
     CONST_PASS,
     EPSILON,
     newComparison,
-    newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
-import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 import {ComparisonOp, comparisonOps} from "../../../../src/whisker/model/checks/CheckTypes";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
@@ -87,29 +85,6 @@ describe.each([
 });
 
 describe.each([
-    ["<", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
-    [">", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
-    ["!=", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
-    ["!=", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
-])('The bounded "x %s y" comparison with %s', (operator: ComparisonOp, _, bounds) => {
-    it.prop([bounds])("is true if x == y", ([min, max, value]) => {
-        expect(newComparison({operator, value}, {min, max}).apply(value).passed).toBe(true);
-    });
-
-    const inBounds = bounds.chain(([min, max]) => fc.tuple(
-        fc.constant(min),
-        fc.constant(max),
-        fc.double({min, max}).filter((v) => v !== min && v !== max)
-    ));
-
-    it.prop([inBounds])("has the same result as the unbounded comparison otherwise", ([min, max, value]) => {
-        const actual = newComparison({operator, value}, {min, max}).apply(value);
-        const expected = newComparison({operator, value}).apply(value);
-        expect(actual).toStrictEqual(expected);
-    });
-});
-
-describe.each([
     ["==", "==", xy.filter(([y, b]) => y != b && Math.abs(y - b) > EPSILON), true, "if y != b"],
     ["==", "!=", xy.filter(([y, b]) => y != b && Math.abs(y - b) > EPSILON), false, "if y != b"],
     ["==", "!=", number.map((y) => [y, y]), true, "if y == b"],
@@ -162,20 +137,6 @@ function comparingCheck(negated: boolean): fc.Arbitrary<ComparingCheck> {
     });
 }
 
-describe("newQuantifiedComparison", () => {
-    it.prop([comparingCheck(false)])("returns an Existential when not negated", (c) => {
-        const q = newQuantifiedComparison(c);
-        expect(q).toBeInstanceOf(Existential);
-        expect(q.wrapped).toStrictEqual(newComparison(c));
-    });
-
-    it.prop([comparingCheck(true)])("returns a Universal when negated", (c) => {
-        const q = newQuantifiedComparison(c);
-        expect(q).toBeInstanceOf(Universal);
-        expect(q.wrapped).toStrictEqual(newComparison({...c, negated: true}));
-    });
-});
-
 describe("The schema validation for comparison operators", () => {
     it.each(comparisonOps)('succeeds for "%s" and returns it unchanged', (op) => {
         expect(ComparisonOp.parse(op)).toBe(op);
@@ -217,7 +178,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as a regular comparison", ([x, y, min, max]) => {
             const regular = newComparison({operator: op, value: y});
             const interval = newComparison({operator: op, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 
@@ -240,7 +201,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as the regular comparison otherwise", ([min, x, y, max]) => {
             const regular = newComparison({operator, value: y});
             const interval = newComparison({operator, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 
@@ -292,7 +253,7 @@ describe("A comparison with an interval [min, max]", () => {
         it.prop([values])("has the same result as the regular comparison otherwise", ([x, y, min, max]) => {
             const regular = newComparison({operator, value: y});
             const interval = newComparison({operator, value: y}, {min, max});
-            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x).enhance({min, max}));
         });
     });
 });

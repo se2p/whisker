@@ -1,6 +1,5 @@
 import {fc, it, test} from "@fast-check/jest";
-import {ChangingCheck, newChange, newQuantifiedChange} from "../../../../src/whisker/model/checks/Change";
-import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
+import {newChange} from "../../../../src/whisker/model/checks/Change";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/model/checks/CheckTypes";
 import {EPSILON} from "../../../../src/whisker/model/checks/Comparison";
@@ -180,27 +179,6 @@ describe("A change", () => {
     });
 });
 
-function changingCheck(negated: boolean): fc.Arbitrary<ChangingCheck> {
-    return fc.record({
-        change: numOp,
-        negated: fc.constantFrom(negated),
-    });
-}
-
-describe("newQuantifiedChange", () => {
-    it.prop([changingCheck(false)])("returns an Existential when not negated", (c) => {
-        const q = newQuantifiedChange(c);
-        expect(q).toBeInstanceOf(Existential);
-        expect(q.wrapped).toStrictEqual(newChange(c));
-    });
-
-    it.prop([changingCheck(true)])("returns a Universal when negated", (c) => {
-        const q = newQuantifiedChange(c);
-        expect(q).toBeInstanceOf(Universal);
-        expect(q.wrapped).toStrictEqual(newChange({...c, negated: true}));
-    });
-});
-
 const numberLike = fc.oneof(number, number.map((n) => `${n}`));
 const notNumberLike = fc.string().filter((s) =>
     s.trim().length > 0 && Number.isNaN(Number(s)) && !changeOps.includes(s as ChangeOp) && s != "=");
@@ -262,7 +240,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -286,7 +268,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -328,7 +314,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -344,7 +334,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('always has the same result as a regular change', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -381,7 +375,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
             const clamped = newChange({change}, {min, max, kind: "clamped"});
             const regular = newChange({change});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -418,7 +416,11 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
             const clamped = newChange({change}, {min, max, kind: "clamped"});
             const regular = newChange({change});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "clamped"
+            }));
         });
     });
 
@@ -445,7 +447,7 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])("has the same result as a regular change", ({min, x, y, max}) => {
             const clamped = newChange({change: 0}, {min, max, kind: "clamped"});
             const regular = newChange({change: 0});
-            expect(clamped.apply(x, y)).toStrictEqual(regular.apply(x, y));
+            expect(clamped.apply(x, y)).toStrictEqual(regular.apply(x, y).enhance({min, max, kind: "clamped"}));
         });
     });
 });
@@ -483,6 +485,9 @@ describe("A cyclic change with bounds [min, max]", () => {
         max: fc.constant(max),
     }));
 
+    const atLeastOneNotOnBound = values.filter(({after, before, min, max}) =>
+        (before != min && before != max) || (after != min && after != max));
+
     describe.each(["+", "-"])('using operator "%s"', (op: ChangeOp) => {
         it.prop([values])('is equivalent to "!="', ({after, before, min, max}) => {
             const change = newChange({change: op}, {min, max, kind: "cyclic"});
@@ -492,10 +497,14 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe.each(["==", '!='])('using operator "%s"', (op: ChangeOp) => {
-        it.prop([values])('is equivalent to the regular change', ({after, before, min, max}) => {
+        it.prop([atLeastOneNotOnBound])('is equivalent to the regular change', ({after, before, min, max}) => {
             const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
             const regular = newChange({change: op});
-            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "cyclic"
+            }));
         });
     });
 
@@ -513,7 +522,7 @@ describe("A cyclic change with bounds [min, max]", () => {
         }));
 
         it.prop([passing])("passes for after < before if wrapping around correctly", ({after, before, min, max}) => {
-            const change = (max - before) + (after - min) + 1;
+            const change = (max - before) + (after - min);
             const c = newChange({change}, {min, max, kind: "cyclic"});
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
@@ -525,7 +534,10 @@ describe("A cyclic change with bounds [min, max]", () => {
                 before: fc.constant(before),
                 min: fc.constant(min),
                 max: fc.constant(max),
-                change: fc.integer({min: 1, max: max - min}).filter((c) => c !== (max - before) + (after - min) + 1),
+                change: fc.integer({
+                    min: 1,
+                    max: max - min
+                }).filter((c) => c % (max - min) !== (max - before) + (after - min)),
             }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
@@ -548,7 +560,7 @@ describe("A cyclic change with bounds [min, max]", () => {
         }));
 
         it.prop([passing])("passes for after > before if wrapping around correctly", ({after, before, min, max}) => {
-            const change = -((max - after) + (before - min) + 1);
+            const change = -((max - after) + (before - min));
             const c = newChange({change}, {min, max, kind: "cyclic"});
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
@@ -563,7 +575,7 @@ describe("A cyclic change with bounds [min, max]", () => {
                 change: fc.integer(({
                     min: min - max,
                     max: 0
-                })).filter((c) => c !== -((max - after) + (before - min) + 1)),
+                })).filter((c) => c % (max - min) !== -((max - after) + (before - min))),
             }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
@@ -573,10 +585,14 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe("by 0", () => {
-        it.prop([values])("has the same result as the regular change", ({after, before, min, max}) => {
+        it.prop([atLeastOneNotOnBound])("has the same result as the regular change", ({after, before, min, max}) => {
             const cyclic = newChange({change: 0}, {min, max, kind: "cyclic"});
             const regular = newChange({change: 0});
-            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));
+            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
+                min,
+                max,
+                kind: "cyclic"
+            }));
         });
     });
 });

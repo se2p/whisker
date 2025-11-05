@@ -1,5 +1,4 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
@@ -7,7 +6,7 @@ import {Change, ChangingCheck, newChange} from "./Change";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {NumberOrChangeOp, parseNonUnionError, ParsingResult, SpriteName, VariableName} from "./CheckTypes";
-import {checkVariableExistence, getStageOrSprite, testNumber} from "../util/ModelUtil";
+import {checkVariableExistence, testNumber} from "../util/ModelUtil";
 
 const name = "VarChange" as const;
 
@@ -68,18 +67,17 @@ export class VarChange extends PureCheck<VarChangeJSON, CheckFun0> implements Ch
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, varName] = this._args;
 
-        let sprite = getStageOrSprite(t, pSpriteName);
+        const sprite = this._getStageOrSprite(pSpriteName);
         const {
             sprite: foundSprite,
             variable: foundVar
         } = checkVariableExistence(t, sprite, varName);
-        sprite = foundSprite;
-        const spriteName = sprite.name;
         const variableName = foundVar.name;
 
-        const check = () => {
-            const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
-            const variable: Variable = sprite.getVariable(variableName);
+        this._registerVarEvent(variableName);
+
+        return () => {
+            const variable: Variable = foundSprite.getVariable(variableName);
             try {
                 return this._change.apply(
                     testNumber(variable.value),
@@ -89,9 +87,6 @@ export class VarChange extends PureCheck<VarChangeJSON, CheckFun0> implements Ch
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }
         };
-
-        this._registerVarEvent(variableName);
-        return check;
     }
 
     protected override _contradicts(that: VarChange): boolean {

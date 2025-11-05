@@ -1,11 +1,10 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
-import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, result} from "./CheckResult";
+import {result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence, returnNumberIfPossible} from "../util/ModelUtil";
+import {currentMaxLayer} from "../util/ModelUtil";
 
 const name = "Layer" as const;
 
@@ -56,15 +55,13 @@ export class Layer extends PureCheck<LayerJSON, CheckFun0> {
      * @param t Instance of the test driver for retrieving the layers of the sprite and its clones.
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const pSpriteName = this._args[0];
-        const spriteName = checkSpriteExistence(t, pSpriteName).name;
+        const sprite = this._checkSpriteExistence(this._args[0]);
+        const spriteName = sprite.name;
+        this._registerOnVisualChange(spriteName);
+
         return () => {
-            const expected = this._args[1] === "First"
-                ? Math.max(...t.getSprites().map((s: Sprite) => returnNumberIfPossible(s.layerOrder, -1)))
-                : 1;
-            const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const check = (s: Sprite) => result(s.layerOrder == expected, {actual: s.layerOrder, expected});
-            return any(check, this.negated, sprites);
+            const expected = (this._args[1] === "First" ? currentMaxLayer(t) : 1);
+            return result(sprite.layerOrder == expected, {actual: sprite.layerOrder, expected}, this.negated);
         };
     }
 

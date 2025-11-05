@@ -7,7 +7,15 @@ import {ModelEdge} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
 import logger from "../../../util/logger";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
-import {EndModelJSON, ModelEdgeJSON, ModelJSON, parse, ProgramModelJSON, UserModelJSON} from "./schema";
+import {
+    EndModelJSON,
+    ModelEdgeJSON,
+    ModelJSON,
+    OracleModelJSON,
+    parse,
+    ProgramModelJSON,
+    UserModelJSON
+} from "./schema";
 import {CheckJSON, ConditionJSON, newCheck, newCondition} from "../checks/newCheck";
 import {newUserInput, UserInputJSON} from "../inputs/newUserInput";
 
@@ -92,11 +100,11 @@ function loadUserModel(raw: UserModelJSON): UserModel {
 }
 
 function loadProgramModel(raw: ProgramModelJSON): ProgramModel {
-    const {id, startNodeId, stopAllNodeIds, initialStorage} = raw;
+    const {id, startNodeId, stopAllNodeIds, initialStorage, type, param} = raw;
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
     addConnections(id, nodes, edges);
-    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage);
+    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage, type, param);
 }
 
 function loadEndModel(raw: EndModelJSON): EndModel {
@@ -134,7 +142,7 @@ function loadNodes<E extends ModelEdge>(raw: ModelJSON): Map<string, ModelNode<E
     return nodes;
 }
 
-function loadProgramModelEdges(raw: ProgramModelJSON | EndModelJSON): Map<string, ProgramModelEdge> {
+function loadProgramModelEdges(raw: OracleModelJSON): Map<string, ProgramModelEdge> {
     const edges = new Map<string, ProgramModelEdge>();
 
     handleDuplicateEdgeIDs(raw.edges);

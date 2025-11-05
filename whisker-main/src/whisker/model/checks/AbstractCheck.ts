@@ -4,7 +4,12 @@ import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, fail} from "./CheckResult";
+import {CheckResult, fail, Reason} from "./CheckResult";
+import Sprite from "../../../vm/sprite";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {STAGE_NAME} from "../../../assembler/utils/selectors";
+import {checkSpriteExistence, evaluateExpression} from "../util/ModelUtil";
+import {AttrName} from "./CheckTypes";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -47,6 +52,8 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     private _graphId: string | null;
     private _t: TestDriver | null;
     private _cu: CheckUtility | null;
+    private _currentClone: RenderedTarget | null;
+    private _currentSprite : Sprite | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -103,11 +110,15 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     /**
      * Register the check listener and test driver and check for errors.
      */
-    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
+    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string, newTarget: RenderedTarget | null = null): void {
         this._reset();
         this._t = t;
         this._cu = cu;
         this._graphId = graphID;
+        this._currentClone = newTarget;
+        this._currentSprite  = newTarget !== null
+            ? t.getSprite(newTarget.getName()).getClones().filter((s: Sprite) => s.id === newTarget.id)[0]
+            : null;
         try {
             const check = this._checkArgsWithTestDriver(t);
             this._check = this._wrapCheck(check) as C;
@@ -123,7 +134,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
      * @param that The other effect.
      */
     contradicts(that: AbstractCheck): boolean {
-        if (this.name !== that.name || this.equals(that)) {
+        if (this.name !== that.name || this.equals(that) || this._currentClone !== that._currentClone) {
             return false;
         }
 
@@ -172,6 +183,28 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
 
+
+    protected _checkSpriteExistence(pSpriteName: ArgType): Sprite {
+        const sprite = checkSpriteExistence(this._t, pSpriteName);
+        return this._currentClone === null || sprite.name !== this._currentClone.getName() ? sprite : this._currentSprite ;
+    }
+
+    protected _getStageOrSprite(spriteName: ArgType): Sprite {
+        return spriteName == STAGE_NAME ? this._t.getStage() : this._checkSpriteExistence(spriteName);
+    }
+
+    protected evaluateExpression(expr: string, log: Reason): unknown {
+        return evaluateExpression(this._t, expr, this.graphID, log, this._currentSprite );
+    }
+
+    protected removeEffectsOfModels(modelIds: Set<string>): void {
+        this._cu.removeEffectsOfModels(modelIds);
+    }
+
+    protected _debug(...msg: string[]) {
+        this._cu.debug(...msg);
+    }
+
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});
         this._lastStepExecuted = -1;
@@ -211,5 +244,40 @@ export abstract class PureCheck<J extends CheckJSON, C extends CheckFun = CheckF
 export abstract class ImpureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
+    }
+
+    protected _contradicts(_that: ImpureCheck<J, C>): boolean {
+        return false; // side effects can even depend on another check to be executed before
+    }
+}
+
+export abstract class BoundedCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> extends PureCheck<J, C> {
+    private _lastCurrentCostume = -1;
+    private _lastSize = -1;
+
+    protected abstract get attrName(): AttrName;
+
+    protected _boundsNeedUpdate(s: Sprite): boolean {
+        switch (this.attrName) {
+            case "x":
+            case "y": {
+                const currentCostume = s.currentCostume;
+                const currentSize = s.size;
+                const res = this._lastCurrentCostume !== currentCostume || this._lastSize !== currentSize;
+                this._lastCurrentCostume = currentCostume;
+                this._lastSize = currentSize;
+                return res;
+            }
+            case "size": {
+                const currentCostume = s.currentCostume;
+                const res = this._lastCurrentCostume !== currentCostume;
+                this._lastCurrentCostume = currentCostume;
+                return res;
+            }
+            case "layerOrder":
+                return true;
+            default:
+                return false;
+        }
     }
 }

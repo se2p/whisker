@@ -17,7 +17,8 @@ import {Check} from "./checks/newCheck";
 import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
 import {Model, OracleModel} from "./components/AbstractModel";
-
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {addModelToMap, clearAllModels, registerCloneCreatedEvent} from "./util/ModelUtil";
 
 export class ModelTester extends EventEmitter {
 
@@ -29,6 +30,7 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_MISSED_EDGES = "ModelLogMissedEdges";
     static readonly MODEL_ON_LOAD = "ModelOnLoad";
     private _programModels: ProgramModel[] = [];
+    private _cloneCreatedModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
     private _runningUserModel: UserModel = null;
     private _onTestEndModels: EndModel[] = [];
@@ -38,6 +40,7 @@ export class ModelTester extends EventEmitter {
     private _modelStepCallback: Callback | null;
     private _onTestEndCallback: Callback | null;
     private _isRunning = false;
+    private _onTargetCreatedListener: (target: RenderedTarget) => void;
     private _nextTestDriver = null;
     private _nextUmIndex = ModelTester.NO_USER_MODEL;
 
@@ -80,7 +83,8 @@ export class ModelTester extends EventEmitter {
         try {
             const {programModels, userModels, onTestEndModels} = loadModels(modelsString);
             if (pModels) {
-                this._programModels = programModels;
+                this._programModels = [...programModels];
+                this._cloneCreatedModels = this._programModels.filter(m => m.type === "CloneCreated");
             }
             if (endModels) {
                 this._onTestEndModels = onTestEndModels;
@@ -92,6 +96,7 @@ export class ModelTester extends EventEmitter {
         } catch (e) {
             if (pModels) {
                 this._programModels = [];
+                this._cloneCreatedModels = [];
             }
             if (endModels) {
                 this._onTestEndModels = [];
@@ -233,6 +238,8 @@ export class ModelTester extends EventEmitter {
         this._checkUtility.on(CheckUtility.CHECK_LOG_FAIL, this._onLogEvent.bind(this));
 
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
+        clearAllModels();
+        this._programModels.forEach(addModelToMap);
         allModels.forEach(model => {
             model.reset();
             model.registerComponents(this._checkUtility!, t);
@@ -243,6 +250,8 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = this._addModelCallback(() => this._onModelStep(), true, "modelStep");
         this._onTestEndCallback = this._addModelCallback(() => this._onTestEnd(), true, "stopModelsCheck");
+        this._onTargetCreatedListener = this._onTargetCreated.bind(this);
+        this._testDriver.vm.runtime.on('targetWasCreated', this._onTargetCreatedListener);
 
         if (this._programModels.length == 0) {
             this._modelStepCallback?.disable();
@@ -384,6 +393,7 @@ export class ModelTester extends EventEmitter {
             this._checkUtility!.stop();
             this._modelStepCallback!.disable();
             this._onTestEndCallback!.disable();
+            this._testDriver.vm.runtime.removeListener('targetWasCreated', this._onTargetCreatedListener);
             if (this._testDriver.getTotalStepsExecuted() < 1) {
                 // the test execution did not even start
                 return null;
@@ -437,5 +447,17 @@ export class ModelTester extends EventEmitter {
         logger.error("EFFECTS CONTRADICTING", output);
         this._result!.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
+    }
+
+    private _onTargetCreated(newTarget: RenderedTarget) {
+        const spriteName = newTarget.getName();
+        const step = this._testDriver.getTotalStepsExecuted();
+        registerCloneCreatedEvent(spriteName, step);
+        this._cloneCreatedModels.filter(m => m.param === spriteName).forEach(model => {
+            if (model.stopped()) {
+                model.restart(step);
+                model.registerComponents(this._checkUtility, this._testDriver, newTarget);
+            } // otherwise the model is still running and should not be interrupted so it can achieve full coverage
+        });
     }
 }

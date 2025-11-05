@@ -6,6 +6,7 @@ import {
     ExpressionSyntaxError,
     ExprEvalError,
     NotANumericalValueError,
+    RGBRangeError,
     SpriteNotFoundError,
     VariableNotFoundError
 } from "./ModelError";
@@ -14,7 +15,8 @@ import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
 import {approxEq} from "../checks/Comparison";
-import {CheckResult, result} from "../checks/CheckResult";
+import {CheckResult, pass, Reason, result} from "../checks/CheckResult";
+import {OracleModel} from "../components/AbstractModel";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -25,20 +27,22 @@ export interface Expression extends Dependencies {
     expr: string
 }
 
+export const MOUSE_NAME = "_mouse_";
+
+export type MultiMap<K, V> = Map<K, Set<V>>;
 
 const DEFAULT_CYCLIC_DELTA = 3.0;
 const _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
+const _modelMap: Map<string, OracleModel> = new Map<string, OracleModel>();
+const _clonesCreated: Map<number, Set<string>> = new Map<number, Set<string>>();
 
-/**
- * If {@link pSpriteName} == "_stage_" this method returns the stage, otherwise it calls {@link checkSpriteExistence}
- * @param testDriver Instance of the test driver.
- * @param pSpriteName Name of the sprite or "_stage_" for the stage
- */
-export function getStageOrSprite(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
-    if (pSpriteName == STAGE_NAME) {
-        return testDriver.getStage();
+export function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
+    const set = map.get(key);
+    if (set) {
+        set.add(value);
+    } else {
+        map.set(key, new Set([value]));
     }
-    return checkSpriteExistence(testDriver, pSpriteName);
 }
 
 /**
@@ -48,16 +52,11 @@ export function getStageOrSprite(testDriver: TestDriver, pSpriteName: ArgType): 
  */
 export function checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
     const spriteNames = Array.isArray(pSpriteName) ? pSpriteName : [String(pSpriteName)];
-
-    for (const name of spriteNames) {
-        const sprite = testDriver.getSprite(name);
-
-        if (sprite != null) {
-            return sprite;
-        }
+    const correctName = spriteNames.find(name => testDriver.getSprite(name));
+    if (correctName === undefined) {
+        throw new SpriteNotFoundError(String(pSpriteName));
     }
-
-    throw new SpriteNotFoundError(String(pSpriteName));
+    return testDriver.getSprite(correctName);
 }
 
 /**
@@ -156,17 +155,6 @@ export function getExpectedDirectionForSprite1LookingAtSprite2(s1: Sprite, s2: S
 }
 
 /**
- * Calls {@link getExpectedDirectionForSprite1LookingAtTarget} with the x and y coordinates of the mouse
- * @param s1 Sprite looking at another sprite
- * @param t Test-Driver for retrieving the coordinates of the mouse
- */
-export function getExpectedDirectionForSpriteLookingAtMouse(s1: Sprite, t: TestDriver): number {
-    const {x, y} = t.getMousePos();
-    return getExpectedDirectionForSprite1LookingAtTarget(s1, x, y);
-
-}
-
-/**
  * Calculates the direction of sprite s1 if it points at some target coordinates. The rotation style does not matter,
  * since s1.direction changes independent on the graphic visible on screen.
  *
@@ -223,9 +211,9 @@ export function checkCyclicValueWithinDelta(actual: number, expected: number, mi
 export function getExpressionForEval(t: TestDriver, pToEval: ArgType, graphId: string): Expression {
     // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
     const code = String(pToEval);
-    const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
+    const result = {expr: `(t, $, $$) => ${code}`, varDependencies: [], attrDependencies: []};
     const $ = (s: string, a: string, c: boolean) =>
-        getValueForSubExpression(t, s, a, c, dependencies);
+        getValueForSubExpression(t, s, a, c, result);
     const $$ = get$$Function(graphId);
     try {
         // fill dependencies and check if the expression works
@@ -240,11 +228,7 @@ export function getExpressionForEval(t: TestDriver, pToEval: ArgType, graphId: s
         }
         throw new ExprEvalError(e, code);
     }
-    return {
-        expr: `(t, $, $$) => ${code}`,
-        varDependencies: dependencies.varDependencies,
-        attrDependencies: dependencies.attrDependencies
-    };
+    return result;
 }
 
 export function getStorageValue(graphId: string, key: string): unknown {
@@ -259,9 +243,9 @@ export function initialiseStorage(graphId: string, value: Map<string, unknown>):
     _graphStorage.set(graphId, value);
 }
 
-export function evaluateExpression(t: TestDriver, expression: string, graphId: string, log: Record<string, string> = {}): unknown {
+export function evaluateExpression(t: TestDriver, expression: string, graphId: string, log: Reason = {}, clone: Sprite = null): unknown {
     const $ = (spriteName: string, attribute: string, custom: boolean) =>
-        getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
+        getValueForSubExpression(t, spriteName, attribute, custom, undefined, log, clone);
     const $$ = get$$Function(graphId, log);
     return eval(expression)(t, $, $$);
 }
@@ -424,6 +408,10 @@ export function getMovedSteps(sprite: Sprite): number {
     return getDistance(sprite, sprite.old);
 }
 
+export function numberToReasonString(num: number, digits = 1): string {
+    return typeof num !== "number" || Number.isInteger(num) ? String(num) : num.toFixed(digits);
+}
+
 export function movedCorrectAmountOfSteps(s: Sprite, expected: number, negated = false): CheckResult {
     const actual = getMovedSteps(s);
     const forward = expected >= 0;
@@ -434,12 +422,12 @@ export function movedCorrectAmountOfSteps(s: Sprite, expected: number, negated =
     // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
     const correct = directionCorrect && approxEq(actual, Math.abs(expected), 0.9);
     return result(correct, {
-        actualDistance: actual,
-        expectedDistance: expected,
-        oldDirection: s.old.direction,
-        movedDirection: movedDirection,
-        x: s.x,
-        y: s.y,
+        actualDistance: numberToReasonString(actual),
+        expectedDistance: numberToReasonString(expected),
+        oldDirection: numberToReasonString(s.old.direction),
+        movedDirection: numberToReasonString(movedDirection),
+        x: numberToReasonString(s.x),
+        y: numberToReasonString(s.y),
     }, negated);
 }
 
@@ -463,7 +451,7 @@ function _isAnAttribute(attrName: string): boolean {
  * @param graphId Id of the graph for determining the storage.
  * @param log The log object for information on failed checks.
  */
-function get$$Function(graphId: string, log: Record<string, string> = null) {
+function get$$Function(graphId: string, log: Reason = null): (key: string, value: unknown) => unknown {
     return (key: string, value?: unknown) => {
         const storage = _graphStorage.get(graphId);
         if (value === undefined) {
@@ -474,22 +462,30 @@ function get$$Function(graphId: string, log: Record<string, string> = null) {
             return result;
         }
         storage.set(key, value);
+        return value;
     };
+}
+
+function getSprite(t: TestDriver, spriteName: string, clone: Sprite = null): Sprite {
+    if (spriteName === STAGE_NAME) {
+        return t.getStage();
+    }
+    return clone?.name === spriteName ? clone : t.getSprite(spriteName);
 }
 
 function getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
                                   custom: boolean, dependencies: Dependencies = undefined,
-                                  log: Record<string, string> = undefined): Sprite | Variable | string | string[] {
+                                  log: Reason = undefined, clone: Sprite = null): Sprite | Variable | string | string[] {
     if (!spriteName || spriteName == "") {
         throw new EmptyExpressionError();
     }
-    const sprite: Sprite = spriteName == STAGE_NAME ? t.getStage() : t.getSprite(spriteName);
+    const sprite: Sprite = getSprite(t, spriteName, clone);
     if (!sprite) {
         throw new SpriteNotFoundError(spriteName);
     }
     if (attribute == undefined) {
         if (log) {
-            log[`$("${spriteName}")`] = "sprite with that name";
+            log[`$("${spriteName}")`] = `sprite id: ${sprite.id}`;
         }
         return sprite;
     }
@@ -519,7 +515,7 @@ function getValueForSubExpression(t: TestDriver, spriteName: string, attribute: 
             } else {
                 try {
                     // maybe custom flag was not specified by accident -> try custom variables
-                    return getValueForSubExpression(t, spriteName, attribute, true, dependencies, log);
+                    return getValueForSubExpression(t, spriteName, attribute, true, dependencies, log, clone);
                 } catch (e) {
                     throw new AttributeNotFoundError(spriteName, attribute);
                 }
@@ -535,3 +531,69 @@ function getValueForSubExpression(t: TestDriver, spriteName: string, attribute: 
     }
 }
 
+export function currentMaxLayer(t: TestDriver): number {
+    return Math.max(...t.getSprites().map((s: Sprite) => returnNumberIfPossible(s.layerOrder, -1)));
+}
+
+export function clearAllModels(): void {
+    _modelMap.clear();
+    _graphStorage.clear();
+    _clonesCreated.clear();
+}
+
+export function doesModelExist(id: string): boolean {
+    return _modelMap.has(id);
+}
+
+export function addModelToMap(model: OracleModel): void {
+    _modelMap.set(model.id, model);
+}
+
+function _getModel(id: string): OracleModel {
+    const model = _modelMap.get(id);
+    if (!model) {
+        throw new Error(`Model with id ${id} does not exist`);
+    }
+    return model;
+}
+
+export function stopModel(id: string): void {
+    _getModel(id).stop();
+}
+
+export function markModelAsRestartable(id: string): boolean {
+    const model = _modelMap.get(id);
+    if (!model) {
+        return true;
+    }
+    model.enableRestarting();
+    return false;
+}
+
+export function restartModel(id: string, currentStep: number): void {
+    _getModel(id).restart(currentStep);
+}
+
+export function registerCloneCreatedEvent(spriteName: string, step: number): void {
+    addToMultiMap(_clonesCreated, step, spriteName);
+}
+
+export function wasCloneCreatedAroundStep(spriteName: string, step: number): CheckResult {
+    let list = _clonesCreated.get(step);
+    if (list && list.has(spriteName)) {
+        return pass();
+    }
+    const message = list ? `there were only clones created for ${list}` : 'there was no clone created';
+    list = _clonesCreated.get(step - 1);
+    return list.has(spriteName) ? pass() : fail({message});
+}
+
+export function convertToRgbNumbers(pR: ArgType, pG: ArgType, pB: ArgType): [number, number, number] {
+    const r = testNumber(pR);
+    const g = testNumber(pG);
+    const b = testNumber(pB);
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+        throw new RGBRangeError();
+    }
+    return [r, g, b];
+}

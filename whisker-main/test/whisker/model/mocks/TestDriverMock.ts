@@ -12,14 +12,13 @@ export class TestDriverMock {
     public mouseDown: (value: boolean) => void;
     public clickStage: () => void;
     public clickSprite: (name: string, steps: number) => void;
+    public _currentSprites: Sprite[];
 
     constructor(currentSprites: SpriteMock[] = [], steps = 0, isMouseDown = true) {
         this.currentSprites = SpriteMock.toSpriteArray(currentSprites);
         this.isMouseDown = isMouseDown;
         this.totalStepsExecuted = steps;
     }
-
-    public _currentSprites: Sprite[];
 
     get currentSprites(): Sprite[] {
         return this._currentSprites;

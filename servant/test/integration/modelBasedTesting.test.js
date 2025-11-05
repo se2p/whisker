@@ -29,17 +29,17 @@ describe('Servant: Model-Based Testing', () => {
         const expectedModelCoverage =
 `Model coverage:
  # modelCoverage:
-#   combined: 0.88 (74/84)
+#   combined: 0.76 (64/84)
 #   individual:
 #     bowl: 0.67 (4/6)
-#     apple: 1.00 (4/4)
+#     apple: 0.25 (1/4)
 #     appleStop: 1.00 (5/5)
 #     bananasR: 0.67 (4/6)
 #     bananasB: 0.83 (5/6)
 #     init: 1.00 (2/2)
 #     timer: 0.67 (2/3)
 #     timer2: 1.00 (3/3)
-#     points: 0.91 (10/11)
+#     points: 0.27 (3/11)
 #     spawnApple: 1.00 (3/3)
 #     spawnBanan: 1.00 (1/1)
 #     bananFalling: 1.00 (2/2)

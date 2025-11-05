@@ -70,7 +70,7 @@ describe('AttributeComparison', () => {
 
     test('Output is registered on CheckUtil for changing visual', () => {
         const sprite = new SpriteMock(STAGE_NAME);
-        sprite.currentCostumeName = "defaultStage";
+        sprite._currentCostumeName = "defaultStage";
         const tdMock = new TestDriverMock([sprite]);
         tdMock.stage = sprite.updateSprite();
         const t = tdMock.getTestDriver();
@@ -108,13 +108,13 @@ describe('AttributeComparison', () => {
         kiwi.clones.forEach(c => c.updateSprite());
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", 15]});
         c.registerComponents(t, cu, graphID);
-        expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
+        expect(c.check()).toStrictEqual(negated ? pass() : fail(expect.any(Object)));
     });
 
     test('Can check value of effects', () => {
         const effects: Record<string, number> = {fisheye: 10};
         const bowl = new SpriteMock("bowl", [{name: "effects", value: effects}]);
-        bowl.old = new SpriteMock("bowl", [{name: "effects", value: {fisheye: 0}}]);
+        bowl._old = new SpriteMock("bowl", [{name: "effects", value: {fisheye: 0}}]);
         const mock = new TestDriverMock([banana, bowl, apple]);
         const c = new AttrComp('label', {negated: false, args: ["bowl", "fisheye", "==", 25]});
         c.registerComponents(mock.getTestDriver(), getDummyCheckUtility(), graphID);

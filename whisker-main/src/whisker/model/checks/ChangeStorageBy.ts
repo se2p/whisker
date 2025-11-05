@@ -61,8 +61,4 @@ export class ChangeStorageBy extends ImpureCheck<ChangeStorageByJSON, CheckFun0>
             return result(true, {}, this.negated);
         };
     }
-
-    protected _contradicts(_that: ChangeStorageBy): boolean {
-        return false;
-    }
 }

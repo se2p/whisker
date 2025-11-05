@@ -1,11 +1,10 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence, evaluateExpression, getExpressionForEval} from "../util/ModelUtil";
+import {getExpressionForEval} from "../util/ModelUtil";
+import {Reason, result} from "./CheckResult";
 
 const name = "Output" as const;
 
@@ -54,9 +53,10 @@ export class Output extends PureCheck<OutputJSON, CheckFun0> {
      * @param t Instance of the test driver for retrieving the sayText value of a sprite and its clones
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const [pSpriteName, output] = this._args;
+        const output = this._args[1];
 
-        const spriteName = checkSpriteExistence(t, pSpriteName).name;
+        const sprite = this._checkSpriteExistence(this._args[0]);
+        const spriteName = sprite.name;
         let expression: string;
         try {
             expression = getExpressionForEval(t, output, this.graphID).expr;
@@ -65,27 +65,21 @@ export class Output extends PureCheck<OutputJSON, CheckFun0> {
             expression = getExpressionForEval(t, `'${output}'`, this.graphID).expr;
         }
 
-        const sayTextCheck = (s: Sprite) => {
-            const expected = String(evaluateExpression(t, expression, this.graphID)).toLocaleLowerCase();
-
-            if (s.sayText === null) {
-                return fail({actual: null, expected: expected});
-            }
-
-            const actual = s.sayText.toLocaleLowerCase();
-
-            if (!actual.includes(expected)) {
-                return fail({actual, expected});
-            }
-
-            return pass();
-        };
-
         this._registerOutput(spriteName);
-
         return () => {
-            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            return any(sayTextCheck, this.negated, sprites);
+            const log: Reason = {};
+            const exprRes = this.evaluateExpression(expression, log);
+            const expected = String(exprRes).toLocaleLowerCase();
+
+            let actual = sprite.sayText;
+            let containsText: boolean;
+            if (actual === null) {
+                containsText = false;
+            } else {
+                actual = sprite.sayText.toLocaleLowerCase();
+                containsText = actual.includes(expected);
+            }
+            return result(containsText, {...log, actual, expected}, this.negated);
         };
     }
 

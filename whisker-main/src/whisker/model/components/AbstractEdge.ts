@@ -6,6 +6,7 @@ import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -109,9 +110,9 @@ export abstract class AbstractEdge {
     /**
      * Register the check listener and test driver on the edge's conditions.
      */
-    registerComponents(checkListener: CheckUtility, t: TestDriver): void {
+    registerComponents(checkListener: CheckUtility, t: TestDriver, newTarget: RenderedTarget | null = null): void {
         this.conditions.forEach(cond => {
-            cond.registerComponents(t, checkListener, this.graphID);
+            cond.registerComponents(t, checkListener, this.graphID, newTarget);
         });
     }
 

@@ -30,15 +30,12 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
     private readonly _key: string;
     private readonly _type: "number" | "string" | "exprType";
     private readonly _value: number | string | string[];
-    private readonly _code: string;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<SetStorageJSON>) {
         super(edgeLabel, {...json, name});
         this._key = this._args[0];
         this._type = this._args[1];
         this._value = this._args[2];
-        this._code = this.type !== "exprType" ? ""
-            : Array.isArray(this._args[2]) ? this._args[2].join("\n") : String(this._args[2]);
     }
 
     get key(): string {
@@ -67,7 +64,6 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         if (this.type === "number" || this.type === "string") {
-            // a static value is used, so there are no dependencies, and nothing has to be computed
             return () => {
                 setStorageValue(this.graphID, this.key, this.value);
                 return result(true, {}, this.negated);
@@ -81,9 +77,5 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
             setStorageValue(this.graphID, this.key, value);
             return result(true, log, this.negated);
         };
-    }
-
-    protected _contradicts(_that: SetStorage): boolean {
-        return false;
     }
 }

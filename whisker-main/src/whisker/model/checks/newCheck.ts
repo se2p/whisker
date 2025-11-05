@@ -31,6 +31,10 @@ import {ChangeStorageBy, ChangeStorageByJSON} from "./ChangeStorageBy";
 import {SetStorage, SetStorageJSON} from "./SetStorage";
 import {MoveSteps, MoveStepsJSON} from "./MoveSteps";
 import {Bounce, BounceJSON} from "./Bounce";
+import {StopModels, StopModelsJSON} from "./StopModels";
+import {RestartModels, RestartModelsJSON} from "./RestartModels";
+import {CloneCreated, CloneCreatedJSON} from "./CloneCreated";
+import {CloneRemoved, CloneRemovedJSON} from "./CloneRemoved";
 
 export type ConditionJSON =
     | AttrChangeJSON
@@ -59,6 +63,8 @@ export type ConditionJSON =
     | PointsToJSON
     | MoveStepsJSON
     | BounceJSON
+    | CloneCreatedJSON
+    | CloneRemovedJSON
     ;
 
 export const ConditionJSON = z.discriminatedUnion("name", [
@@ -90,18 +96,24 @@ export const ConditionJSON = z.discriminatedUnion("name", [
     SetStorageJSON,
     MoveStepsJSON,
     BounceJSON,
+    CloneCreatedJSON,
+    CloneRemovedJSON
 ]);
 
 export type CheckJSON =
     | ConditionJSON
     | ChangeStorageByJSON
     | SetStorageJSON
+    | StopModelsJSON
+    | RestartModelsJSON
     ;
 
 export const CheckJSON = z.union([
     ConditionJSON,
     ChangeStorageByJSON,
     SetStorageJSON,
+    StopModelsJSON,
+    RestartModelsJSON,
 ]);
 
 function extractCheckNamesFromZodSchema(z: ZodUnion<any> | ZodDiscriminatedUnion<"name", any> | ZodObject<any>): string[] {
@@ -141,8 +153,12 @@ export type Check =
     | PointsTo
     | MoveSteps
     | Bounce
+    | CloneCreated
+    | CloneRemoved
     | ChangeStorageBy
     | SetStorage
+    | StopModels
+    | RestartModels
     ;
 
 // Every pure check can automatically be used as edge condition.
@@ -205,6 +221,10 @@ export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): C
             return new MoveSteps(edgeLabel, conditionJSON);
         case "Bounce":
             return new Bounce(edgeLabel, conditionJSON);
+        case "CloneCreated":
+            return new CloneCreated(edgeLabel, conditionJSON);
+        case "CloneRemoved":
+            return new CloneRemoved(edgeLabel, conditionJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
@@ -218,6 +238,10 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new ChangeStorageBy(edgeLabel, checkJSON);
         case "SetStorage":
             return new SetStorage(edgeLabel, checkJSON);
+        case "StopModels":
+            return new StopModels(edgeLabel, checkJSON);
+        case "RestartModels":
+            return new RestartModels(edgeLabel, checkJSON);
         default:
             return newCondition(edgeLabel, checkJSON);
     }
@@ -283,6 +307,14 @@ export function convertArgs(checkJSON: CheckJSON): ParsingResult {
             return MoveSteps.convertArgs(checkJSON.args);
         case "Bounce":
             return Bounce.convertArgs(checkJSON.args);
+        case "StopModels":
+            return StopModels.convertArgs(checkJSON.args);
+        case "RestartModels":
+            return RestartModels.convertArgs(checkJSON.args);
+        case "CloneCreated":
+            return CloneCreated.convertArgs(checkJSON.args);
+        case "CloneRemoved":
+            return CloneRemoved.convertArgs(checkJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

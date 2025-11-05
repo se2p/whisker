@@ -1,6 +1,5 @@
-import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, result} from "./CheckResult";
+import {CheckResult, Reason, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
 import {returnNumberIfPossible} from "../util/ModelUtil";
 
@@ -27,11 +26,16 @@ export interface Interval {
     max: number;
 }
 
-abstract class AbstractComparison<T extends Interval | null> implements Quantifiable<Comparison<T>> {
+abstract class AbstractComparison<T extends Interval | null> {
+    protected readonly _actualOperand2: AttributeType;
+
     protected constructor(
         private readonly _operand2: AttributeType,
         private readonly _interval: T | null,
     ) {
+        this._actualOperand2 = this._interval === null || typeof _operand2 !== "number"
+            ? _operand2
+            : Math.min(_interval.max, Math.max(_interval.min, _operand2));
     }
 
     get operand2(): AttributeType {
@@ -72,6 +76,10 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
 
     toString(): string {
         return `x ${this.operator} ${this.operand2}`;
+    }
+
+    protected _extendReasonWithInterval(reason: Reason): Reason {
+        return this._interval === null ? reason : {...this._interval, ...reason};
     }
 }
 
@@ -132,8 +140,8 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = approxEq(operand1, this.operand2);
-        return result(res, message);
+        const res = approxEq(operand1, this._actualOperand2);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -155,8 +163,8 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1};
-        const res = approxNeq(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        const res = approxNeq(operand1, this._actualOperand2) || this._boundaries.includes(operand1);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -175,8 +183,8 @@ class Leq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = approxLeq(operand1, this.operand2);
-        return result(res, message);
+        const res = approxLeq(operand1, this._actualOperand2);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -198,8 +206,8 @@ class Lt<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = approxLt(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        const res = approxLt(operand1, this._actualOperand2) || this._boundaries.includes(operand1);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -221,8 +229,8 @@ class Gt<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = approxGt(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        const res = approxGt(operand1, this._actualOperand2) || this._boundaries.includes(operand1);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -241,8 +249,8 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = approxGeq(operand1, this.operand2);
-        return result(res, message);
+        const res = approxGeq(operand1, this._actualOperand2);
+        return result(res, this._extendReasonWithInterval(message), false);
     }
 
     override negate(): Comparison<T> {
@@ -297,15 +305,4 @@ export interface ComparingCheck {
     operator: ComparisonOp;
     value: AttributeType;
     negated: boolean;
-}
-
-export function newQuantifiedComparison<T extends Interval | null>(
-    {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    interval: T | null = null,
-): Quantification<Comparison<T>> {
-    const comparison = newComparison({operator, value}, interval);
-
-    return negated
-        ? new Universal(comparison.negate())
-        : new Existential(comparison);
 }

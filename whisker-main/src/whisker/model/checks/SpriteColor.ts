@@ -1,12 +1,10 @@
 import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import {RGBRangeError} from "../util/ModelError";
-import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence, testNumber} from "../util/ModelUtil";
+import {convertToRgbNumbers} from "../util/ModelUtil";
+import {result} from "./CheckResult";
 
 const name = "SpriteColor" as const;
 
@@ -69,17 +67,9 @@ export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
-        const negated = this.negated;
-
-        const r = testNumber(pR);
-        const g = testNumber(pG);
-        const b = testNumber(pB);
-        const spriteName = checkSpriteExistence(t, pSpriteName).name;
-        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-            throw new RGBRangeError();
-        }
-
-        const color = [r, g, b];
+        const sprite = this._checkSpriteExistence(pSpriteName);
+        const spriteName = sprite.name;
+        const color = convertToRgbNumbers(pR, pG, pB);
 
         // on movement check sprite color
         this._registerOnMoveEvent(spriteName);
@@ -87,20 +77,13 @@ export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName
         return () => {
-            const touchingColorCheck = (s: Sprite) => {
-                if (!s.visible) {
-                    return fail({message: `Expected sprite "${s}" to be visible`});
-                }
-
-                if (!s.isTouchingColor(color)) {
-                    return fail({message: `Expected sprite "${s}" to touch color ${color}`});
-                }
-
-                return pass();
-            };
-
-            const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
-            return any(touchingColorCheck, negated, sprites);
+            let res: boolean;
+            try {
+                res = sprite.isTouchingColor(color);
+            } catch (e) {
+                res = t.getSprite(spriteName).isTouchingColor(color);
+            }
+            return result(res, {}, this.negated);
         };
     }
 

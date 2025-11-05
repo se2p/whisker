@@ -19,12 +19,12 @@ describe('Move steps tests', () => {
         const oldSprite = new SpriteMock("s1", [
             {name: "x", value: oldX}, {name: "y", value: oldY}, {name: "direction", value: dir}
         ]);
-        const sprite = new SpriteMock(oldSprite.name, [
+        const sprite = new SpriteMock(oldSprite._name, [
             {name: "x", value: x}, {name: "y", value: y}, {name: "direction", value: dir}
         ]);
-        sprite.old = oldSprite;
+        sprite._old = oldSprite;
         const tdMock = new TestDriverMock([sprite]);
-        const check = new MoveSteps("label", {args: [sprite.name, steps]});
+        const check = new MoveSteps("label", {args: [sprite._name, steps]});
         check.registerComponents(tdMock.getTestDriver(), getDummyCheckUtility(), "graphID");
         const res = check.check();
         if (res.passed !== expected) {

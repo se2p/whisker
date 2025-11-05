@@ -1,7 +1,6 @@
 import {Comparison, CONST_PASS, Interval, newComparison} from "./Comparison";
-import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, result} from "./CheckResult";
+import {CheckResult, Reason, result} from "./CheckResult";
 
 import {ChangeOp, ComparisonOp, NumberOrChangeOp} from "./CheckTypes";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
@@ -23,7 +22,7 @@ export type Bounds =
     | CyclicBounds
     ;
 
-export class Change implements Quantifiable<Change> {
+export class Change {
     protected constructor(
         protected readonly _comparison: Comparison,
         protected readonly _bounds: Bounds | null = null,
@@ -98,7 +97,8 @@ export class Change implements Quantifiable<Change> {
     }
 
     apply(after: number, before: number): CheckResult {
-        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
+        return this._apply(this._clampToBounds(after), this._clampToBounds(before))
+            .replace(this._extendReasonWithInterval({before, after}));
     }
 
     contradicts(that: Change): boolean {
@@ -124,6 +124,10 @@ export class Change implements Quantifiable<Change> {
         const {min, max} = this._bounds;
         return Math.max(min, Math.min(max, v));
     }
+
+    protected _extendReasonWithInterval(reason: Reason): Reason {
+        return this._bounds === null ? reason : {...this._bounds, ...reason};
+    }
 }
 
 class CyclicChange extends Change {
@@ -138,7 +142,7 @@ class CyclicChange extends Change {
             super(comparison, bounds);
         }
 
-        this._length = bounds.max - bounds.min + 1;
+        this._length = bounds.max - bounds.min;
     }
 
     protected override _apply(after: number, before: number): CheckResult {
@@ -162,7 +166,9 @@ class CyclicChange extends Change {
 
         // The `after` value might have wrapped around. We have to simulate the comparison as if that had not occurred.
         const uncycle = after + (this._comparison.operand2 > 0 ? this._length : -this._length);
-        return super._apply(uncycle, before);
+        const difWithinRing = (uncycle - before) % this._length;
+        // cyclic with changes min === max mean a change of this._length is the same as no change
+        return this._comparison.apply(difWithinRing) || this._comparison.apply(difWithinRing + this._length);
     }
 }
 
@@ -231,7 +237,7 @@ class Eq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        return result(after == before, {before, after});
+        return result(after == before, {before, after}, false);
     }
 
     override negate(): Change {
@@ -245,7 +251,7 @@ class Neq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        return result(after != before, {before, after});
+        return result(after != before, {before, after}, false);
     }
 
     override negate(): Change {
@@ -264,15 +270,4 @@ export function newChange(
 export interface ChangingCheck {
     change: NumberOrChangeOp;
     negated: boolean;
-}
-
-export function newQuantifiedChange(
-    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>,
-    bounds: Bounds | null = null,
-): Quantification<Change> {
-    const change = newChange({change: numOp, negated: false}, bounds);
-
-    return negated
-        ? new Universal(change.negate())
-        : new Existential(change);
 }

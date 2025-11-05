@@ -6,7 +6,6 @@ import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {ComparisonOp, NonNegativeNumber, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {checkSpriteExistence} from "../util/ModelUtil";
 
 export type NbrOfClonesArgs = [
     /**
@@ -65,9 +64,7 @@ abstract class AbstractNbrOfClones<
      * @param t Instance of the test driver to retrieve the number of clones of a sprite.
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const [pSpriteName] = this._args;
-
-        const sprite = checkSpriteExistence(t, pSpriteName);
+        const sprite = this._checkSpriteExistence(this._args[0]);
         const spriteName = sprite.name;
 
         const spriteCondition = this._visible
