@@ -6,7 +6,6 @@ import {ArgType, Position} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {
     checkDirectionWithinDelta,
-    getExpectedDirectionForSprite1LookingAtSprite2,
     getExpectedDirectionForSprite1LookingAtTarget,
     MOUSE_NAME,
     numberToReasonString
@@ -64,27 +63,25 @@ export class PointsTo extends PureCheck<PointsToJSON, CheckFun0> {
         const spriteNameRotate = sprite.name;
         const targetName = this._args[1] === MOUSE_NAME ? MOUSE_NAME : this._checkSpriteExistence(this._args[1]).name;
         this._registerOnVisualChange(spriteNameRotate);
+        this._registerOnMoveEvent(spriteNameRotate);
+        if (targetName !== MOUSE_NAME) {
+            this._registerOnVisualChange(targetName);
+            this._registerOnMoveEvent(targetName);
+        }
         return () => {
-            let expectedValues: number[];
             let target: Position;
             if (targetName == MOUSE_NAME) {
                 target = t.getMousePos();
                 if (Number.isNaN(target.x) || Number.isNaN(target.y)) {
                     return result(true, {msg: "mouse position is NaN"}, this.negated);
                 }
-                expectedValues = [
-                    getExpectedDirectionForSprite1LookingAtTarget(sprite, target.x, target.y),
-                    getExpectedDirectionForSprite1LookingAtTarget(sprite.old, target.x, target.y)
-                ];
             } else {
-                const actualTarget = t.getSprite(targetName);
-                expectedValues = [
-                    getExpectedDirectionForSprite1LookingAtSprite2(sprite, actualTarget),
-                    getExpectedDirectionForSprite1LookingAtSprite2(sprite, actualTarget.old),
-                    getExpectedDirectionForSprite1LookingAtSprite2(sprite.old, actualTarget),
-                ];
-                target = actualTarget;
+                target = t.getSprite(targetName);
             }
+            const expectedValues = [
+                getExpectedDirectionForSprite1LookingAtTarget(sprite, target.x, target.y),
+                getExpectedDirectionForSprite1LookingAtTarget(sprite.old, target.x, target.y)
+            ];
             const reason = {
                 actual: numberToReasonString(sprite.direction),
                 expected: `[${expectedValues.map(numberToReasonString).join(",")}]`,
