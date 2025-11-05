@@ -35,6 +35,7 @@ import {StopModels, StopModelsJSON} from "./StopModels";
 import {RestartModels, RestartModelsJSON} from "./RestartModels";
 import {CloneCreated, CloneCreatedJSON} from "./CloneCreated";
 import {CloneRemoved, CloneRemovedJSON} from "./CloneRemoved";
+import {SpriteColorTouchColor, SpriteColorTouchColorJSON} from "./SpriteColorTouchColor";
 
 export type ConditionJSON =
     | AttrChangeJSON
@@ -65,6 +66,7 @@ export type ConditionJSON =
     | BounceJSON
     | CloneCreatedJSON
     | CloneRemovedJSON
+    | SpriteColorTouchColorJSON
     ;
 
 export const ConditionJSON = z.discriminatedUnion("name", [
@@ -97,7 +99,8 @@ export const ConditionJSON = z.discriminatedUnion("name", [
     MoveStepsJSON,
     BounceJSON,
     CloneCreatedJSON,
-    CloneRemovedJSON
+    CloneRemovedJSON,
+    SpriteColorTouchColorJSON
 ]);
 
 export type CheckJSON =
@@ -155,6 +158,7 @@ export type Check =
     | Bounce
     | CloneCreated
     | CloneRemoved
+    | SpriteColorTouchColor
     | ChangeStorageBy
     | SetStorage
     | StopModels
@@ -225,6 +229,8 @@ export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): C
             return new CloneCreated(edgeLabel, conditionJSON);
         case "CloneRemoved":
             return new CloneRemoved(edgeLabel, conditionJSON);
+        case "SpriteColorTouchColor":
+            return new SpriteColorTouchColor(edgeLabel, conditionJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
@@ -315,6 +321,8 @@ export function convertArgs(checkJSON: CheckJSON): ParsingResult {
             return CloneCreated.convertArgs(checkJSON.args);
         case "CloneRemoved":
             return CloneRemoved.convertArgs(checkJSON.args);
+        case "SpriteColorTouchColor":
+            return SpriteColorTouchColor.convertArgs(checkJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
