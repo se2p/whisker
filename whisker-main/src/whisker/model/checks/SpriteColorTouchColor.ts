@@ -5,6 +5,7 @@ import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
 import {convertToRgbNumbers} from "../util/ModelUtil";
 import {result} from "./CheckResult";
+import Sprite from "../../../vm/sprite";
 
 const name = "SpriteColorTouchColor" as const;
 
@@ -70,9 +71,9 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
         return () => {
             let res: boolean;
             try {
-                res = sprite.isColorTouchingColor(firstColor, secondColor);
+                res = this.areColorsTouching(sprite, firstColor, secondColor);
             } catch (e) {
-                res = t.getSprite(spriteName).isColorTouchingColor(firstColor, secondColor);
+                res = this.areColorsTouching(t.getSprite(spriteName), firstColor, secondColor);
             }
             return result(res, {}, this.negated);
         };
@@ -80,5 +81,9 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
 
     protected _contradicts(_that: SpriteColorTouchColor): boolean {
         return false; // A sprite can touch multiple different colors at the same time.
+    }
+
+    private areColorsTouching(sprite: Sprite, color1: [number, number, number], color2: [number, number, number]) {
+        return sprite.isColorTouchingColor(color1, color2) || sprite.isColorTouchingColor(color2, color1);
     }
 }
