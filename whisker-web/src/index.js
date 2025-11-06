@@ -105,12 +105,12 @@ const loadModelFromString = function (models, userModels) {
     try {
         if (userModels) {
             Whisker.modelTester.loadUserModels(models);
-            if (!Whisker.modelTester.userModelsLoaded()){
+            if (!Whisker.modelTester.userModelsLoaded()) {
                 showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-user-model-in-file')}</div>`);
             }
         } else {
             Whisker.modelTester.loadProgramModels(models);
-            if (!Whisker.modelTester.programModelsLoaded()){
+            if (!Whisker.modelTester.programModelsLoaded()) {
                 showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-program-model-in-file')}</div>`);
             }
         }
@@ -274,11 +274,11 @@ const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
 };
 
-const downloadMutants = async function (mutants) {
+const downloadMutants = async function (projectName, mutants) {
     for (const mutant of mutants) {
         await Whisker.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
         const projectBlob = await Whisker.scratch.vm.saveProjectSb3(); // await required
-        FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+        FileSaver.saveAs(projectBlob, `${projectName.split('.')[0]}-${mutant.mutantName}.sb3`);
     }
 };
 
@@ -455,8 +455,8 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         Whisker.outputLog.println(csvResults);
 
         // Download generated mutants if desired.
-        if (mutantDownload && mutantPrograms.length > 0){
-            await downloadMutants(mutantPrograms);
+        if (mutantDownload && mutantPrograms.length > 0) {
+            await downloadMutants(props.projectName, mutantPrograms);
         }
     } catch (e) {
         logger.error('Error while running tests:', e instanceof Error ? e.stack : e);
@@ -640,8 +640,8 @@ const runAllTests = async function () {
 
             summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
-            if (mutantDownload && mutantPrograms.length > 0){
-                await downloadMutants(mutantPrograms);
+            if (mutantDownload && mutantPrograms.length > 0) {
+                await downloadMutants(properties.projectName, mutantPrograms);
             }
 
             if (spriteTraces) {
@@ -697,7 +697,7 @@ const runAllTests = async function () {
 
             if (testsRunning && // Test chain execution might have been stopped
                 ((Whisker.tests && Whisker.tests.length > 0) ||
-                Whisker.modelTester.someModelLoaded())) {
+                    Whisker.modelTester.someModelLoaded())) {
 
                 await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings, false);
             }
@@ -976,7 +976,7 @@ const initEvents = function () {
         if (Whisker.inputRecorder.isRecording()) {
             Whisker.inputRecorder.stop();
         }
-        if (Whisker.stateActionRecorder.isRecording){
+        if (Whisker.stateActionRecorder.isRecording) {
             Whisker.stateActionRecorder.onStopAll();
         }
     });
@@ -1005,7 +1005,7 @@ const initEvents = function () {
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
-        if (document.querySelector('#container').stateActionRecorder){
+        if (document.querySelector('#container').stateActionRecorder) {
             if (Whisker.stateActionRecorder.isRecording) {
                 Whisker.inputRecorder.emit('stopRecording');
                 Whisker.stateActionRecorder.stopRecording();
@@ -1294,14 +1294,14 @@ i18next
         _updateLang();
     }).then();
 
-function _showRunIcon () {
+function _showRunIcon() {
     $('#run-tests-icon').show();
     $('#stop-tests-icon').hide();
     $('#run-all-tests').off('click');
     $('#run-all-tests').on('click', runAllTests);
 }
 
-function _showStopIcon () {
+function _showStopIcon() {
     $('#run-tests-icon').hide();
     $('#stop-tests-icon').show();
     $('#run-all-tests').off('click');
@@ -1316,12 +1316,12 @@ const _disableVMRelatedButtons = function (exception) {
     $(`.vm-related:not(${exception})`).prop('disabled', true);
 };
 
-function _showAndJumpTo (elem) {
+function _showAndJumpTo(elem) {
     $(elem).show();
     _jumpTo(elem);
 }
 
-function _jumpTo (elem) {
+function _jumpTo(elem) {
     location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
     location.href = elem;
     window.scrollBy(0, -100); // respect header size
@@ -1378,7 +1378,9 @@ const _showTooltipIfTooLong = function (label, event) {
 
 const _initLangSelect = function () {
     const newLabel = document.createElement('label');
-    let html = '<select id="lang-select">'; const lngs = ['de', 'en']; let i;
+    let html = '<select id="lang-select">';
+    const lngs = ['de', 'en'];
+    let i;
     for (i = 0; i < lngs.length; i++) {
         html += `<option value='${lngs[i]}' `;
         if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
@@ -1391,7 +1393,7 @@ const _initLangSelect = function () {
     document.querySelector('#form-lang').appendChild(newLabel);
 };
 
-function _translateTestTableTooltips (oldLanguage, newLanguage) {
+function _translateTestTableTooltips(oldLanguage, newLanguage) {
     const oldLangData = i18next.getDataByLanguage(oldLanguage);
     const oldIndexData = oldLangData.index;
     const newLangData = i18next.getDataByLanguage(newLanguage);
@@ -1401,16 +1403,16 @@ function _translateTestTableTooltips (oldLanguage, newLanguage) {
     });
 }
 
-function _translateTooltip (tooltipElement, oldData, newData) {
+function _translateTooltip(tooltipElement, oldData, newData) {
     const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
     tooltipElement.innerHTML = newData[key];
 }
 
-function _getKeyByValue (langData, value) {
+function _getKeyByValue(langData, value) {
     return Object.keys(langData).find(key => langData[key] === value);
 }
 
-function _updateLang () {
+function _updateLang() {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
     if (Whisker.testTable) {
@@ -1438,7 +1440,7 @@ $('.nav-link').on('click', event => {
     _updateFilenameLabels();
 });
 
-function _updateFilenameLabels () {
+function _updateFilenameLabels() {
     if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
         $('#project-label').html(Whisker.projectFileSelect.getName());
     }
