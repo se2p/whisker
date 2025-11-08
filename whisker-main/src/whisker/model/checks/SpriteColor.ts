@@ -81,7 +81,7 @@ export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
             try {
                 res = sprite.isTouchingColor(color);
             } catch (e) {
-                res = t.getSprite(spriteName).isTouchingColor(color);
+                res = false;
             }
             return result(res, {}, this.negated);
         };

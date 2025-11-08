@@ -60,8 +60,8 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, pR_1, pG_1, pB_1, pR_2, pG_2, pB_2] = this._args;
 
-        const firstColor = convertToRgbNumbers(pR_1, pG_1, pB_1);
-        const secondColor = convertToRgbNumbers(pR_2, pG_2, pB_2);
+        const color1 = convertToRgbNumbers(pR_1, pG_1, pB_1);
+        const color2 = convertToRgbNumbers(pR_2, pG_2, pB_2);
         const sprite = this._checkSpriteExistence(pSpriteName);
         const spriteName = sprite.name;
         // on movement check sprite color
@@ -71,9 +71,9 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
         return () => {
             let res: boolean;
             try {
-                res = this.areColorsTouching(sprite, firstColor, secondColor);
+                res = sprite.isColorTouchingColor(color1, color2) || sprite.isColorTouchingColor(color2, color1);
             } catch (e) {
-                res = this.areColorsTouching(t.getSprite(spriteName), firstColor, secondColor);
+                res = false;
             }
             return result(res, {}, this.negated);
         };
@@ -81,9 +81,5 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
 
     protected _contradicts(_that: SpriteColorTouchColor): boolean {
         return false; // A sprite can touch multiple different colors at the same time.
-    }
-
-    private areColorsTouching(sprite: Sprite, color1: [number, number, number], color2: [number, number, number]) {
-        return sprite.isColorTouchingColor(color1, color2) || sprite.isColorTouchingColor(color2, color1);
     }
 }
