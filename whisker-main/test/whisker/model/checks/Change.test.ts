@@ -240,11 +240,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -268,11 +265,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -314,11 +308,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -334,11 +325,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])('always has the same result as a regular change', ({after, before, min, max}) => {
             const regular = newChange({change: op});
             const clamped = newChange({change: op}, {min, max, kind: "clamped"});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -375,11 +363,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
             const clamped = newChange({change}, {min, max, kind: "clamped"});
             const regular = newChange({change});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -416,11 +401,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
             const clamped = newChange({change}, {min, max, kind: "clamped"});
             const regular = newChange({change});
-            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "clamped"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -447,7 +429,8 @@ describe("A clamped change with bounds [min, max]", () => {
         it.prop([values])("has the same result as a regular change", ({min, x, y, max}) => {
             const clamped = newChange({change: 0}, {min, max, kind: "clamped"});
             const regular = newChange({change: 0});
-            expect(clamped.apply(x, y)).toStrictEqual(regular.apply(x, y).enhance({min, max, kind: "clamped"}));
+            const expected = regular.apply(x, y).enhance({min, max, kind: "clamped"});
+            expect(clamped.apply(x, y)).toStrictEqual(expected);
         });
     });
 });
@@ -500,11 +483,8 @@ describe("A cyclic change with bounds [min, max]", () => {
         it.prop([atLeastOneNotOnBound])('is equivalent to the regular change', ({after, before, min, max}) => {
             const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
             const regular = newChange({change: op});
-            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "cyclic"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "cyclic"});
+            expect(cyclic.apply(after, before)).toStrictEqual(expected);
         });
     });
 
@@ -588,11 +568,8 @@ describe("A cyclic change with bounds [min, max]", () => {
         it.prop([atLeastOneNotOnBound])("has the same result as the regular change", ({after, before, min, max}) => {
             const cyclic = newChange({change: 0}, {min, max, kind: "cyclic"});
             const regular = newChange({change: 0});
-            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before).enhance({
-                min,
-                max,
-                kind: "cyclic"
-            }));
+            const expected = regular.apply(after, before).enhance({min, max, kind: "cyclic"});
+            expect(cyclic.apply(after, before)).toStrictEqual(expected);
         });
     });
 });
