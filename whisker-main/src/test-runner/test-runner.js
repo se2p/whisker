@@ -163,7 +163,7 @@ class TestRunner extends EventEmitter {
                         600000, false, coveragePerTest, timingsPerTest);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
-                        testResults, projectMutation, totalAssertions, 0);
+                        testResults, projectMutation);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -177,8 +177,7 @@ class TestRunner extends EventEmitter {
             this.util = await this._loadProject(vm, project, props, modelTester);
             for (let i = 0; i < modelProps.repetitions; i++) {
                 modelTester.clearRepetitionCoverage();
-                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
-                    testResults, projectName, totalAssertions, i);
+                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -283,15 +282,12 @@ class TestRunner extends EventEmitter {
      * @param {{duration: number, repetitions: number}} modelProps
      * @param {TestResult[]} testResults
      * @param {string} projectName
-     * @param {number} totalAssertions
-     * @param {number} rep
      * @return {Promise<string>}
      */
     async _executeUserModels(vm, modelTester, project, props, modelProps,
                              testResults, projectName, totalAssertions, rep) {
         let csv = "";
-        const indices = modelTester.userModelIndices();
-        for (const uM of indices) {
+        for (const uM of modelTester.userModelIndices()) {
             this.util = await this._loadProject(vm, project, props, modelTester);
             this.vmWrapper.nextUserModelIndex = uM;
             const startTime = Date.now();
@@ -301,9 +297,8 @@ class TestRunner extends EventEmitter {
             // Record the results
             const duration = (Date.now() - startTime) / 1000;
             const coverage = this._extractCoverage();
-            const seed = Randomness.scratchSeed;
-            csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                duration, undefined, result.modelResult);
+            csv += this._generateCSVRow(projectName, Randomness.scratchSeed, 0,
+                [result.status], coverage, duration, undefined, result.modelResult);
         }
         return csv;
     }
