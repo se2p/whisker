@@ -15,6 +15,7 @@ export interface ExtendedCoverageResult extends CoverageResult {
 }
 
 export interface ModelCoverageResult extends CoverageResult {
+    repetitionCovered: number;
     totalCovered: number;
 }
 
@@ -34,6 +35,7 @@ export interface ModelCoverageResult extends CoverageResult {
 abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractModel<ProgramModelEdge> {
     protected coverageCurrentRun: Set<string> = new Set();
     protected coverageTotal: Set<string> = new Set();
+    protected coverageRepetition: Set<string> = new Set();
     private _manuallyStopped = false;
     private _restartable = false;
 
@@ -76,16 +78,6 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         this.coverageCurrentRun?.clear();
     }
 
-    protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
-        this.coverageCurrentRun.add(edge.id);
-        this.coverageTotal.add(edge.id);
-        super._takeEdge(edge, t);
-    }
-
-    testForEvent(t: TestDriver): void {
-        this.currentState.testForEvent(this.stepsSinceLastTransition(t), this.programEndStep);
-    }
-
     /**
      * Get the coverage of this model of the last run.
      */
@@ -98,9 +90,20 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         }
         return {
             covered: this.coverageCurrentRun.size,
+            repetitionCovered: this.coverageRepetition.size,
             totalCovered: this.coverageTotal.size,
             total: Object.keys(this.edges).length
         };
+    }
+
+    testForEvent(t: TestDriver): void {
+        this.currentState.testForEvent(this.stepsSinceLastTransition(t), this.programEndStep);
+    }
+
+    clearTotalCoverage() {
+        this.coverageCurrentRun.clear();
+        this.coverageRepetition.clear();
+        this.coverageTotal.clear();
     }
 
     /**
@@ -148,9 +151,16 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         } as J;
     }
 
-    clearTotalCoverage() {
+    clearRepetitionCoverage() {
         this.coverageCurrentRun.clear();
-        this.coverageTotal.clear();
+        this.coverageRepetition.clear();
+    }
+
+    protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
+        this.coverageCurrentRun.add(edge.id);
+        this.coverageRepetition.add(edge.id);
+        this.coverageTotal.add(edge.id);
+        super._takeEdge(edge, t);
     }
 }
 

@@ -176,6 +176,7 @@ class TestRunner extends EventEmitter {
 
             this.util = await this._loadProject(vm, project, props, modelTester);
             for (let i = 0; i < modelProps.repetitions; i++) {
+                modelTester.clearRepetitionCoverage();
                 csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
                     testResults, projectName, totalAssertions, i);
             }

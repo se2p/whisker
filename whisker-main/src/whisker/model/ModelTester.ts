@@ -205,6 +205,11 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
+    clearRepetitionCoverage(): void {
+        this._programModels.forEach(model => model.clearRepetitionCoverage());
+        this._onTestEndModels.forEach(model => model.clearRepetitionCoverage());
+    }
+
     clearCoverage(): void {
         this._programModels.forEach(model => model.clearTotalCoverage());
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
@@ -435,7 +440,7 @@ export class ModelTester extends EventEmitter {
                 this._result!.coverage[model.id] = currentCov;
             });
 
-            this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
+            this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
         }
         return this._result!;
     }
