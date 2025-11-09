@@ -67,11 +67,12 @@ export class ModelResult {
      * @return {[number,number,number,number]}
      */
     getCsvColumns() {
-        const [current, repetition, edgeCount] = Object.values(this.coverage).reduce(([curr, rep, edges], covObj) =>
-            [curr + covObj.covered, rep + covObj.repetitionCovered, edges + covObj.total], [0, 0, 0]);
+        const [current, repetition, total, edgeCount] = Object.values(this.coverage).reduce(([curr, rep, total, edges], covObj) =>
+            [curr + covObj.covered, rep + covObj.repetitionCovered, total + covObj.totalCovered, edges + covObj.total], [0, 0, 0, 0]);
         const singleCov = toCoverageValue(current, edgeCount);
         const repetitionCov = toCoverageValue(repetition, edgeCount);
-        return [this.testNbr ?? 1, this.fails.length, this.errors.length, singleCov, repetitionCov];
+        const totalCov = toCoverageValue(total, edgeCount);
+        return [this.testNbr ?? 1, this.fails.length, this.errors.length, singleCov, repetitionCov, totalCov];
     }
 }
 
@@ -79,7 +80,7 @@ function toCoverageValue(sum, total) {
     return Math.round((sum / total) * 100) / 100;
 }
 
-export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage,repetitionModelCoverage";
+export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage,repetitionModelCoverage,totalModelCoverage";
 
 /**
  * Converts the result into the data for the csv file. If no valid result but instead null/ undefined,
@@ -89,5 +90,5 @@ export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCove
  * @return {string|*[]}
  */
 export function modelResultToCsvData(result, defaultValue = null) {
-    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue, defaultValue];
+    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue, defaultValue, defaultValue];
 }
