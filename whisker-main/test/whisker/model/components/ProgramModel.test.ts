@@ -3,7 +3,7 @@ import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
-import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
+import {ModelCoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
 
 function getValidProgramModelForCoverage(): MockedProgram {
@@ -18,11 +18,9 @@ function getValidProgramModelForCoverage(): MockedProgram {
 
 class MockedProgram extends ProgramModel {
     setCoverageForKey(key: string) {
-        this.coverageCurrentRun[key] = true;
-    }
-
-    setTotalCoverageForKey(key: string) {
-        this.coverageTotal[key] = true;
+        this.coverageCurrentRun.add(key);
+        this.coverageRepetition.add(key);
+        this.coverageTotal.add(key);
     }
 }
 
@@ -78,24 +76,24 @@ describe('Program model', () => {
     test("Coverage without run", () => {
         const p = getValidProgramModelForCoverage();
         const coverage = p.getCoverageCurrentRun();
-        expect(coverage.covered.length).toBe(0);
+        expect(coverage.covered).toBe(0);
         expect(coverage.total).toBe(4);
     });
 
     test("Total coverage without run", () => {
         const p = getValidProgramModelForCoverage();
         const totalCoverage = p.getTotalCoverage();
-        expect(totalCoverage.covered.length).toBe(0);
+        expect(totalCoverage.covered).toBe(0);
         expect(totalCoverage.total).toBe(4);
         expect(totalCoverage.missedEdges.length).toBe(4);
     });
 
     test("Total coverage with run", () => {
         const p = getValidProgramModelForCoverage();
-        p.setTotalCoverageForKey("2");
-        p.setTotalCoverageForKey("3");
+        p.setCoverageForKey("2");
+        p.setCoverageForKey("3");
         const totalCoverage = p.getTotalCoverage();
-        expect(totalCoverage.covered.length).toBe(2);
+        expect(totalCoverage.covered).toBe(2);
         expect(totalCoverage.total).toBe(4);
         expect(totalCoverage.missedEdges.length).toBe(2);
     });
@@ -210,10 +208,10 @@ describe('Program model', () => {
         };
         const model = new MockedProgram("model", "start", nodes, edges, [], {});
         model.setCoverageForKey("edgeID");
-        let expected: CoverageResult = {total: 1, covered: ["edgeID"]};
+        let expected: ModelCoverageResult = {total: 1, covered: 1, repetitionCovered: 1, totalCovered: 1};
         expect(model.getCoverageCurrentRun()).toStrictEqual(expected);
         model.reset();
-        expected = {total: 1, covered: []};
+        expected = {total: 1, covered: 0, repetitionCovered: 1, totalCovered: 1};
         expect(model.getCoverageCurrentRun()).toStrictEqual(expected);
     });
 
