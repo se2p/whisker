@@ -5,7 +5,6 @@ import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
 import {convertToRgbNumbers} from "../util/ModelUtil";
 import {result} from "./CheckResult";
-import Sprite from "../../../vm/sprite";
 
 const name = "SpriteColorTouchColor" as const;
 
@@ -73,6 +72,7 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
             try {
                 res = sprite.isColorTouchingColor(color1, color2) || sprite.isColorTouchingColor(color2, color1);
             } catch (e) {
+                // the clone this check operates own is no longer existent, so .isColorTouchingColor throws an exception
                 res = false;
             }
             return result(res, {}, this.negated);
