@@ -43,6 +43,7 @@ export class ModelTester extends EventEmitter {
     private _onTargetCreatedListener: (target: RenderedTarget) => void;
     private _nextTestDriver = null;
     private _nextUmIndex = ModelTester.NO_USER_MODEL;
+    private _executionCount = 0;
 
     constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
@@ -77,6 +78,10 @@ export class ModelTester extends EventEmitter {
 
     get canBeStopped(): boolean {
         return this._isRunning;
+    }
+
+    get runIndex(): number {
+        return this._executionCount;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -211,6 +216,7 @@ export class ModelTester extends EventEmitter {
     }
 
     clearCoverage(): void {
+        this._executionCount = 0;
         this._programModels.forEach(model => model.clearTotalCoverage());
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
     }
@@ -243,6 +249,7 @@ export class ModelTester extends EventEmitter {
         this._log(msg);
 
         this._result = new ModelResult();
+        this._result.testNbr = this._executionCount;
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
         this._checkUtility.on(CheckUtility.CHECK_LOG_FAIL, this._onLogEvent.bind(this));
@@ -441,6 +448,7 @@ export class ModelTester extends EventEmitter {
             });
 
             this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
+            ++this._executionCount;
         }
         return this._result!;
     }
