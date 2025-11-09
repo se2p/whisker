@@ -1,11 +1,5 @@
 import {fc, it} from "@fast-check/jest";
-import {
-    ComparingCheck,
-    CONST_FAIL,
-    CONST_PASS,
-    EPSILON,
-    newComparison,
-} from "../../../../src/whisker/model/checks/Comparison";
+import {CONST_FAIL, CONST_PASS, EPSILON, newComparison,} from "../../../../src/whisker/model/checks/Comparison";
 import {ComparisonOp, comparisonOps} from "../../../../src/whisker/model/checks/CheckTypes";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
@@ -128,14 +122,6 @@ describe.each([
             expect(c.contradicts(d)).toBe(d.contradicts(c));
         });
     });
-
-function comparingCheck(negated: boolean): fc.Arbitrary<ComparingCheck> {
-    return fc.record({
-        operator: fc.constantFrom(...comparisonOps),
-        value: number,
-        negated: fc.constantFrom(negated),
-    });
-}
 
 describe("The schema validation for comparison operators", () => {
     it.each(comparisonOps)('succeeds for "%s" and returns it unchanged', (op) => {
