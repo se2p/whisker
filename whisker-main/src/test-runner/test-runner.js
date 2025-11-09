@@ -134,6 +134,7 @@ class TestRunner extends EventEmitter {
             let i = -1; // We start with -1 since the first suite execution is on the original project
             const mutationStart = Date.now();
             while (i < maxMutants && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
+                modelTester.clearCoverage();
                 let mutant;
                 if (i === -1) { // In the first iteration, we execute the original project as a reference.
                     mutant = JSON.parse(vm.toJSON());

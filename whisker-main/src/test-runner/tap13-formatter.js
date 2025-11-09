@@ -142,10 +142,10 @@ const TAP13Formatter = {
         const formattedCoverage = {};
         for (const modelName of Object.keys(coveragePerModel)) {
             const coverageRecord = coveragePerModel[modelName];
-            covered += coverageRecord.covered.length;
+            covered += coverageRecord.covered;
             total += coverageRecord.total;
             formattedCoverage[modelName] =
-                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
+                this.formatCoverageRecord({covered: coverageRecord.covered, total: coverageRecord.total});
         }
 
         return {
@@ -156,24 +156,12 @@ const TAP13Formatter = {
 
     /**
      * Format model coverage for one repetition.
-     * @param {Map|{}} coveragePerModel .
+     * @param {{covered, total}} coveragePerModel .
      * @return {object} .
      */
     formatModelCoverageLastRun(coveragePerModel) {
-        let covered = 0;
-        let total = 0;
-
-        const formattedCoverage = {};
-        for (const modelName of Object.keys(coveragePerModel)) {
-            const coverageRecord = coveragePerModel[modelName];
-            covered += coverageRecord.covered.length;
-            total += coverageRecord.total;
-            formattedCoverage[modelName] =
-                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
-        }
-
         return {
-            combined: this.formatCoverageRecord({covered, total})
+            combined: this.formatCoverageRecord(coveragePerModel),
         };
     },
 

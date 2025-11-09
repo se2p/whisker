@@ -205,6 +205,11 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
+    clearCoverage(): void {
+        this._programModels.forEach(model => model.clearTotalCoverage());
+        this._onTestEndModels.forEach(model => model.clearTotalCoverage());
+    }
+
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         if (!this.someModelLoaded()) {
             return;
@@ -420,12 +425,12 @@ export class ModelTester extends EventEmitter {
                 this._log(log.join("\n"));
             }
 
-            const coverages = {covered: [] as string[][], total: 0};
+            const coverages: { covered: number, total: number } = {covered: 0, total: 0};
 
             const programModels = [...this._programModels, ...this._onTestEndModels];
             programModels.forEach(model => {
                 const currentCov = model.getCoverageCurrentRun(true);
-                coverages.covered.push(currentCov.covered);
+                coverages.covered += currentCov.covered;
                 coverages.total += currentCov.total;
                 this._result!.coverage[model.id] = currentCov;
             });
