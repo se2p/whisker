@@ -72,7 +72,7 @@ export class SpriteColorTouchColor extends PureCheck<SpriteColorTouchColorJSON, 
             try {
                 res = sprite.isColorTouchingColor(color1, color2) || sprite.isColorTouchingColor(color2, color1);
             } catch (e) {
-                // the clone this check operates own is no longer existent, so .isColorTouchingColor throws an exception
+                // the clone this check operates on is no longer existent, so .isColorTouchingColor throws an exception
                 res = false;
             }
             return result(res, {}, this.negated);
