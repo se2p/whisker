@@ -75,7 +75,8 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
             try {
                 spritesTouching = sprite1.isTouchingSprite(spriteName2);
             } catch (e) {
-                spritesTouching = t.getSprite(spriteName1).isTouchingSprite(spriteName2);
+                // the clone this check operates on is no longer existent, so .isTouchingSprite throws an exception
+                spritesTouching = false;
             }
             return result(spritesTouching, {spritesTouching, s1Visible, s2Visible}, this.negated);
         };
