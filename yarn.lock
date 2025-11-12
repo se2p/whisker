@@ -8585,7 +8585,7 @@ scratch-render-fonts@1.0.0-prerelease.20210401210003:
 
 "scratch-render@git+https://gitlab+deploy-token-28:gldt-jJYfv7JHVyMGyCEr7FxK@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-render.git#develop":
   version "0.1.0"
-  resolved "git+https://gitlab+deploy-token-28:gldt-jJYfv7JHVyMGyCEr7FxK@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-render.git#a6a5d7df81adde5529c3e92cd5dacceec70d4c75"
+  resolved "git+https://gitlab+deploy-token-28:gldt-jJYfv7JHVyMGyCEr7FxK@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-render.git#2e6b8ea29f361dc7d8d16230a302943ea899076f"
   dependencies:
     grapheme-breaker "0.3.2"
     hull.js "0.2.10"
