@@ -177,7 +177,7 @@ class TestRunner extends EventEmitter {
             this.util = await this._loadProject(vm, project, props, modelTester);
             for (let i = 0; i < modelProps.repetitions; i++) {
                 modelTester.clearRepetitionCoverage();
-                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName);
+                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName, i);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -282,10 +282,11 @@ class TestRunner extends EventEmitter {
      * @param {{duration: number, repetitions: number}} modelProps
      * @param {TestResult[]} testResults
      * @param {string} projectName
+     * @param {int} rep
      * @return {Promise<string>}
      */
     async _executeUserModels(vm, modelTester, project, props, modelProps,
-                             testResults, projectName, totalAssertions, rep) {
+                             testResults, projectName, rep = 0) {
         let csv = "";
         for (const uM of modelTester.userModelIndices()) {
             this.util = await this._loadProject(vm, project, props, modelTester);
@@ -298,7 +299,7 @@ class TestRunner extends EventEmitter {
             const duration = (Date.now() - startTime) / 1000;
             const coverage = this._extractCoverage();
             csv += this._generateCSVRow(projectName, Randomness.scratchSeed, 0,
-                [result.status], coverage, duration, undefined, result.modelResult);
+                [result.status], coverage, duration, undefined, result.modelResult, rep, modelTester.currentUserModelId);
         }
         return csv;
     }
@@ -525,7 +526,7 @@ class TestRunner extends EventEmitter {
             }
             header += `,passed,failed,error,skip`;
         }
-        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult${modelCsvHeader}`;
+        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult,repetition,userModelId${modelCsvHeader}`;
         return header + "\n";
     }
 
@@ -539,10 +540,12 @@ class TestRunner extends EventEmitter {
      * @param {number} duration
      * @param {{}} resultRecords
      * @param {ModelResult} modelResult
+     * @param {number} repetition
+     * @param {string | null} userModelId
      * @return {string}
      */
     _generateCSVRow(projectName, seed, assertions, testStatusResults,
-                    coverage, duration, resultRecords, modelResult = undefined) {
+                    coverage, duration, resultRecords, modelResult = undefined, repetition = 0, userModelId = null) {
         let csvRow = `${projectName},${seed},${assertions}`;
         if (resultRecords !== undefined) {
             csvRow += `,${resultRecords.generationAlgorithm}`;
@@ -551,7 +554,8 @@ class TestRunner extends EventEmitter {
             }
             csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip}`;
         }
-        csvRow += `,${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration},${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
+        csvRow += `,${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration},${testStatusResults[0]}`;
+        csvRow += `,${repetition},${userModelId},${modelResultToCsvData(modelResult)}`;
         return csvRow + '\n';
     }
 

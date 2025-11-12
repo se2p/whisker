@@ -80,8 +80,8 @@ export class ModelTester extends EventEmitter {
         return this._isRunning;
     }
 
-    get runIndex(): number {
-        return this._executionCount;
+    get currentUserModelId(): string | null {
+        return this._runningUserModel ? this._runningUserModel.id : null;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
