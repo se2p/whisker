@@ -173,12 +173,7 @@ class TestRunner extends EventEmitter {
         } else if (modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
-
-            this.util = await this._loadProject(vm, project, props, modelTester);
-            for (let i = 0; i < modelProps.repetitions; i++) {
-                modelTester.clearRepetitionCoverage();
-                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName, i);
-            }
+            csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName);
             finalResults[projectName] = testResults;
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
@@ -282,24 +277,25 @@ class TestRunner extends EventEmitter {
      * @param {{duration: number, repetitions: number}} modelProps
      * @param {TestResult[]} testResults
      * @param {string} projectName
-     * @param {int} rep
      * @return {Promise<string>}
      */
     async _executeUserModels(vm, modelTester, project, props, modelProps,
-                             testResults, projectName, rep = 0) {
+                             testResults, projectName) {
         let csv = "";
-        for (const uM of modelTester.userModelIndices()) {
-            this.util = await this._loadProject(vm, project, props, modelTester);
-            this.vmWrapper.nextUserModelIndex = uM;
-            const startTime = Date.now();
-            const result = await this._executeTest(vm, null, props, modelProps, 0);
-            this.emit(TestRunner.TEST_MODEL, result);
-            testResults.push(result);
-            // Record the results
-            const duration = (Date.now() - startTime) / 1000;
-            const coverage = this._extractCoverage();
-            csv += this._generateCSVRow(projectName, Randomness.scratchSeed, 0,
-                [result.status], coverage, duration, undefined, result.modelResult, rep, modelTester.currentUserModelId);
+        for (let i = 0; i < modelProps.repetitions; i++) {
+            modelTester.clearRepetitionCoverage();
+            for (const uM of modelTester.userModelIndices()) {
+                this.util = await this._loadProject(vm, project, props, modelTester);
+                this.vmWrapper.nextUserModelIndex = uM;
+                const startTime = Date.now();
+                const result = await this._executeTest(vm, null, props, modelProps, 0);
+                this.emit(TestRunner.TEST_MODEL, result);
+                testResults.push(result);
+                const duration = (Date.now() - startTime) / 1000;
+                const coverage = this._extractCoverage();
+                csv += this._generateCSVRow(projectName, Randomness.scratchSeed, 0,
+                    [result.status], coverage, duration, undefined, result.modelResult, i, modelTester.currentUserModelId);
+            }
         }
         return csv;
     }
