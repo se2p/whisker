@@ -46,9 +46,9 @@
 # [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
 # [2] https://hub.docker.com/_/node?tab=tags
 #
-# Currently, this digest corresponds to the tag 18.18.0-bullseye-slim:
-# https://hub.docker.com/layers/satantime/puppeteer-node/18.18-bullseye-slim/images/sha256-0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555?context=explore
-ARG version=@sha256:0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555
+# Currently, this digest corresponds to the tag 24.11.0-bullseye-slim:
+# https://hub.docker.com/layers/satantime/puppeteer-node/24.11.0-bullseye-slim/images/sha256-6050cafd3f8faab90389fe939ef5bae5227695c07d4f3c12a3b32025de76dac4
+ARG version=@sha256:6050cafd3f8faab90389fe939ef5bae5227695c07d4f3c12a3b32025de76dac4
 
 # Whether the image should only include open source GPU drivers for Intel
 # and AMD ("base"), or install drivers for Nvidia Titan Black GPU ("nvidia").
