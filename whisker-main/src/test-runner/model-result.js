@@ -64,7 +64,7 @@ export class ModelResult {
 
     /**
      * Returns this object as a tuple containing all values given in the header.
-     * @return {[number,number,number,number]}
+     * @return {[number,number,number,number,number]}
      */
     getCsvColumns() {
         const [current, repetition, total, edgeCount] = Object.values(this.coverage).reduce(([curr, rep, total, edges], covObj) =>
@@ -72,7 +72,7 @@ export class ModelResult {
         const singleCov = toCoverageValue(current, edgeCount);
         const repetitionCov = toCoverageValue(repetition, edgeCount);
         const totalCov = toCoverageValue(total, edgeCount);
-        return [this.testNbr ?? 1, this.fails.length, this.errors.length, singleCov, repetitionCov, totalCov];
+        return [this.fails.length, this.errors.length, singleCov, repetitionCov, totalCov];
     }
 }
 
@@ -80,7 +80,7 @@ function toCoverageValue(sum, total) {
     return Math.round((sum / total) * 100) / 100;
 }
 
-export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage,repetitionModelCoverage,totalModelCoverage";
+export const modelCsvHeader = ",modelFails,modelErrors,modelCoverage,repetitionModelCoverage,totalModelCoverage";
 
 /**
  * Converts the result into the data for the csv file. If no valid result but instead null/ undefined,
@@ -90,5 +90,5 @@ export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCove
  * @return {string|*[]}
  */
 export function modelResultToCsvData(result, defaultValue = null) {
-    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue, defaultValue, defaultValue];
+    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue, defaultValue];
 }
