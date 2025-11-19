@@ -134,6 +134,7 @@ class TestRunner extends EventEmitter {
             let i = -1; // We start with -1 since the first suite execution is on the original project
             const mutationStart = Date.now();
             while (i < maxMutants && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
+                modelTester.clearCoverage();
                 let mutant;
                 if (i === -1) { // In the first iteration, we execute the original project as a reference.
                     mutant = JSON.parse(vm.toJSON());
@@ -162,7 +163,7 @@ class TestRunner extends EventEmitter {
                         600000, false, coveragePerTest, timingsPerTest);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
-                        testResults, projectMutation, totalAssertions, 0);
+                        testResults, projectMutation);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -172,12 +173,7 @@ class TestRunner extends EventEmitter {
         } else if (modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
-
-            this.util = await this._loadProject(vm, project, props, modelTester);
-            for (let i = 0; i < modelProps.repetitions; i++) {
-                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
-                    testResults, projectName, totalAssertions, i);
-            }
+            csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName);
             finalResults[projectName] = testResults;
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
@@ -281,28 +277,25 @@ class TestRunner extends EventEmitter {
      * @param {{duration: number, repetitions: number}} modelProps
      * @param {TestResult[]} testResults
      * @param {string} projectName
-     * @param {number} totalAssertions
-     * @param {number} rep
      * @return {Promise<string>}
      */
     async _executeUserModels(vm, modelTester, project, props, modelProps,
-                             testResults, projectName, totalAssertions, rep) {
+                             testResults, projectName) {
         let csv = "";
-        const indices = modelTester.userModelIndices();
-        for (const uM of indices) {
-            this.util = await this._loadProject(vm, project, props, modelTester);
-            this.vmWrapper.nextUserModelIndex = uM;
-            const startTime = Date.now();
-            const result = await this._executeTest(vm, null, props, modelProps, 0);
-            result.modelResult.testNbr = Math.max(0, rep * indices.length + uM);
-            this.emit(TestRunner.TEST_MODEL, result);
-            testResults.push(result);
-            // Record the results
-            const duration = (Date.now() - startTime) / 1000;
-            const coverage = this._extractCoverage();
-            const seed = Randomness.scratchSeed;
-            csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                duration, undefined, result.modelResult);
+        for (let i = 0; i < modelProps.repetitions; i++) {
+            modelTester.clearRepetitionCoverage();
+            for (const uM of modelTester.userModelIndices()) {
+                this.util = await this._loadProject(vm, project, props, modelTester);
+                this.vmWrapper.nextUserModelIndex = uM;
+                const startTime = Date.now();
+                const result = await this._executeTest(vm, null, props, modelProps, 0);
+                this.emit(TestRunner.TEST_MODEL, result);
+                testResults.push(result);
+                const duration = (Date.now() - startTime) / 1000;
+                const coverage = this._extractCoverage();
+                csv += this._generateCSVRow(projectName, Randomness.scratchSeed, 0,
+                    [result.status], coverage, duration, undefined, result.modelResult, i, modelTester.currentUserModelId);
+            }
         }
         return csv;
     }
@@ -529,7 +522,7 @@ class TestRunner extends EventEmitter {
             }
             header += `,passed,failed,error,skip`;
         }
-        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult${modelCsvHeader}`;
+        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult,repetition,userModelId${modelCsvHeader}`;
         return header + "\n";
     }
 
@@ -543,10 +536,12 @@ class TestRunner extends EventEmitter {
      * @param {number} duration
      * @param {{}} resultRecords
      * @param {ModelResult} modelResult
+     * @param {number} repetition
+     * @param {string | null} userModelId
      * @return {string}
      */
     _generateCSVRow(projectName, seed, assertions, testStatusResults,
-                    coverage, duration, resultRecords, modelResult = undefined) {
+                    coverage, duration, resultRecords, modelResult = undefined, repetition = 0, userModelId = null) {
         let csvRow = `${projectName},${seed},${assertions}`;
         if (resultRecords !== undefined) {
             csvRow += `,${resultRecords.generationAlgorithm}`;
@@ -555,7 +550,8 @@ class TestRunner extends EventEmitter {
             }
             csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip}`;
         }
-        csvRow += `,${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration},${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
+        csvRow += `,${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration},${testStatusResults[0]}`;
+        csvRow += `,${repetition},${userModelId},${modelResultToCsvData(modelResult)}`;
         return csvRow + '\n';
     }
 

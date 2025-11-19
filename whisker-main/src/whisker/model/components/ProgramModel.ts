@@ -7,11 +7,16 @@ import logger from "../../../util/logger";
 
 export interface CoverageResult {
     total: number;
-    covered: EdgeID[]
+    covered: number;
 }
 
 export interface ExtendedCoverageResult extends CoverageResult {
     missedEdges: EdgeID[];
+}
+
+export interface ModelCoverageResult extends CoverageResult {
+    repetitionCovered: number;
+    totalCovered: number;
 }
 
 /**
@@ -28,8 +33,9 @@ export interface ExtendedCoverageResult extends CoverageResult {
  * taken. So that it not gets ambiguous.
  */
 abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractModel<ProgramModelEdge> {
-    protected coverageCurrentRun: Record<string, boolean> = {};
-    protected coverageTotal: Record<string, boolean> = {};
+    protected coverageCurrentRun: Set<string> = new Set();
+    protected coverageTotal: Set<string> = new Set();
+    protected coverageRepetition: Set<string> = new Set();
     private _manuallyStopped = false;
     private _restartable = false;
 
@@ -69,56 +75,47 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
     override reset(currentStep = 0): void {
         this.restart(currentStep);
         this._manuallyStopped = this._restartable;
-        for (const edgesCoveredKey of Object.keys(this.coverageCurrentRun)) {
-            this.coverageCurrentRun[edgesCoveredKey] = false;
-        }
+        this.coverageCurrentRun?.clear();
     }
 
-    protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
-        this.coverageCurrentRun[edge.id] = true;
-        this.coverageTotal[edge.id] = true;
-        super._takeEdge(edge, t);
+    /**
+     * Get the coverage of this model of the last run.
+     */
+    getCoverageCurrentRun(debug = false): ModelCoverageResult {
+        if (debug) {
+            const notCoveredIds = Object.keys(this.edges).filter(k => !this.coverageCurrentRun.has(k));
+            if (notCoveredIds.length > 0) {
+                logger.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
+            }
+        }
+        return {
+            covered: this.coverageCurrentRun.size,
+            repetitionCovered: this.coverageRepetition.size,
+            totalCovered: this.coverageTotal.size,
+            total: Object.keys(this.edges).length
+        };
     }
 
     testForEvent(t: TestDriver): void {
         this.currentState.testForEvent(this.stepsSinceLastTransition(t), this.programEndStep);
     }
 
-    /**
-     * Get the coverage of this model of the last run.
-     */
-    getCoverageCurrentRun(debug = false): CoverageResult {
-        const covered = Object.entries(this.coverageCurrentRun)
-            .filter(([edgeID, covered]) => covered)
-            .map(([edgeID]) => edgeID);
-
-        const notCoveredIds = Object.keys(this.edges).filter(k => !this.coverageCurrentRun[k]);
-        if (debug && notCoveredIds.length > 0) {
-            logger.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
-        }
-        return {
-            covered: covered,
-            total: Object.keys(this.edges).length
-        };
+    clearTotalCoverage() {
+        this.coverageCurrentRun.clear();
+        this.coverageRepetition.clear();
+        this.coverageTotal.clear();
     }
 
     /**
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
     getTotalCoverage(): ExtendedCoverageResult {
-        const covered: string[] = [];
-        const missedEdges: string[] = [];
-        for (const key in this.edges) {
-            if (this.coverageTotal[key]) {
-                covered.push(key);
-            } else {
-                missedEdges.push(key);
-            }
-            this.coverageTotal[key] = false;
-        }
+        const keys = Object.keys(this.edges);
+        const total = keys.length;
+        const missedEdges = keys.filter(k => !this.coverageTotal.has(k));
         return {
-            covered: covered,
-            total: Object.keys(this.edges).length,
+            covered: total - missedEdges.length,
+            total,
             missedEdges: missedEdges
         };
     }
@@ -152,6 +149,18 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
             initialStorage: this.initialStorage
         } as J;
+    }
+
+    clearRepetitionCoverage() {
+        this.coverageCurrentRun.clear();
+        this.coverageRepetition.clear();
+    }
+
+    protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
+        this.coverageCurrentRun.add(edge.id);
+        this.coverageRepetition.add(edge.id);
+        this.coverageTotal.add(edge.id);
+        super._takeEdge(edge, t);
     }
 }
 

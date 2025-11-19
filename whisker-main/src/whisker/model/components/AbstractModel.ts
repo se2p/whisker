@@ -45,7 +45,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
         this.startNodeId = startNodeId;
         this.stopAllNodeIds = stopAllNodeIds;
         this.initialStorage = initialStorage;
-        this.restart(0);
+        this.reset();
     }
 
     get lastTransitionStep(): number {

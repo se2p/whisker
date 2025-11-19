@@ -127,11 +127,11 @@ describe('ModelTester', () => {
         const result = modelTester.getTotalCoverage();
         expect(Object.keys(result)).toHaveLength(2);
         expect(result["bowl"]).toStrictEqual({
-            covered: [],
+            covered: 0,
             total: 0,
         });
         expect(result["bowl3"]).toStrictEqual({
-            covered: [],
+            covered: 0,
             total: 1,
         });
     });

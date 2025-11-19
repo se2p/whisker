@@ -23,7 +23,7 @@ export class ModelResult {
         this.fails = [];
 
         /**
-         * @type {Object.<string, CoverageResult>}
+         * @type {Object.<string, ModelCoverageResult>}
          */
         this.coverage = {};
 
@@ -64,21 +64,23 @@ export class ModelResult {
 
     /**
      * Returns this object as a tuple containing all values given in the header.
-     * @return {[number,number,number,number]}
+     * @return {[number,number,number,number,number]}
      */
     getCsvColumns() {
-        let achievedModelCoverage = 0;
-        let totalModelCoverage = 0;
-        for (const coverages of Object.values(this.coverage)) {
-            achievedModelCoverage += coverages.covered.length;
-            totalModelCoverage += coverages.total;
-        }
-        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return [this.testNbr ?? 1, this.fails.length, this.errors.length, coverageRate];
+        const [current, repetition, total, edgeCount] = Object.values(this.coverage).reduce(([curr, rep, total, edges], covObj) =>
+            [curr + covObj.covered, rep + covObj.repetitionCovered, total + covObj.totalCovered, edges + covObj.total], [0, 0, 0, 0]);
+        const singleCov = toCoverageValue(current, edgeCount);
+        const repetitionCov = toCoverageValue(repetition, edgeCount);
+        const totalCov = toCoverageValue(total, edgeCount);
+        return [this.fails.length, this.errors.length, singleCov, repetitionCov, totalCov];
     }
 }
 
-export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage";
+function toCoverageValue(sum, total) {
+    return Math.round((sum / total) * 100) / 100;
+}
+
+export const modelCsvHeader = ",modelFails,modelErrors,modelCoverage,repetitionModelCoverage,totalModelCoverage";
 
 /**
  * Converts the result into the data for the csv file. If no valid result but instead null/ undefined,
@@ -87,6 +89,6 @@ export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCove
  * @param defaultValue
  * @return {string|*[]}
  */
-export function modelResultToCsvData(result, defaultValue  = null) {
-    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue];
+export function modelResultToCsvData(result, defaultValue = null) {
+    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue, defaultValue];
 }

@@ -43,6 +43,7 @@ export class ModelTester extends EventEmitter {
     private _onTargetCreatedListener: (target: RenderedTarget) => void;
     private _nextTestDriver = null;
     private _nextUmIndex = ModelTester.NO_USER_MODEL;
+    private _executionCount = 0;
 
     constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
@@ -77,6 +78,10 @@ export class ModelTester extends EventEmitter {
 
     get canBeStopped(): boolean {
         return this._isRunning;
+    }
+
+    get currentUserModelId(): string | null {
+        return this._runningUserModel ? this._runningUserModel.id : null;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -205,6 +210,17 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
+    clearRepetitionCoverage(): void {
+        this._programModels.forEach(model => model.clearRepetitionCoverage());
+        this._onTestEndModels.forEach(model => model.clearRepetitionCoverage());
+    }
+
+    clearCoverage(): void {
+        this._executionCount = 0;
+        this._programModels.forEach(model => model.clearTotalCoverage());
+        this._onTestEndModels.forEach(model => model.clearTotalCoverage());
+    }
+
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         if (!this.someModelLoaded()) {
             return;
@@ -233,6 +249,7 @@ export class ModelTester extends EventEmitter {
         this._log(msg);
 
         this._result = new ModelResult();
+        this._result.testNbr = this._executionCount;
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
         this._checkUtility.on(CheckUtility.CHECK_LOG_FAIL, this._onLogEvent.bind(this));
@@ -420,17 +437,18 @@ export class ModelTester extends EventEmitter {
                 this._log(log.join("\n"));
             }
 
-            const coverages = {covered: [] as string[][], total: 0};
+            const coverages: { covered: number, total: number } = {covered: 0, total: 0};
 
             const programModels = [...this._programModels, ...this._onTestEndModels];
             programModels.forEach(model => {
                 const currentCov = model.getCoverageCurrentRun(true);
-                coverages.covered.push(currentCov.covered);
+                coverages.covered += currentCov.covered;
                 coverages.total += currentCov.total;
                 this._result!.coverage[model.id] = currentCov;
             });
 
-            this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
+            this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
+            ++this._executionCount;
         }
         return this._result!;
     }
