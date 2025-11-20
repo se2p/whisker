@@ -1,6 +1,5 @@
 const {
     scratchPath,
-    stateActionRecorder,
     configPath,
     recordProject,
     recordingTime,
@@ -60,9 +59,6 @@ async function configureOpen(whisker) {
         await whisker.uploadProject(scratchPath.path);
     }
     await (await whisker.page.$('#fileselect-config')).uploadFile(configPath);
-    if (stateActionRecorder) {
-        await whisker.page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-    }
 }
 
 // Initialises a single Whisker instance in a browser window based on the provided CLI options

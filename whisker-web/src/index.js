@@ -718,7 +718,6 @@ const runAllTests = async function () {
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
-    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 };
 
 /**
@@ -940,7 +939,6 @@ const initComponents = function () {
         Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
-    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
@@ -1343,7 +1341,9 @@ const _addFileListeners = function () {
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
-        Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
+        if (document.querySelector('#container').stateActionRecorder) {
+            Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
+        }
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
