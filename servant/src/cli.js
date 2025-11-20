@@ -22,7 +22,6 @@ const {relativeToServantDir} = require("./util");
  * @property {number} [maxMutants] Upper bound of analysed mutations during mutation analysis
  * @property {number} [activationTraces] Number of activation traces for surprise adequacy based error detection
  * @property {boolean} [traceAttributes] Activates recording of sprite attributes after every block execution.
- * @property {boolean} [stateActionRecorder] Records executed scratch events and maps them to the current program state
  * @property {string} [recordProject] Executes procedure for collecting recording data of single project
  * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
  * @property {string} whiskerUrl Path to index.html of Whisker Web
@@ -308,11 +307,6 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionStateActionRecorder() {
-        return this.option('-rec, --state-action-recorder',
-            'records executed scratch events and maps them to the current program state');
-    }
-
     optionRecordProject() {
         return this.option(
             '-rp, --record-project <Path>',
@@ -379,7 +373,6 @@ const subCommands = [
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
         .optionConfigPath()
-        .optionStateActionRecorder()
         .optionRecordProject()
         .optionRecordingTime(),
 
