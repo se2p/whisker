@@ -24,4 +24,8 @@
  * @param <T> The type of the elements in the pair
  * @author Sophia Geserer, Sebastian Schweikl
  */
-export type Pair<T> = Readonly<[T, T]>;
+export type Pair<T, U = T> = Readonly<[T, U]>;
+
+export function pair<T, U>(x: T, y: U): Pair<T, U> {
+    return [x, y];
+}
