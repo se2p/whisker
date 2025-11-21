@@ -49,7 +49,7 @@ export class MultiMap<K, V> implements Iterable<Pair<K, V>> {
     }
 
     get size(): number {
-        return [...this._map.values()].reduce((size, set) => size + set.size, 0);
+        return [...this._map.values()].reduce((size, currSet) => size + currSet.size, 0);
     }
 
     [Symbol.iterator](): IterableIterator<Pair<K, V>> {

@@ -60,8 +60,8 @@ describe("Getting", () => {
         const map = new MultiMap([[1, 2], [3, 4]]);
         const before = new MultiMap(map);
 
-        const set = map.get(1);
-        set.add(42);
+        const backingSet = map.get(1);
+        backingSet.add(42);
 
         expect(map).toStrictEqual(before);
     });
