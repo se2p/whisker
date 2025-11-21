@@ -21,9 +21,9 @@
 
 import {GraphNode} from 'scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
-import {TestChromosome} from "../TestChromosome";
-import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
+import {NetworkChromosome} from "../../agentTraining/neuroevolution/networks/NetworkChromosome";
 import logger from '../../../util/logger';
+import {TestCase} from "../../core/TestCase";
 
 export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
 
@@ -31,38 +31,38 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
         super(controlNode);
     }
 
-    override getBranchDistance(chromosome: TestChromosome): number {
-        // If the control node is not covered, compute branch distance toward the control node.
-        if (!chromosome.coverage.has(this._targetNode.id)) {
-            return super.getBranchDistance(chromosome);
+    override getBranchDistance(solution: TestCase): number {
+        // If the control node is not covered, compute the branch distance toward the control node.
+        if (!solution.getCoveredBlocks().has(this._targetNode.id)) {
+            return super.getBranchDistance(solution);
         }
 
         // Otherwise, compute the distance toward the desired branch.
-        const blockTrace = Object.values(chromosome.trace.blockTraces).find(block => block.id === this._targetNode.block.id);
-        if (!blockTrace){   // If we cannot find the block trace return a default value of 1.
-            logger.debug(`No block trace found for ${this.toString()}`, chromosome.trace.blockTraces);
+        const blockTrace = Object.values(solution.getTrace().blockTraces).find(block => block.id === this._targetNode.block.id);
+        if (!blockTrace) {   // If we cannot find the block trace return a default value of 1.
+            logger.debug(`No block trace found for ${this.toString()}`);
             return 1;
         }
 
         return this._isTrueBranch ? blockTrace.getTrueDistance() : blockTrace.getFalseDistance();
     }
 
-    override async getFitness(chromosome: TestChromosome): Promise<number> {
-        if (chromosome.trace == null) {
+    override async getFitness(solution: TestCase): Promise<number> {
+        if (solution.getTrace() == null) {
             throw Error("Test case not executed");
         }
 
-        const approachLevel = this.getApproachLevel(chromosome);
-        const branchDistance = this.getBranchDistance(chromosome);
+        const approachLevel = this.getApproachLevel(solution);
+        const branchDistance = this.getBranchDistance(solution);
 
         // When dealing with NetworkChromosomes, ignore the cfgDistance.
-        if (chromosome instanceof NetworkChromosome){
+        if (solution instanceof NetworkChromosome) {
             return StatementFitnessFunction.normalize(approachLevel + StatementFitnessFunction.normalize(branchDistance));
         }
 
         let cfgDistanceNormalized: number;
         if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
-            cfgDistanceNormalized = StatementFitnessFunction.normalize(this.getCFGDistance(chromosome, approachLevel > 0));
+            cfgDistanceNormalized = StatementFitnessFunction.normalize(this.getCFGDistance(solution, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }

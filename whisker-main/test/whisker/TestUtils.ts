@@ -1,4 +1,4 @@
-import {InputFeatures} from "../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {InputFeatures} from "../../src/whisker/agentTraining/featureExtraction/FeatureExtraction";
 
 export const generateNetworkInputs = (): InputFeatures => {
     const genInputs: InputFeatures = new Map<string, Map<string, number>>();

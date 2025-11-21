@@ -25,9 +25,6 @@
 /servant/*.csv
 /servant/evaluation.js
 
-# WhiskerNet evaluation
-/whisker-main/src/whisker/whiskerNet/EvaluationScripts
-
 # Generated
 /whisker-main/coverage
 

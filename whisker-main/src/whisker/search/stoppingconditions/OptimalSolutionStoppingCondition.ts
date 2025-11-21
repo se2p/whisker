@@ -19,12 +19,12 @@
  */
 
 import {StoppingCondition} from '../StoppingCondition';
-import {Chromosome} from "../Chromosome";
-import {SearchAlgorithm} from "../SearchAlgorithm";
+import {Solution} from "../../core/Solution";
+import {OptimizationAlgorithm} from "../../core/OptimizationAlgorithm";
 
-export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
+export class OptimalSolutionStoppingCondition<T extends Solution> implements StoppingCondition<T> {
 
-    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+    async isFinished(algorithm: OptimizationAlgorithm<T>): Promise<boolean> {
         const solutions = algorithm.getCurrentSolution();
         const fitnessFunctions = algorithm.getFitnessFunctions();
 
@@ -47,7 +47,7 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         return true;
     }
 
-    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
+    async getProgress(algorithm: OptimizationAlgorithm<T>): Promise<number> {
         let coveredFitnessFunctions = 0;
         let totalFitnessFunctions = 0;
         for (const f of algorithm.getFitnessFunctions()) {

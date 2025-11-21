@@ -2,7 +2,7 @@ const Variable = require('./variable');
 const RenderedTarget = require('scratch-vm/src/sprites/rendered-target');
 const ScratchVariable = require('scratch-vm/src/engine/variable');
 const Scratch3LooksBlocks = require('scratch-vm/src/blocks/scratch3_looks');
-const {InputExtraction} = require("../whisker/whiskerNet/Misc/InputExtraction");
+const {ScratchInterface} = require("../whisker/scratch/ScratchInterface");
 
 /**
  * Represents a scratch {@link Sprite} by wrapping a {@link RenderedTarget} and gives the user basic functionality to
@@ -558,7 +558,7 @@ class Sprite {
     getRangeOfSize() {
         try {
             if (this._target.renderer) {
-                const [min, max] = InputExtraction.getSizeBounds(this._target);
+                const [min, max] = ScratchInterface.getSizeBoundsOfTarget(this._target);
                 return {min, max};
             }
         } catch (error) {

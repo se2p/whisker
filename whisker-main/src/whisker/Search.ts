@@ -41,7 +41,6 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
-import {SearchAlgorithmBuilder} from "./search/SearchAlgorithmBuilder";
 import logger from "../util/logger";
 import {SearchResult} from "../types/SearchResult";
 
@@ -68,7 +67,7 @@ export class Search {
     private handleEmptyProject(): string {
         logger.warn("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
-        SearchAlgorithmBuilder.initializeCoverageMappings();
+        TestGenerator.initializeCoverageMappings();
 
         let hasBlocks = false;
         for (const target of this.vm.runtime.targets) {
@@ -119,7 +118,7 @@ export class Search {
                 }
             }
             // Sample every minute
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(60000, upperBound);
+            const csvOutput = StatisticsCollector.getInstance().asCSVAgentTraining(60000, upperBound);
             logger.info(csvOutput);
             return csvOutput;
         } else {
@@ -214,9 +213,10 @@ seed ${configSeed} defined within the config files.`);
         StatisticsCollector.getInstance().projectName = projectName;
         StatisticsCollector.getInstance().configName = configName;
         const testListWithSummary = await this.execute(project, config);
+
+        const csvOutput = this.outputCSV(config);
         const tests = testListWithSummary.testList;
         const javaScriptText = this.testsToString(tests);
-        const csvOutput = this.outputCSV(config);
 
         let blockBasedTests = [];
         if (generateBBTs) {

@@ -57,7 +57,7 @@ describe('MIO', () => {
             selectionProbability: {start: 0.5, focusedPhase: 0},
             maxArchiveSize: {start: 10, focusedPhase: 1},
             maxMutationCount: {start: 0, focusedPhase: 10},
-            stoppingCondition: new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations),
+            stoppingCondition: new OneOfStoppingCondition<BitstringChromosome>(new FixedIterationsStoppingCondition(iterations),
                 new OptimalSolutionStoppingCondition()),
             startOfFocusedPhase: 0.5,
             mutationProbability: undefined,

@@ -31,6 +31,7 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 import logger from "../../../../src/util/logger";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 
 describe('OnePlusOneEa', () => {
 
@@ -48,7 +49,7 @@ describe('OnePlusOneEa', () => {
         const properties = {
             populationSize: 1,
             chromosomeLength: 10,
-            stoppingCondition: new OneOfStoppingCondition(
+            stoppingCondition: new OneOfStoppingCondition<BitstringChromosome>(
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
             mutationProbability: undefined,
@@ -74,7 +75,7 @@ describe('OnePlusOneEa', () => {
     });
 
     test('Setter', () => {
-        const stoppingCondition = new OneOfStoppingCondition(
+        const stoppingCondition = new OneOfStoppingCondition<BitstringChromosome>(
             new FixedIterationsStoppingCondition(1000), // Plenty time...
             new OptimalSolutionStoppingCondition()
         );
@@ -105,7 +106,7 @@ describe('OnePlusOneEa', () => {
         expect(search["_fitnessFunction"]).toBe(fitnessFunction);
 
         expect(function () {
-            search.setSelectionOperator(null);
+            search.setSelectionOperator();
         }).toThrow();
     });
 

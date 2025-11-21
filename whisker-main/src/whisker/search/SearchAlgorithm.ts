@@ -19,11 +19,11 @@
  */
 
 import {Chromosome} from "./Chromosome";
-import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
-import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {FitnessFunction} from "./FitnessFunction";
 import {Selection} from "./Selection";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
+import {ChromosomeGenerator} from "./ChromosomeGenerator";
+import {Hyperparameter, OptimizationAlgorithm} from "../core/OptimizationAlgorithm";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -31,19 +31,13 @@ import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
  * @param <C> the solution encoding of the problem
  * @author Sophia Geserer
  */
-export interface SearchAlgorithm<C extends Chromosome> {
+export interface SearchAlgorithm<C extends Chromosome> extends OptimizationAlgorithm<C> {
 
     /**
-     * Returns a list of possible admissible solutions for the given problem.
-     * @returns Solution for the given problem
-     */
-    findSolution(): Promise<Map<number, C>>;
-
-    /**
-     * Sets the properties for this search algorithm.
+     * Sets the properties for this optimization algorithm.
      * @param properties the properties for the search algorithm
      */
-    setProperties(properties: SearchAlgorithmProperties<C>): void;
+    setProperties(properties: Hyperparameter): void;
 
     /**
      * Sets the chromosome generator for this search algorithm.
@@ -56,12 +50,6 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * @param fitnessFunction fitness function for chromosome evaluation
      */
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
-
-    /**
-     * Sets the map of fitness functions used by the search algorithm.
-     * @param fitnessFunctions map of fitness functions used for the chromosome evaluation
-     */
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 
     /**
      * Sets the selection operator used by the search algorithm.
@@ -80,22 +68,4 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * @returns the number of performed iterations
      */
     getNumberOfIterations(): number;
-
-    /**
-     * Returns the list of best individuals at the current time during the search
-     * @returns Solution for the given problem
-     */
-    getCurrentSolution(): C[];
-
-    /**
-     * Returns all fitness functions for this search algorithm
-     * @return list with all fitness functions
-     */
-    getFitnessFunctions(): Iterable<FitnessFunction<C>>;
-
-    /**
-     * Get starting time of Algorithm
-     * @returns startTime of Algorithm in ms.
-     */
-    getStartTime(): number;
 }

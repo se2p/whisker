@@ -27,6 +27,7 @@ export type SearchAlgorithmType =
     | 'mio'
     | 'onePlusOne'
     | 'simpleGA'
+
     | 'neat'
     | 'neatest'
     | 'mosaNeatest'

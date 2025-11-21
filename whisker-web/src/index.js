@@ -1,11 +1,11 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
-import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
-import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
+import {NeatestSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/NeatestSuiteExecutor';
+import {StateActionRecorder} from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
 import {FileSaver} from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
-import {Container} from "whisker-main/src/whisker/utils/Container";
+import {Container} from 'whisker-main/src/whisker/utils/Container';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -341,7 +341,7 @@ const runSearch = async function () {
     }
 
     _enableVMRelatedButtons();
-    return searchResult.javaScriptText;
+    return searchResult;
 };
 
 const _generateResults = function (coverage, coverageModels, summary) {
@@ -583,6 +583,9 @@ window.Whisker.runTestsForRepair = async function () {
     };
 };
 
+const _isNeatestSuite = function () {
+    return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))
+};
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
@@ -606,8 +609,8 @@ const runAllTests = async function () {
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
 
-    // Dynamic Suite
-    if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
+    // Agent Suite
+    if (Whisker.tests && _isNeatestSuite()) {
         let coverage;
         let summary;
         try {
@@ -629,15 +632,13 @@ const runAllTests = async function () {
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.maxMutants = maxMutants;
-            properties.minimiseSuite = document.querySelector('#container').minimiseSuite;
             properties.downloadMutants = mutantDownload;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
             properties.winningStates = document.querySelector('#container').winningStates;
 
-            const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
-                properties);
-            const [csv, mutantPrograms, spriteTraces] = await dynamicSuite.execute(Whisker.modelTester);
-
+            const suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project,
+                Whisker.scratch.vm, properties, Whisker.tests);
+            const [csv, mutantPrograms, spriteTraces] = await suiteExecutor.execute(Whisker.modelTester);
             summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
@@ -870,7 +871,6 @@ const handleOnLoadProjectFile = async function (fileSelect) {
  */
 const handleOnLoadTestFile = async function (fileSelect) {
     const fileExtension = fileSelect.files[0].name.split('.').pop();
-
     if (fileExtension === 'sb3') {
 
         const project = await fileSelect.loadAsArrayBuffer();
@@ -902,7 +902,6 @@ const handleOnLoadTestFile = async function (fileSelect) {
         setBBTTests(Whisker.scratch.getBBTTestsOfCurrentProject());
 
     } else {
-
         // clear BBT tests, regular Whisker tests are replaced during loadTestsFromString(..)
         Whisker.bbtTests = null;
         Whisker.bbtTestStore = null;
@@ -1137,7 +1136,7 @@ const initEvents = function () {
                 const tests = runSearch();
                 tests.then(
                     result => {
-                        loadTestsFromString(result).then();
+                        loadTestsFromString(result.javaScriptText).then();
                         _jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();

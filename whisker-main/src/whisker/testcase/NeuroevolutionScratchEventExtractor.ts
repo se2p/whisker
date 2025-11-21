@@ -15,7 +15,7 @@ import Arrays from "../utils/Arrays";
 import {ScratchInterface} from "../scratch/ScratchInterface";
 import {WaitEvent} from "./events/WaitEvent";
 import {MouseMoveDimensionEvent} from "./events/MouseMoveDimensionEvent";
-import {ClassificationType} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType} from "../agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 

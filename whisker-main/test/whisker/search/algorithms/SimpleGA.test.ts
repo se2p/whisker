@@ -33,6 +33,7 @@ import {TournamentSelection} from "../../../../src/whisker/search/operators/Tour
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 import logger from "../../../../src/util/logger";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 
 describe('SimpleGA', () => {
 
@@ -49,7 +50,7 @@ describe('SimpleGA', () => {
         const properties = {
             populationSize: 50,
             chromosomeLength: 10,
-            stoppingCondition: new OneOfStoppingCondition(
+            stoppingCondition: new OneOfStoppingCondition<BitstringChromosome>(
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
             mutationProbability: 0.2,
@@ -81,7 +82,7 @@ describe('SimpleGA', () => {
         const properties = {
             populationSize: 1,
             chromosomeLength: 10,
-            stoppingCondition: new OneOfStoppingCondition(
+            stoppingCondition: new OneOfStoppingCondition<BitstringChromosome>(
                 new FixedIterationsStoppingCondition(1000), // Plenty time...
                 new OptimalSolutionStoppingCondition()
             ),

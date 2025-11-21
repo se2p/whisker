@@ -24,8 +24,6 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Selection} from "../Selection";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -100,7 +98,7 @@ ${bestIndividual.toString()}`);
 
     /**
      * Determines whether the used TestGenerator is the IterativeSearchBasedTestGenerator.
-     * If so we do no want to update statistics in the OnePlusOne-Algorithm.
+     * If so we do not want to update statistics in the OnePlusOne-Algorithm.
      * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator
      */
     private isIterativeSearch(): boolean {
@@ -112,7 +110,6 @@ ${bestIndividual.toString()}`);
      */
     private initializeStatistics(): void {
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
         StatisticsCollector.getInstance().startTime = this._startTime;
     }
@@ -141,11 +138,11 @@ ${bestIndividual.toString()}`);
         return this._startTime;
     }
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
+    setSelectionOperator(): void {
         throw new Error('Method not implemented.');
     }
 
-    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+    setLocalSearchOperators(): void {
         throw new Error('Method not implemented.');
     }
 }

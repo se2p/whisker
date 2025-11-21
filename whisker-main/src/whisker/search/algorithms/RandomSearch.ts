@@ -24,8 +24,6 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Selection} from "../Selection";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import logger from '../../../util/logger';
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -59,7 +57,6 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         let bestFitness = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(await this._stoppingCondition.isFinished(this))) {
@@ -97,7 +94,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().incrementIterationCount();
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
-            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = StatisticsCollector.getInstance().numberFitnessEvaluations;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = StatisticsCollector.getInstance().evaluations;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
@@ -122,11 +119,11 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._startTime;
     }
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
+    setSelectionOperator(): void {
         throw new Error('Method not implemented.');
     }
 
-    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+    setLocalSearchOperators(): void {
         throw new Error('Method not implemented.');
     }
 }

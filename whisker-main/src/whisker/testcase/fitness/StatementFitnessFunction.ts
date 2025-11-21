@@ -19,9 +19,8 @@
  */
 
 import {FitnessFunction} from '../../search/FitnessFunction';
-import {TestChromosome} from '../TestChromosome';
 import {Container} from "../../utils/Container";
-import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
+import {NetworkChromosome} from "../../agentTraining/neuroevolution/networks/NetworkChromosome";
 import {
     ControlDependenceGraph,
     GraphNode,
@@ -33,9 +32,9 @@ import {
 } from 'scratch-analysis';
 import {BranchDistanceTrace} from "scratch-vm/@types/scratch-vm/tracing/branchCoverageTracer";
 import logger from '../../../util/logger';
-import {BranchCoverageFitnessFunction} from "./BranchCoverageFitnessFunction";
+import {TestCase} from "../../core/TestCase";
 
-export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
+export class StatementFitnessFunction implements FitnessFunction<TestCase> {
 
     private static _EXECUTION_HALTING_OPCODES = ['control_wait', 'looks_thinkforsecs', 'looks_sayforsecs',
         'motion_glideto', 'motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
@@ -93,27 +92,27 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return approachLevels;
     }
 
-    async getFitness(chromosome: TestChromosome): Promise<number> {
-        if (chromosome.trace == null) {
+    async getFitness(solution: TestCase): Promise<number> {
+        if (solution.getTrace() == null) {
             throw Error("Test case not executed");
         }
-        if (chromosome.coverage.has(this._targetNode.id)) {
+        if (solution.getCoveredBlocks().has(this._targetNode.id)) {
             // Shortcut: If the target is covered, we don't need to spend
             // any time on calculating anything
             return 0;
         }
 
-        const approachLevel = this.getApproachLevel(chromosome);
-        const branchDistance = this.getBranchDistance(chromosome);
+        const approachLevel = this.getApproachLevel(solution);
+        const branchDistance = this.getBranchDistance(solution);
 
         // When dealing with NetworkChromosomes, ignore the cfgDistance.
-        if (chromosome instanceof NetworkChromosome) {
+        if (solution instanceof NetworkChromosome) {
             return StatementFitnessFunction.normalize(approachLevel + StatementFitnessFunction.normalize(branchDistance));
         }
 
         let cfgDistanceNormalized;
         if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
-            cfgDistanceNormalized = StatementFitnessFunction.normalize(this.getCFGDistance(chromosome, approachLevel > 0));
+            cfgDistanceNormalized = StatementFitnessFunction.normalize(this.getCFGDistance(solution, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }
@@ -131,16 +130,16 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return fitnessValue === 0.0;
     }
 
-    async isCovered(chromosome: TestChromosome): Promise<boolean> {
-        return this.isOptimal(await this.getFitness(chromosome));
+    async isCovered(solution: TestCase): Promise<boolean> {
+        return this.isOptimal(await this.getFitness(solution));
     }
 
     getCDGDepth(): number {
         return Math.max(...Object.values(this._approachLevels));
     }
 
-    getApproachLevel(chromosome: TestChromosome): number {
-        const trace = chromosome.trace;
+    getApproachLevel(solution: TestCase): number {
+        const trace = solution.getTrace();
         let min = Number.MAX_SAFE_INTEGER;
 
         for (const blockTrace of Object.values(trace.blockTraces)) {
@@ -169,8 +168,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return min;
     }
 
-    getBranchDistance(chromosome: TestChromosome): number {
-        const trace = chromosome.trace;
+    getBranchDistance(solution: TestCase): number {
+        const trace = solution.getTrace();
         let minBranchApproachLevel: number = Number.MAX_SAFE_INTEGER;
         let branchDistance = Number.MAX_SAFE_INTEGER;
         for (const blockTrace of Object.values(trace.blockTraces)) {
@@ -230,7 +229,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return this._targetNode;
     }
 
-    getCFGDistance(chromosome: TestChromosome, hasUnexecutedCdgPredecessor: boolean): number {
+    getCFGDistance(solution: TestCase, hasUnexecutedCdgPredecessor: boolean): number {
         /*
             function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
@@ -307,7 +306,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
         let targetNodeQueue: GraphNode[];
         if (hasUnexecutedCdgPredecessor) {
-            targetNodeQueue = bfsPredecessors(Container.cdg, this._targetNode, chromosome.coverage);
+            targetNodeQueue = bfsPredecessors(Container.cdg, this._targetNode, solution.getCoveredBlocks());
             if (targetNodeQueue.length === 0) {
                 // If no predecessor was found, something is wrong, e.g. nothing was covered.
                 // By returning max, the effect is essentially that the CFG distance is not used.
@@ -316,7 +315,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         } else {
             targetNodeQueue = [this._targetNode];
         }
-        return bfs(Container.cfg, targetNodeQueue, chromosome.coverage);
+        return bfs(Container.cfg, targetNodeQueue, solution.getCoveredBlocks());
     }
 
 
@@ -537,67 +536,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             statementMap.set(keyStatement, valueStatements);
         }));
         return statementMap;
-    }
-
-    /**
-     * Extracts statements from the CDG that are immediate children of already covered statements.
-     * @param allStatements of the Scratch program.
-     * @param uncoveredStatements uncovered subset of allStatements.
-     * @returns uncovered immediate children of already covered statements.
-     */
-    public static getNearestStatements(
-        allStatements: Set<StatementFitnessFunction>,
-        uncoveredStatements: Set<StatementFitnessFunction>): Set<StatementFitnessFunction> {
-        const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
-        const cdg = Container.cdg;
-        const uncoveredKeys = [...uncoveredStatements].map(node => node.getTargetNode().id);
-        for (const statement of uncoveredStatements) {
-            const parents = StatementFitnessFunction.getCDGParent(statement._targetNode);
-            if (!parents) {
-                throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`);
-            }
-            for (const parent of parents) {
-                const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
-                if (!uncoveredStatements.has(parentStatement) ||
-                    parentStatement._targetNode.id === statement._targetNode.id) {
-                    nearestUncoveredStatements.add(statement);
-                }
-            }
-        }
-        return nearestUncoveredStatements;
-    }
-
-    /**
-     * Extracts branches whose control nodes have already been covered or are direct parents of the flag clicked node.
-     * @param uncoveredBranches set of uncovered branches from which we will determine the closest to be covered.
-     * @param coveredStatements set of covered statements determining which control nodes have been covered.
-     * @returns The set of branching targets that are the closest to be covered.
-     * If we were unable to find preferred branches, the set of uncovered branches is returned.
-     */
-    public static getNearestBranches(
-        uncoveredBranches: Set<BranchCoverageFitnessFunction>,
-        coveredStatements: Set<StatementFitnessFunction>): Set<BranchCoverageFitnessFunction> {
-        const nearestBranches = new Set<BranchCoverageFitnessFunction>();
-        const coveredStatementIds = [...coveredStatements].map(node => node.getNodeId());
-        for (const branch of uncoveredBranches) {
-
-            // Extract branches whose control nodes have been covered.
-            if (coveredStatementIds.some(node => branch.getNodeId().includes(node))) {
-                nearestBranches.add(branch);
-            }
-
-            // Extract branches that are direct children of the flag clicked node.
-            if (this.getCDGParent(branch.controlNode).some(parent => parent.id == "flagclicked")) {
-                nearestBranches.add(branch);
-            }
-        }
-
-        // If we were not able to find suitable branches, return the entire set of uncovered branches.
-        if (nearestBranches.size === 0) {
-            return uncoveredBranches;
-        }
-
-        return nearestBranches;
     }
 
     /**

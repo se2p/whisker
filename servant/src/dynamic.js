@@ -38,7 +38,6 @@ async function configureWhiskerWebInstance(page) {
         document.querySelector('#container').maxMutants = opts.maxMutants;
         document.querySelector('#container').downloadMutants = opts.downloadMutants;
         document.querySelector('#container').activationTraceRepetitions = opts.activationTraces;
-        document.querySelector('#container').minimiseSuite = opts.minimiseSuite;
     }, opts);
 
     if (winningStates) {

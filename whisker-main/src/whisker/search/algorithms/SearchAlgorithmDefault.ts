@@ -144,9 +144,6 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
             const candidateLength = candidateChromosome.getLength();
             if (await fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                }
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }
         }
@@ -181,6 +178,6 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
             statementCoverage: StatisticsCollector.getInstance().statementCoverage,
             branchCoverage: StatisticsCollector.getInstance().branchCoverage
         };
-        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
+        StatisticsCollector.getInstance().updateCoverageOverTime(Date.now() - this._startTime, timeLineValues);
     }
 }

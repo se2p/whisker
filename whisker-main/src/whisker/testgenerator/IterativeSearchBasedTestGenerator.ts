@@ -26,6 +26,7 @@ import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import logger from '../../util/logger';
+import {SearchAlgorithm} from "../search/SearchAlgorithm";
 
 /**
  * To generate a test suite using single-objective search,
@@ -38,6 +39,10 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
      * Maps each target statement to the chromosome covering it, if any.
      */
     private _archive = new Map<number, TestChromosome>();
+
+    override buildOptimizationAlgorithm(isManyObjective: boolean): SearchAlgorithm<TestChromosome> {
+        return super.buildOptimizationAlgorithm(isManyObjective) as SearchAlgorithm<TestChromosome>;
+    }
 
     /**
      * Generate Tests by sequentially targeting each target statement in the fitnessFunction map.
@@ -61,7 +66,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             }
             // Generate searchAlgorithm responsible for covering the selected target statement.
             // TODO: Somehow set the fitness function as objective
-            const searchAlgorithm = this.buildSearchAlgorithm(false);
+            const searchAlgorithm = this.buildOptimizationAlgorithm(false);
             const nextFitnessTarget = this._fitnessFunctions.get(fitnessFunction);
             searchAlgorithm.setFitnessFunction(nextFitnessTarget);
             if(nextFitnessTarget instanceof StatementFitnessFunction) {
@@ -84,10 +89,9 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         }
         // Done at the end to prevent used SearchAlgorithm to distort fitnessFunctionCount & coveredFitnessFunctionCount
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         const testChromosomes = Arrays.distinct(this._archive.values());
         const testSuite = await this.getTestSuite(testChromosomes);
-        await this.collectStatistics(testSuite);
+        this.collectStatistics(testSuite);
         const summary = await this.summarizeSolution(this._archive);
         return new WhiskerTestListWithSummary(testSuite, summary);
     }
@@ -104,9 +108,6 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
                     this._archive.get(fitnessKey).getLength() : Number.MAX_SAFE_INTEGER;
                 const candidateFitness = await candidate.getFitness(fitnessFunction);
                 if (await fitnessFunction.isOptimal(candidateFitness) && candidate.getLength() < bestLength) {
-                    if(!this._archive.has(fitnessKey)){
-                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                    }
                     this._archive.set(fitnessKey, candidate);
                 }
             });

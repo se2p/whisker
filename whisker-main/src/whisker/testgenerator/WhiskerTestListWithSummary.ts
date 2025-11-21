@@ -23,12 +23,4 @@ export class WhiskerTestListWithSummary {
     set summary(value: string) {
         this._summary = value;
     }
-
-    get networkPopulation(): string {
-        return this._networkPopulation;
-    }
-
-    set networkPopulation(value: string) {
-        this._networkPopulation = value;
-    }
 }

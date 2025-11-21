@@ -92,6 +92,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         // Save the initial trace and coverage of the chromosome to recover them later.
         const trace = chromosome.trace.clone();
         const coverage = new Set<string>(chromosome.coverage);
+        const branchCoverage = new Set<string>(chromosome.branchCoverage);
 
         // Apply extension local search.
         const newCodons: number[] = [];
@@ -112,6 +113,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const coverageTrace: CoverageTrace = this._vmWrapper.vm.getTraces();
         newChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, [...events]);
         newChromosome.coverage = coverageTrace.blockCoverage;
+        newChromosome.branchCoverage = coverageTrace.branchCoverage;
         newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
@@ -121,6 +123,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;
         chromosome.coverage = coverage;
+        chromosome.branchCoverage = branchCoverage;
         return newChromosome;
     }
 
@@ -167,7 +170,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         let extendWait = false;
         let previousEvents: ScratchEvent[] = [];
         while (codons.length < upperLengthBound && this._projectRunning) {
-            StatisticsCollector.getInstance().numberFitnessEvaluations++;
+            StatisticsCollector.getInstance().evaluations++;
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
 
             // If we have no events available, we can only stop.
@@ -279,6 +282,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.getTraces().branchDistances, events);
             chromosome.coverage = this._vmWrapper.vm.getTraces().blockCoverage;
+            chromosome.branchCoverage = this._vmWrapper.vm.getTraces().branchCoverage;
             const newFitnessValues = await TestExecutor.calculateUncoveredFitnessValues(chromosome);
 
             // Check if the latest event has improved the fitness, if yes update properties and keep extending the

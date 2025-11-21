@@ -26,6 +26,7 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = chromosome.lastImprovedTrace;
         newChromosome.coverage = new Set<string>(chromosome.coverage);
+        newChromosome.branchCoverage = new Set<string>(chromosome.branchCoverage);
         newChromosome.lastImprovedCodon = chromosome.lastImprovedCodon;
         return newChromosome;
     }

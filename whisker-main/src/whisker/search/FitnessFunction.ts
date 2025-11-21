@@ -18,45 +18,44 @@
  *
  */
 
-import { Chromosome } from "./Chromosome";
+import {Solution} from "../core/Solution";
 
 /**
- * A fitness function maps a given chromosome onto a numeric value that represents the goodness of
- * the solution encoded by that particular chromosome.
+ * A fitness function maps a given solution onto a numeric value that represents the goodness of
+ * the solution encoded by that particular solution.
  *
- * @param <C> the type of the chromosmes rated by this fitness function
- * @author Sophia Geserer
+ * @param <S> the type of the solution rated by this fitness function
  */
-export interface FitnessFunction<C extends Chromosome> {
+export interface FitnessFunction<S extends Solution> {
 
     /**
-     * Computes and returns the fitness value for the given chromosome.
-     * @param chromosome the chromosome to rate
-     * @returns the fitness value of the specified chromosome
+     * Computes and returns the fitness value for the given solution.
+     * @param solution the solution to rate
+     * @returns the fitness value of the specified solution
      */
-    getFitness(chromosome: C): Promise<number>;
+    getFitness(solution: S): Promise<number>;
 
     /**
-     * Computes and returns the branch distance value for the given chromosome.
-     * @param chromosome the chromosome to rate
-     * @returns the branch distance value of the specified chromosome
+     * Computes and returns the branch distance value for the given solution.
+     * @param solution the solution to rate
+     * @returns the branch distance value of the specified solution
      */
-    getBranchDistance(chromosome: C): number;
+    getBranchDistance(solution: S): number;
 
     /**
-     * Computes and returns the approach level value for the given chromosome.
-     * @param chromosome the chromosome to rate
-     * @returns the approach level  value of the specified chromosome
+     * Computes and returns the approach level value for the given solution.
+     * @param solution the solution to rate
+     * @returns the approach level value of the specified solution
      */
-    getApproachLevel(chromosome: C): number;
+    getApproachLevel(solution: S): number;
 
     /**
-     * Computes and returns the CFG Distance value for the given chromosome.
-     * @param chromosome the chromosome to rate
+     * Computes and returns the CFG Distance value for the given solution.
+     * @param solution the solution to rate
      * @param hasUnexecutedCdgPredecessor
-     * @returns the CFG distance value of the specified chromosome
+     * @returns the CFG distance value of the specified solution
      */
-    getCFGDistance(chromosome: C, hasUnexecutedCdgPredecessor: boolean): number;
+    getCFGDistance(solution: S, hasUnexecutedCdgPredecessor: boolean): number;
 
     /**
      * @returns the nesting depth of the fitness function itself
@@ -85,11 +84,11 @@ export interface FitnessFunction<C extends Chromosome> {
     isOptimal(fitnessValue: number): Promise<boolean>;
 
     /**
-     * Confirm whether the fitness function achieves an optimal value for the given chromosome
+     * Confirm whether the fitness function achieves an optimal value for the given solution
      *
-     * @param chromosome to check the fitness function with
+     * @param solution to check the fitness function with
      */
-    isCovered(chromosome: Chromosome): Promise<boolean>;
+    isCovered(solution: S): Promise<boolean>;
 
     /**
      * Defines whether the fitness function is maximizing or minimizing.

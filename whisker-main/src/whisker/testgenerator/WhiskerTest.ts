@@ -88,10 +88,10 @@ export class WhiskerTest {
     }
 
     public toString = () : string => {
-        assert(this._chromosome.trace != null);
+        assert(this._chromosome.getTrace() != null);
         let text = "";
         let position = 0;
-        for (const {event} of this._chromosome.trace.events) {
+        for (const {event} of this._chromosome.getTrace().events) {
             text += event.toString() + "\n";
             for (const assertion of this.getAssertionsAt(position)) {
                 text += assertion.toString() + "\n";

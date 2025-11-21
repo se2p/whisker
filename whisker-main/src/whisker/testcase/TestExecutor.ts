@@ -57,14 +57,6 @@ export class TestExecutor {
         this._initialState = this._vmWrapper._recordInitialState();
     }
 
-    async executeTests(tests: TestChromosome[]): Promise<void> {
-        for (const testChromosome of tests) {
-            if (testChromosome.trace == null) {
-                await this.execute(testChromosome);
-            }
-        }
-    }
-
     /**
      * Executes a chromosome by selecting events according to the chromosome's defined genes.
      * @param testChromosome the testChromosome that should be executed.
@@ -99,6 +91,7 @@ export class TestExecutor {
             const coverageTrace: CoverageTrace = this._vm.getTraces();
             testChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
             testChromosome.coverage = coverageTrace.blockCoverage;
+            testChromosome.branchCoverage = coverageTrace.branchCoverage;
 
             // Check if we came closer to cover a specific block.
             // This only makes sense when using a SingleObjective focused Algorithm like MIO.
@@ -108,7 +101,7 @@ export class TestExecutor {
                 const currentFitness = await testChromosome.getFitness(testChromosome.targetObjective);
                 if (testChromosome.targetObjective.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
-                    testChromosome.lastImprovedFitnessCodon = numCodon;
+                    testChromosome.lastImprovedCodon = numCodon;
                 }
             }
 
@@ -142,6 +135,7 @@ export class TestExecutor {
         const coverageTrace: CoverageTrace = this._vm.getTraces();
         testChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
         testChromosome.coverage = coverageTrace.blockCoverage;
+        testChromosome.branchCoverage = coverageTrace.branchCoverage;
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -179,6 +173,7 @@ export class TestExecutor {
         const coverageTrace: CoverageTrace = this._vm.getTraces();
         chromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, chromosome.trace.events);
         chromosome.coverage = coverageTrace.blockCoverage;
+        chromosome.branchCoverage = coverageTrace.branchCoverage;
 
         this._vmWrapper.end();
         await this._vmWrapper.resetProject(this._initialState);
@@ -246,6 +241,7 @@ export class TestExecutor {
         const coverageTrace: CoverageTrace = this._vm.getTraces();
         randomEventChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
         randomEventChromosome.coverage = coverageTrace.blockCoverage;
+        randomEventChromosome.branchCoverage = coverageTrace.branchCoverage;
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -263,7 +259,7 @@ export class TestExecutor {
      */
     private async updateStatistics(executionTime: number, chromosome: TestChromosome): Promise<void> {
         StatisticsCollector.getInstance().incrementExecutedTests();
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        StatisticsCollector.getInstance().evaluations++;
         StatisticsCollector.getInstance().updateAverageTestExecutionTime(executionTime);
         await StatisticsCollector.getInstance().updateStatementCoverage(chromosome);
         await StatisticsCollector.getInstance().updateBranchCoverage(chromosome);
@@ -329,13 +325,6 @@ export class TestExecutor {
         const isExist = this._eventObservers.includes(observer);
         if (!isExist) {
             this._eventObservers.push(observer);
-        }
-    }
-
-    public detach(observer: EventObserver): void {
-        const observerIndex = this._eventObservers.indexOf(observer);
-        if (observerIndex !== -1) {
-            this._eventObservers.splice(observerIndex, 1);
         }
     }
 

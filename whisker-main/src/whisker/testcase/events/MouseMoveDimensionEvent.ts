@@ -2,7 +2,7 @@ import {MouseMoveEvent} from "./MouseMoveEvent";
 import {ScratchInterface} from "../../scratch/ScratchInterface";
 
 /**
- * Moves the mouse pointer to a certain point in the x or y dimension.
+ * Moves the mouse pointer in a certain direction in the x or y dimension by a variable magnitude.
  */
 export class MouseMoveDimensionEvent extends MouseMoveEvent {
 
@@ -25,7 +25,7 @@ export class MouseMoveDimensionEvent extends MouseMoveEvent {
     }
 
     override getSearchParameterNames(): string[] {
-        return [this._dimension];
+        return ["Length"];
     }
 
     override setParameter(args: number[]): [number, number] {
