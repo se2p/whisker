@@ -42,3 +42,20 @@ export function deepFreeze<T>(o: T): T {
 
     return o;
 }
+
+/**
+ * Similar to `Array.prototype.map` but for objects in general.
+ *
+ * @param o the object to map
+ * @param f the mapping function
+ */
+export function mapObject<T, U>(
+    o: Readonly<Record<string, T>>,
+    f: (elem: T, key: string) => U
+): Record<string, U> {
+    const result = empty<U>();
+    for (const [key, value] of Object.entries(o)) {
+        result[key] = f(value, key);
+    }
+    return result;
+}
