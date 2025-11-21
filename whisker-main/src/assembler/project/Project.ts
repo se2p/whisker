@@ -2,6 +2,7 @@ import {Target} from "./Target";
 import {Monitor} from "./Monitor";
 import {Block, BlockID} from "../blocks/Block";
 import {TopLevelListBlock, TopLevelVariableBlock} from "../blocks/Inputs";
+import {HashCode} from "../../repair/utils/hashCode";
 
 /**
  * A Scratch project's `project.json` file, representing the project. This JSON file is included in the project's
@@ -95,19 +96,21 @@ export interface Meta {
      * Non-standard property not present in regular Scratch projects. Added by Whisker. Used by automatic repair, e.g.,
      * to identify syntactic code clones.
      */
-    hashCode?: number;
+    hashCode?: HashCode;
 
     /**
      * Non-standard property not present in regular Scratch projects. Added by Whisker. Used by automatic repair, e.g.,
      * to document the changes mutation and crossover operators applied to a project.
      */
     changeLogs?: Array<ChangeLog>;
+
+    filePath?: string;
 }
 
 export interface ChangeLog {
     operator: string;
     operands: Array<BlockID>;
-    parents: Array<number>;
+    parents: Array<HashCode>;
     renamed: Record<BlockID, BlockID>;
     deleted: Array<BlockID>;
 }
