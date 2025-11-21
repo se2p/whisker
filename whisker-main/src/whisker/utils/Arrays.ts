@@ -81,6 +81,13 @@ export default class Arrays {
         }
     }
 
+    /**
+     * Removes the given element from the array. Elements are compared deeply by their structure. The original array
+     * is not modified, instead a copy of the array without the element is returned.
+     *
+     * @param array The array from which to remove the element
+     * @param element The element to remove
+     */
     static removeElem<T>(array: T[], element: T): T[] {
         return array.filter((x) => !isEqual(x, element));
     }
