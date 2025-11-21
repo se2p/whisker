@@ -47,10 +47,21 @@ export function canConnect(parent: ScratchBlock | null, next: ScratchBlock | nul
     return canBeParent(parent) && canBeNext(next);
 }
 
+/**
+ * Tells whether the given `parent` can take the given `input` via the specified `key`
+ * @param parent The block that should take the input
+ * @param key The input key to use
+ * @param input The input to check
+ */
 export function canBeInput(parent: ScratchBlock, key: InputKey, input: ScratchBlock | Input): boolean {
-    return isScratchBlock(input) ? canBeInputB(parent, key, input) : canBeInputI(parent, key, input);
+    // Dynamic dispatch depending on the type of the `input` argument.
+    return isScratchBlock(input)
+        ? canBeInputB(parent, key, input)
+        : canBeInputI(parent, key, input)
+        ;
 }
 
+// Like `canBeInput()`, but the input has been narrowed down to be a `ScratchBlock` object -> "B" suffix in `canBeInputB()`
 function canBeInputB(parent: ScratchBlock, key: InputKey, input: ScratchBlock): boolean {
     if (!supportsInput(parent, key)) {
         return false;
@@ -81,6 +92,7 @@ function canBeInputB(parent: ScratchBlock, key: InputKey, input: ScratchBlock): 
     return isStringNumberReporterBlock(input) || isTopLevelDataBlock(input); // (4)
 }
 
+// Like `canBeInput()`, but the input has been narrowed down to be an `Input` object  -> "I" suffix in `canBeInputI()`
 function canBeInputI(parent: ScratchBlock, key: InputKey, input: Input): boolean {
     // Top-level variable/list blocks cannot have any inputs.
     if (isTopLevelDataBlock(parent)) {
