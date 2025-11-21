@@ -30,7 +30,6 @@ import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
-import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import logger from '../../util/logger';
 
 /**
@@ -85,11 +84,9 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      * After each Iteration, the archive is updated with the trace of executed events.
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
-        SearchAlgorithmBuilder.initializeCoverageMappings();
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageObjectives();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
@@ -123,9 +120,6 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             const candidateLength = chromosome.getLength();
             if (await fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                }
                 this._archive.set(fitnessFunctionKey, chromosome);
                 this._tests = Arrays.distinct(this._archive.values());
                 logger.info(`Found test for objective: ${fitnessFunction}`);
@@ -152,7 +146,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             statementCoverage: StatisticsCollector.getInstance().statementCoverage,
             branchCoverage: StatisticsCollector.getInstance().branchCoverage
         };
-        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
+        StatisticsCollector.getInstance().updateCoverageOverTime(Date.now() - this._startTime, timeLineValues);
     }
 
     getCurrentSolution(): TestChromosome[] {
@@ -184,10 +178,6 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
     }
 
     setFitnessFunctions(): void {
-        throw new NotSupportedFunctionException();
-    }
-
-    setHeuristicFunctions(): void {
         throw new NotSupportedFunctionException();
     }
 

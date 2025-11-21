@@ -18,14 +18,13 @@
  *
  */
 
-import {FitnessFunction} from "../search/FitnessFunction";
-import {Chromosome} from "../search/Chromosome";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {modelCsvHeader, ModelResult, modelResultToCsvData} from "../../test-runner/model-result";
+import {TestCase} from "../core/TestCase";
 
 
 /**
@@ -40,38 +39,26 @@ export class StatisticsCollector {
     private _configName: string;
     private _fitnessFunctionCount: number;
     private _iterationCount: number;
-    private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
-    private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in the final test suite
     private _bestTestSuiteSize: number;
     private _minimizedTests: number;
     private _minimizedEvents: number;
-    private _numberFitnessEvaluations: number;
+    private _evaluations: number;
     private _executedTests: number
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
     private _averageTestExecutionTime: number;
     private _averageTestExecutionCount: number;
     private _timeToReachFullCoverage: number;
-    private readonly _covOverTime: Map<number, number>;
-    private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
     private _statements: Map<StatementFitnessFunction, number>;
     private _branches: Map<BranchCoverageFitnessFunction, number>;
     private _statementCoverage: number;
     private _branchCoverage: number;
     private _winningStates: Record<string, string>;
-
-    // Neuroevolution
-    private _highestNetworkFitness: number;
-    private _highestScore: number;
-    private _highestPlayTime: number;
-    private readonly _fitnessOverTime: Map<number, CoverageOverTime>;
-
-    // Dynamic Suite
-    private _surpriseAdequacy: number;
-    private _surpriseNodeAdequacy: number;
-    private readonly _networkSuiteResults: NetworkTestSuiteResults[];
+    private _seed: number
+    private readonly _networkSuiteResults: AgentSuiteResults[];
+    private readonly _coverageOverTime: Map<number, CoverageOverTime>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -85,27 +72,18 @@ export class StatisticsCollector {
         this._configName = this._unknownConfig;
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
-        this._coveredFitnessFunctionsCount = 0;
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._minimizedTests = 0;
         this._minimizedEvents = 0;
-        this._greenFlagCovered = 0;
         this._startTime = 0;
         this._executedTests = 0;
         this._averageTestExecutionTime = 0;
         this._averageTestExecutionCount = 0;
         this._testEventCount = 0;
-        this._numberFitnessEvaluations = 0;
-        this._highestNetworkFitness = 0;
-        this._covOverTime = new Map<number, number>();
-        this._fitnessOverTime = new Map<number, CoverageOverTime>();
-        this.coveredFitnessFunctions = [];
+        this._evaluations = 0;
+        this._coverageOverTime = new Map<number, CoverageOverTime>();
         this._networkSuiteResults = [];
-        this._highestScore = 0;
-        this._highestPlayTime = 0;
-        this._surpriseAdequacy = 0;
-        this._surpriseNodeAdequacy = 0;
         this._statementCoverage = 0;
         this._branchCoverage = 0;
     }
@@ -126,16 +104,8 @@ export class StatisticsCollector {
         this._projectName = value;
     }
 
-    get configName(): string {
-        return this._configName;
-    }
-
     set configName(value: string) {
         this._configName = value;
-    }
-
-    get fitnessFunctionCount(): number {
-        return this._fitnessFunctionCount;
     }
 
     set fitnessFunctionCount(value: number) {
@@ -177,57 +147,12 @@ export class StatisticsCollector {
         this._iterationCount++;
     }
 
-    get coveredFitnessFunctionsCount(): number {
-        return this._coveredFitnessFunctionsCount;
-    }
-
-    set coveredFitnessFunctionsCount(value: number) {
-        this._coveredFitnessFunctionsCount = value;
-    }
-
-    set greenFlagCovered(value: number) {
-        this._greenFlagCovered = value;
-    }
-
-    get greenFlagCovered(): number {
-        return this._greenFlagCovered;
-    }
-
-    /**
-     * Increments the number of covered fitness functions by one
-     */
-    public incrementCoveredFitnessFunctionCount(coveredFitnessFunction: FitnessFunction<Chromosome>): void {
-        if (!this.coveredFitnessFunctions.includes(coveredFitnessFunction)) {
-            this.coveredFitnessFunctions.push(coveredFitnessFunction);
-            this._coveredFitnessFunctionsCount++;
-            const timeStamp = Date.now() - this._startTime;
-            this._covOverTime.set(timeStamp, this._coveredFitnessFunctionsCount);
-        }
-    }
-
-    public updateHighestNetworkFitness(networkFitness: number): void {
-        if (networkFitness > this._highestNetworkFitness) {
-            this._highestNetworkFitness = networkFitness;
-        }
-    }
-
     public updateAverageTestExecutionTime(newValue: number): void {
         this._averageTestExecutionCount++;
         this._averageTestExecutionTime = this._averageTestExecutionTime + (
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
-    public updateHighestScore(value: number): void {
-        if (value > this.highestScore) {
-            this._highestScore = value;
-        }
-    }
-
-    public updateHighestPlaytime(value: number): void {
-        if (value > this.highestPlayTime) {
-            this._highestPlayTime = value;
-        }
-    }
 
     public updateHighestStatementCoverage(value: number): void {
         if (value > this._statementCoverage) {
@@ -241,12 +166,8 @@ export class StatisticsCollector {
         }
     }
 
-    public updateFitnessOverTime(timeStamp: number, value: CoverageOverTime): void {
-        this._fitnessOverTime.set(timeStamp, value);
-    }
-
-    get averageTestExecutionTime(): number {
-        return this._averageTestExecutionTime;
+    public updateCoverageOverTime(timeStamp: number, value: CoverageOverTime): void {
+        this._coverageOverTime.set(timeStamp, value);
     }
 
     set averageTestExecutionTime(value: number) {
@@ -255,10 +176,6 @@ export class StatisticsCollector {
 
     public incrementExecutedTests(): void {
         this._executedTests++;
-    }
-
-    get executedTests(): number {
-        return this._executedTests;
     }
 
     set executedTests(value: number) {
@@ -280,10 +197,6 @@ export class StatisticsCollector {
         this._eventsCount++;
     }
 
-    get bestTestSuiteSize(): number {
-        return this._bestTestSuiteSize;
-    }
-
     set bestTestSuiteSize(value: number) {
         this._bestTestSuiteSize = value;
     }
@@ -296,12 +209,12 @@ export class StatisticsCollector {
         this._testEventCount = value;
     }
 
-    get numberFitnessEvaluations(): number {
-        return this._numberFitnessEvaluations;
+    get evaluations(): number {
+        return this._evaluations;
     }
 
-    set numberFitnessEvaluations(value: number) {
-        this._numberFitnessEvaluations = value;
+    set evaluations(value: number) {
+        this._evaluations = value;
     }
 
     set minimizedTests(value: number) {
@@ -328,40 +241,16 @@ export class StatisticsCollector {
         this._startTime = value;
     }
 
-    get timeToReachFullCoverage(): number {
-        return this._timeToReachFullCoverage;
-    }
-
     set timeToReachFullCoverage(value: number) {
         this._timeToReachFullCoverage = value;
     }
 
-    get surpriseAdequacy(): number {
-        return this._surpriseAdequacy;
-    }
-
-    set surpriseAdequacy(value: number) {
-        this._surpriseAdequacy = value;
-    }
-
-    get surpriseNodeAdequacy(): number {
-        return this._surpriseNodeAdequacy;
-    }
-
-    set surpriseNodeAdequacy(value: number) {
-        this._surpriseNodeAdequacy = value;
-    }
-
-    get highestScore(): number {
-        return this._highestScore;
-    }
-
-    get highestPlayTime(): number {
-        return this._highestPlayTime;
-    }
-
-    public addNetworkSuiteResult(results: NetworkTestSuiteResults): void {
+    public addAgentSuiteResults(results: AgentSuiteResults): void {
         this._networkSuiteResults.push(results);
+    }
+
+    set seed(value: number) {
+        this._seed = value;
     }
 
     /**
@@ -372,7 +261,7 @@ export class StatisticsCollector {
      * @returns Formatted csv string containing the results of the search algorithm.
      */
     public asCsv(sampleStepSize = 10000, maxTimeStep?: number): string {
-        const [header, values] = this._getPaddedCoverageTimeLine(sampleStepSize, maxTimeStep);
+        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, this._adjustCoverageOverTime(sampleStepSize), maxTimeStep);
 
         const coverageHeaders = header.join(",");
         const coverageValues = values.join(",");
@@ -386,57 +275,52 @@ export class StatisticsCollector {
             this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
             this._isWinningStateCovered(), this._iterationCount, this._testEventCount, this._eventsCount,
             this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime,
-            this._bestTestSuiteSize, this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage,
+            this._bestTestSuiteSize, this._evaluations, this._createdTestsToReachFullCoverage,
             this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }
 
     /**
-     * Outputs a CSV string that summarises statistics about the neuroevolution search.
-     * Among others, this includes a coverage timeline, which reports the achieved coverage over time.
+     * Outputs a CSV string that summarises statistics about the Reinforcement Learning optimization.
+     * This includes a {@link CoverageOverTime} timeline, which reports the achieved coverage over time.
      * @param sampleStepSize the step size for sampling coverage values.
      * @param maxTimeStep defines at which point the coverage timeline will be truncated.
-     * @returns Formatted csv string containing the results of the neuroevolution search algorithm.
+     * @returns Formatted csv string containing the results of the Reinforcement Learning algorithm.
      */
-    public asCsvNeuroevolution(sampleStepSize?: number, maxTimeStep?: number): string {
-        const [header, values] = this._getPaddedCoverageTimeLine(sampleStepSize, maxTimeStep);
+    public asCSVAgentTraining(sampleStepSize: number, maxTimeStep: number): string {
+        const valuesOverTime = this._adjustCoverageOverTime(sampleStepSize);
+        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, valuesOverTime, maxTimeStep);
 
         const fitnessHeaders = header.join(",");
         const fitnessValues = values.join(",");
 
-        const gdTime = Container.backpropagationInstance ? Container.backpropagationInstance.getTrainingTimeMean() : 0;
-        const gdEpochs = Container.backpropagationInstance ? Container.backpropagationInstance.getTrainingEpochsMean() : 0;
-
-        // Default header and data arrays
-        const headers = ["projectName", "configName", "statements", "statementCoverage", "branches",
-            "branchCoverage", "won", "iterationCount", "numberFitnessEvaluations", "searchTimeForFullCoverage",
-            'gdTime', 'gdEpochs'];
-        const data = [this._projectName, this._configName, this._statements.size,
-            this._statementCoverage, this._branches.size, this._branchCoverage, this._isWinningStateCovered(),
-            this._iterationCount, this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
+        const headers = ["projectName", "configName", "seed", "statements", "statementCoverage", "branches",
+            "branchCoverage", 'timeToFullCoverage', "won", "iterations", "evaluations"];
+        const data = [this._projectName, this._configName, this._seed, this._statements.size,
+            this._statementCoverage, this._branches.size, this._branchCoverage, this._timeToReachFullCoverage,
+            this._isWinningStateCovered(), this._iterationCount, this._evaluations];
 
         // Combine the header and data arrays
-        const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
-        const body = fitnessValues === undefined ? data.join(',') : data.join(",").concat(",", fitnessValues);
+        const headerCombined = headers.join(",").concat(",", fitnessHeaders);
+        const body = data.join(",").concat(",", fitnessValues);
         return [headerCombined, body].join("\n");
     }
 
-    public asCsvNetworkSuite(): string {
+    public asCSVAgentSuite(): string {
         let csv = "projectName,testName,id,seed," +
             "totalStatements,testStatementCoverage,suiteStatementCoverage," +
             "totalBranches,testBranchCoverage,suiteBranchCoverage," +
-            "testWon,suiteWon," +
-            "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant" +
+            "testWon,suiteWon,score,playTime,isMutant" +
             modelCsvHeader + "\n";
 
         for (const testResult of this._networkSuiteResults) {
-            const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
-                testResult.statements, testResult.statementCoverageTest, testResult.statementCoverageSuite,
-                testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
-                testResult.wonTest, testResult.wonSuite,
-                testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant, ...modelResultToCsvData(testResult.modelResult)
+            const data = [testResult.projectName, testResult.agentName, testResult.agentID, testResult.seed,
+                testResult.statements, testResult.statementCoverageAgent, testResult.statementCoverageSuite,
+                testResult.branches, testResult.branchCoverageAgent, testResult.branchCoverageSuite,
+                testResult.wonAgent, testResult.wonSuite,
+                testResult.score, testResult.playTime, testResult.isMutant,
+                ...modelResultToCsvData(testResult.modelResult)
             ];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
@@ -445,33 +329,34 @@ export class StatisticsCollector {
     }
 
     /**
-     * Formats and pads the achieved coverage values over time.
+     * Format and pad timeline data.
      * @param sampleStepSize the step size for sampling coverage values.
+     * @param timelineData the map containing timeline data.
      * @param maxTimeStep defines at which point the coverage timeline will be truncated.
      * @return Array containing the formatted header and body of the coverage timeline for the respective csv row.
      */
-    private _getPaddedCoverageTimeLine(sampleStepSize: number, maxTimeStep?: number): [number[], string[]] {
+    private _getPaddedTimeLineData(sampleStepSize: number, timelineData: Map<number, CoverageOverTime>,
+                                   maxTimeStep?: number): [number[], string[]] {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
-        const fitnessOverTimeMap = this._adjustCoverageOverTime(sampleStepSize);
-        const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
-        const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
+        const timestamps = [...timelineData.keys()].sort((a, b) => a - b);
+        const timelineValues = timestamps.map((ts) => Object.values(timelineData.get(ts)).join('|'));
 
         let header = timestamps;
         let values = timelineValues;
 
         // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
-        const truncateFitnessTimeline = maxTimeStep !== undefined && 0 <= maxTimeStep;
+        const truncateTimeline = maxTimeStep !== undefined && 0 <= maxTimeStep;
 
         // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
         // that time and not until the final time.
         // Therefore, the number of columns should be padded so that the number of columns is always identical.
-        if (truncateFitnessTimeline) {
+        if (truncateTimeline) {
             const nextTimeStamp = timestamps[timestamps.length - 1] + sampleStepSize;
-            const nextCoverageValue = timelineValues[timelineValues.length - 1];
+            const nextTimelineData = timelineValues[timelineValues.length - 1];
 
             const lengthDiff = Math.ceil(Math.abs(maxTimeStep - timestamps[timestamps.length - 1]) / sampleStepSize);
             const headerPadding = Arrays.range(0, lengthDiff).map(x => nextTimeStamp + x * sampleStepSize);
-            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+            const valuePadding = Array(lengthDiff).fill(nextTimelineData);
 
             // Plus one since we start at timestamp 0.
             const numHeaderCols = Math.ceil(maxTimeStep / sampleStepSize) + 1;
@@ -482,17 +367,18 @@ export class StatisticsCollector {
         return [header, values];
     }
 
+
     private _adjustCoverageOverTime(sampleDistance: number): Map<number, CoverageOverTime> {
         const adjusted: Map<number, CoverageOverTime> = new Map();
         let maxTime = 0;
-        for (const timeSample of this._fitnessOverTime.keys()) {
+        for (const timeSample of this._coverageOverTime.keys()) {
             const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
-            adjusted.set(rounded, this._fitnessOverTime.get(timeSample));
+            adjusted.set(rounded, this._coverageOverTime.get(timeSample));
             if (rounded > maxTime) {
                 maxTime = rounded;
             }
-
         }
+
         let max: CoverageOverTime = {
             statementCoverage: 0,
             branchCoverage: 0
@@ -508,28 +394,26 @@ export class StatisticsCollector {
         return adjusted;
     }
 
-    public async updateStatementCoverage(chromosome: Chromosome): Promise<void> {
+    public async updateStatementCoverage(solution: TestCase): Promise<void> {
         const stableCount = Container.config.getCoverageStableCount();
-        for (const [st, coverCount] of this._statements.entries()) {
-            const statement = st as unknown as FitnessFunction<Chromosome>;
-            if (this._statements.get(st) >= stableCount) {
+        for (const [statement, coverCount] of this._statements.entries()) {
+            if (this._statements.get(statement) >= stableCount) {
                 continue;
             }
-            if (await statement.isCovered(chromosome)) {
-                this._statements.set(st, coverCount + 1);
+            if (await statement.isCovered(solution)) {
+                this._statements.set(statement, coverCount + 1);
             }
         }
     }
 
-    public async updateBranchCoverage(chromosome: Chromosome): Promise<void> {
+    public async updateBranchCoverage(solution: TestCase): Promise<void> {
         const stableCount = Container.config.getCoverageStableCount();
-        for (const [dec, coverCount] of this._branches.entries()) {
-            const branch = dec as unknown as FitnessFunction<Chromosome>;
-            if (this._branches.get(dec) >= stableCount) {
+        for (const [branch, coverCount] of this._branches.entries()) {
+            if (this._branches.get(branch) >= stableCount) {
                 continue;
             }
-            if (await branch.isCovered(chromosome)) {
-                this._branches.set(dec, coverCount + 1);
+            if (await branch.isCovered(solution)) {
+                this._branches.set(branch, coverCount + 1);
             }
         }
     }
@@ -598,7 +482,6 @@ export class StatisticsCollector {
     public reset(): void {
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
-        this._coveredFitnessFunctionsCount = 0;
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._startTime = Date.now();
@@ -607,24 +490,21 @@ export class StatisticsCollector {
     }
 }
 
-export interface NetworkTestSuiteResults {
+export interface AgentSuiteResults {
     projectName: string,
-    testName: string,
-    testID: number,
+    agentName: string,
+    agentID: number,
     seed: string,
     statements: number,
-    statementCoverageTest: number,
+    statementCoverageAgent: number,
     statementCoverageSuite: number,
     branches: number,
-    branchCoverageTest: number,
+    branchCoverageAgent: number,
     branchCoverageSuite: number,
-    wonTest: string,
-    wonSuite: string,
-    score: number,
-    playTime: number,
-    surpriseNodeAdequacy: number,
-    surpriseCount: number,
-    avgUncertainty: number,
+    wonAgent: boolean,
+    wonSuite: boolean,
+    score?: number,
+    playTime?: number,
     isMutant?: boolean,
     modelResult?: ModelResult,
 }

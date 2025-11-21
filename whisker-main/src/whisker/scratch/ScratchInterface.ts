@@ -21,6 +21,27 @@ export class ScratchInterface {
         return target.getBounds();
     }
 
+    /**
+     * Gets the upper and lower bound of a sprite's size. Attention this value might change when costumes are switched!
+     * @param target the target for which the bounds should be extracted.
+     * @return tuple [minSize, maxSize] representing the current sprite's size bounds.
+     */
+    public static getSizeBoundsOfTarget(target: RenderedTarget): [number, number] {
+        const runtime = target.runtime;
+        const renderer = runtime.renderer;
+        const costumeSize = renderer.getCurrentSkinSize(target.drawableID);
+        const origW = costumeSize[0];
+        const origH = costumeSize[1];
+        const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
+        const maxScale = Math.min(
+            (1.5 * runtime.constructor.STAGE_WIDTH) / origW,
+            (1.5 * runtime.constructor.STAGE_HEIGHT) / origH
+        );
+        const min = Math.round(minScale * 100);
+        const max = Math.round(maxScale * 100);
+        return [min, max];
+    }
+
     public static getWidthOfTarget(target: RenderedTarget): number {
         const bounds = this.getBoundsOfTarget(target);
         return Math.abs(bounds.right - bounds.left);
@@ -106,7 +127,7 @@ export class ScratchInterface {
             radius += samplingResolution;
         }
         // At this point we didn't find the color
-        return undefined;
+        return new ScratchPosition(-1, -1);
     }
 
     /**

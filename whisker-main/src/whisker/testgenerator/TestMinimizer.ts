@@ -44,6 +44,7 @@ export class TestMinimizer {
         let newTest = test.cloneWith(test.getGenes());
         newTest.trace = test.trace;
         newTest.coverage = new Set<string>(test.coverage);
+        newTest.branchCoverage = new Set<string>(test.branchCoverage);
         newTest.lastImprovedCodon = test.lastImprovedCodon;
         const nEventsPreMinimization = test.getLength();
         const startTime = Date.now();

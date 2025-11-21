@@ -22,6 +22,8 @@ import {FitnessFunction} from "./FitnessFunction";
 import {Pair} from "../utils/Pair";
 import {Mutation} from "./Mutation";
 import {Crossover} from "./Crossover";
+import {Solution} from "../core/Solution";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -29,45 +31,24 @@ import {Crossover} from "./Crossover";
  * @param <C> the type of the chromosomes produced as offspring by mutation and crossover
  * @author Sophia Geserer
  */
-export abstract class Chromosome {
-
-    // TODO: If mutation based on lastImprovedFitness turns out to work well, we should think about subclassing this
-    //  into something like SingleObjectiveChromosome. For now its placed here to reduce the amount of casts...
-    /**
-     * The position in the codon list after which no additional fitness improvement regarding the specified
-     * target objective has been seen.
-     */
-    private _lastImprovedFitnessCodon: number;
+export abstract class Chromosome implements Solution {
 
     /**
      * The fitnessFunction this chromosome is optimising for.
      * Only applicable for single-objective-focused algorithms like MIO.
      */
-    private _targetObjective: FitnessFunction<Chromosome>;
+    private _targetObjective: FitnessFunction<Chromosome> | StatementFitnessFunction;
 
     /**
      * Caches fitnessValues to avoid calculating the same fitness multiple times.
      */
     protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
 
-    /**
-     * Saves the number of objectives that were covered by this chromosome.
-     */
-    private _coveredObjectives: number;
-
-    get lastImprovedFitnessCodon(): number {
-        return this._lastImprovedFitnessCodon;
-    }
-
-    set lastImprovedFitnessCodon(value: number) {
-        this._lastImprovedFitnessCodon = value;
-    }
-
-    get targetObjective(): FitnessFunction<Chromosome> {
+    get targetObjective(): FitnessFunction<Chromosome> | StatementFitnessFunction {
         return this._targetObjective;
     }
 
-    set targetObjective(value: FitnessFunction<Chromosome>) {
+    set targetObjective(value: FitnessFunction<Chromosome> | StatementFitnessFunction) {
         this._targetObjective = value;
     }
 
@@ -140,31 +121,6 @@ export abstract class Chromosome {
     }
 
     /**
-     * Determines whether a given test covers a specific fitness objective.
-     * @param objective the fitness objective.
-     * @returns true if the test covers the objective, false otherwise.
-     */
-    public async determineCoveredObjective(objective: FitnessFunction<Chromosome>): Promise<boolean> {
-        return await objective.isCovered(this);
-    }
-
-    /**
-     * Determines the number of fitness objectives covered by a given test.
-     * @param objectives the fitness objectives.
-     * @returns the number of covered fitness objectives.
-     */
-    public async determineCoveredObjectives(objectives: FitnessFunction<Chromosome>[]): Promise<number> {
-        let coverageCount = 0;
-        for (const objective of objectives) {
-            if (await this.determineCoveredObjective(objective)) {
-                coverageCount++;
-            }
-        }
-        this._coveredObjectives = coverageCount;
-        return coverageCount;
-    }
-
-    /**
      * A chromosome consists of a sequence of genes. This method returns the number of genes.
      */
     abstract getLength(): number;
@@ -179,8 +135,4 @@ export abstract class Chromosome {
      * Creates a clone of the current chromosome.
      */
     abstract clone(): Chromosome;
-
-    get coveredObjectives(): number {
-        return this._coveredObjectives;
-    }
 }

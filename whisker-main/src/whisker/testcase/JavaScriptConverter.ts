@@ -28,7 +28,7 @@ export class JavaScriptConverter {
         let text = "";
         let position = 0;
 
-        for (const {event} of test.chromosome.trace.events) {
+        for (const {event} of test.chromosome.getTrace().events) {
             text += "  " + event.toJavaScript() + "\n";
             for (const assertion of test.getAssertionsAt(position)) {
                 text += "  " + assertion.toJavaScript() + "\n";

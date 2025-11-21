@@ -18,15 +18,15 @@
  *
  */
 
-import {Chromosome} from "./Chromosome";
-import {SearchAlgorithm} from "./SearchAlgorithm";
+import {OptimizationAlgorithm} from "../core/OptimizationAlgorithm";
+import {Solution} from "../core/Solution";
 
 /**
   * Query the status of the search algorithm to determine if it is finished
   */
-export interface StoppingCondition<T extends Chromosome> {
+export interface StoppingCondition<T extends Solution> {
 
-    isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean>;
+    isFinished(algorithm: OptimizationAlgorithm<T>): Promise<boolean>;
 
-    getProgress(algorithm: SearchAlgorithm<T>): Promise<number>;
+    getProgress(algorithm: OptimizationAlgorithm<T>): Promise<number>;
 }

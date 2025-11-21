@@ -26,14 +26,23 @@ import {ExecutionTrace} from "./ExecutionTrace";
 import {TestExecutor} from "./TestExecutor";
 import {Container} from "../utils/Container";
 import assert from "assert";
+import {TestCase} from "../core/TestCase";
 
-export class TestChromosome extends IntegerListChromosome {
+export class TestChromosome extends IntegerListChromosome implements TestCase {
+    /**
+     * The execution trace of a chromosome after interacting with the Scratch environment.
+     */
+    protected _trace: ExecutionTrace = null;
 
     /**
-     * The execution trace including the blockTraces and the sent events and their parameters after executing the whole
-     * chromosome.
+     * The covered blocks represented by their id.
      */
-    private _trace: ExecutionTrace;
+    protected _coverage: Set<string> = new Set<string>();
+
+    /**
+     * The covered branches represented by their id.
+     */
+    protected _branchCoverage: Set<string> = new Set<string>();
 
     /**
      * The execution trace including the blockTraces and the sent events and their parameters after executing the
@@ -42,18 +51,12 @@ export class TestChromosome extends IntegerListChromosome {
     private _lastImprovedTrace: ExecutionTrace;
 
     /**
-     * The covered blocks represented by their id.
-     */
-    private _coverage = new Set<string>();
-
-    /**
      * The position in the codons list after which no additional improvement in fitness could be observed.
      */
     private _lastImprovedCodon: number;
 
     constructor(codons: number[], mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
-        this._trace = null;
     }
 
     /**
@@ -61,13 +64,12 @@ export class TestChromosome extends IntegerListChromosome {
      * @param executeCodons if true the saved codons will be exectued instead of the execution code originating from
      * a previous test execution.
      */
-    override async evaluate(executeCodons:boolean): Promise<void> {
+    override async evaluate(executeCodons: boolean): Promise<void> {
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
             Container.config.getEventSelector());
-        if(executeCodons) {
+        if (executeCodons) {
             await executor.execute(this);
-        }
-        else{
+        } else {
             await executor.executeEventTrace(this);
         }
         assert(this.trace != null);
@@ -81,22 +83,6 @@ export class TestChromosome extends IntegerListChromosome {
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }
-    }
-
-    get trace(): ExecutionTrace {
-        return this._trace;
-    }
-
-    set trace(value: ExecutionTrace) {
-        this._trace = value;
-    }
-
-    get coverage(): Set<string> {
-        return this._coverage;
-    }
-
-    set coverage(value: Set<string>) {
-        this._coverage = value;
     }
 
     get lastImprovedCodon(): number {
@@ -141,4 +127,41 @@ export class TestChromosome extends IntegerListChromosome {
 
         return text;
     }
+
+    getTrace(): ExecutionTrace {
+        return this._trace;
+    }
+
+    getCoveredBlocks(): Set<string> {
+        return this._coverage;
+    }
+
+    getCoveredBranches(): Set<string> {
+        return this._branchCoverage;
+    }
+
+    set trace(value: ExecutionTrace) {
+        this._trace = value;
+    }
+
+    get trace(): ExecutionTrace {
+        return this.getTrace();
+    }
+
+    set coverage(value: Set<string>) {
+        this._coverage = value;
+    }
+
+    get coverage(): Set<string> {
+        return this._coverage;
+    }
+
+    set branchCoverage(value: Set<string>) {
+        this._branchCoverage = value;
+    }
+
+     get branchCoverage(): Set<string> {
+        return this._branchCoverage;
+     }
+
 }

@@ -30,7 +30,7 @@ import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
 
-    // TODO: Maybe also good for SB-Algorithms to avoid explosion of available Events.
+    // TODO: Maybe also good for SB-algorithms to avoid explosion of available Events.
     /**
      * Number of generated ClickSpriteEvents belonging due to clones mapped to their sprite name. Used for the
      * NE-Extractor to avoid explosion of ClickClone output nodes.

@@ -5,12 +5,12 @@ import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {WhiskerTest} from "./WhiskerTest";
 import Arrays from "../utils/Arrays";
-import {NeatChromosome} from "../whiskerNet/Networks/NeatChromosome";
+import {NeatChromosome} from "../agentTraining/neuroevolution/networks/NeatChromosome";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {Randomness} from "../utils/Randomness";
-import {NetworkExecutor} from "../whiskerNet/Misc/NetworkExecutor";
+import {NetworkExecutor} from "../agentTraining/neuroevolution/misc/NetworkExecutor";
 import {Container} from "../utils/Container";
-import {NeatParameter} from "../whiskerNet/HyperParameter/NeatParameter";
+import {NeatParameter} from "../agentTraining/neuroevolution/hyperparameter/NeatParameter";
 import {AssertionGenerator} from "./AssertionGenerator";
 import logger from "../../util/logger";
 
@@ -20,7 +20,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * Searches for tests for the given project by using a Neuroevolution Algorithm
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
-        const searchAlgorithm = this.buildSearchAlgorithm(true);
+        const searchAlgorithm = this.buildOptimizationAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinctByComparator([...archive.values()],
             (a: NeatChromosome, b: NeatChromosome) => a.toString() === b.toString());
@@ -42,7 +42,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             }
         }
 
-        await this.collectStatistics(testSuite);
+        this.collectStatistics(testSuite);
         const summary = await this.summarizeSolution(archive);
         return new WhiskerTestListWithSummary(testSuite, summary);
     }
@@ -51,7 +51,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * Builds the specified Neuroevolution search algorithm (specified in config file)
      * @param initializeFitnessFunction flag determining if search algorithm fitness functions should be initialised.
      */
-    protected override buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+    protected override buildOptimizationAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .addProperties(this._config.neuroevolutionProperties as unknown as SearchAlgorithmProperties<any>);
 
@@ -74,7 +74,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      */
     private async recordActivationTrace(hyperParameter: NeatParameter, testChromosomes: NeatChromosome[]): Promise<void> {
         // Save the number of fitness evaluations to recover them later.
-        const trueEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
+        const trueEvaluations = StatisticsCollector.getInstance().evaluations;
 
         // Generate the required seeds.
         const scratchSeeds = Array(hyperParameter.activationTraceRepetitions).fill(0).map(
@@ -99,6 +99,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             network.score = score;
             network.playTime = originalPlayTime;
         }
-        StatisticsCollector.getInstance().numberFitnessEvaluations = trueEvaluations;
+        StatisticsCollector.getInstance().evaluations = trueEvaluations;
     }
 }

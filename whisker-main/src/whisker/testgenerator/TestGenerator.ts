@@ -24,7 +24,6 @@ import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
-import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import Arrays from "../utils/Arrays";
@@ -33,6 +32,11 @@ import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
 import {AssertionGenerator} from './AssertionGenerator';
 import logger from '../../util/logger';
+import {OptimizationAlgorithm} from "../core/OptimizationAlgorithm";
+import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 
 export abstract class TestGenerator {
 
@@ -48,11 +52,12 @@ export abstract class TestGenerator {
 
     constructor(configuration: WhiskerSearchConfiguration) {
         this._config = configuration;
+        TestGenerator.initializeCoverageMappings();
     }
 
     public abstract generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>;
 
-    protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+    protected buildOptimizationAlgorithm(initializeFitnessFunction: boolean): OptimizationAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .addSelectionOperator(this._config.getSelectionOperator())
             .addLocalSearchOperators(this._config.getLocalSearchOperators())
@@ -65,6 +70,25 @@ export abstract class TestGenerator {
         }
         builder.addChromosomeGenerator(this._config.getChromosomeGenerator());
         return builder.buildSearchAlgorithm();
+    }
+
+    /**
+     * Initializes mappings for assessing the achieved coverages during test generation.
+     */
+    public static initializeCoverageMappings(): void {
+        const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const statementMap = new Map<StatementFitnessFunction, number>();
+        for (const statement of statements) {
+            statementMap.set(statement, 0);
+        }
+        StatisticsCollector.getInstance().statements = statementMap;
+
+        const branches = new BranchCoverageFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const branchMap = new Map<BranchCoverageFitnessFunction, number>();
+        for (const branch of branches) {
+            branchMap.set(branch, 0);
+        }
+        StatisticsCollector.getInstance().branches = branchMap;
     }
 
     protected extractCoverageObjectives(): Map<number, FitnessFunction<any>> {

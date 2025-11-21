@@ -18,7 +18,6 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
 import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -29,6 +28,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
+import {Chromosome} from "../Chromosome";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -123,7 +123,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
         const parentPopulation = await this._generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);

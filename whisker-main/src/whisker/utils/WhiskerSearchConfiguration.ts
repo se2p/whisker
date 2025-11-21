@@ -10,7 +10,6 @@ import {Crossover} from "../search/Crossover";
 import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 import {RankSelection} from "../search/operators/RankSelection";
 import {Selection} from "../search/Selection";
-import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
 import {IntegerListChromosomeGenerator} from "../integerlist/IntegerListChromosomeGenerator";
@@ -27,15 +26,14 @@ import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTime
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
-import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
+import {NeatMutation} from "../agentTraining/neuroevolution/operators/NeatMutation";
+import {NeatCrossover} from "../agentTraining/neuroevolution/operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
-import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {InputConnectionMethod, NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
-import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
-import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
-import {InputExtraction} from "../whiskerNet/Misc/InputExtraction";
+import {NetworkFitnessFunction} from "../agentTraining/neuroevolution/networkFitness/NetworkFitnessFunction";
+import {InputConnectionMethod, NetworkChromosome} from "../agentTraining/neuroevolution/networks/NetworkChromosome";
+import {ScoreFitness} from "../agentTraining/neuroevolution/networkFitness/ScoreFitness";
+import {SurviveFitness} from "../agentTraining/neuroevolution/networkFitness/SurviveFitness";
 import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
@@ -54,27 +52,29 @@ import {
 } from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {NeatParameter} from "../whiskerNet/HyperParameter/NeatParameter";
+import {NeatParameter} from "../agentTraining/neuroevolution/hyperparameter/NeatParameter";
 import {
     BasicNeuroevolutionParameter, ClassificationType,
     NeuroevolutionEventSelection
-} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
-import {EventSequenceNovelty} from "../whiskerNet/NetworkFitness/Novelty/EventSequenceNovelty";
-import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
-import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
-import {CosineStateNovelty} from "../whiskerNet/NetworkFitness/Novelty/CosineStateNovelty";
-import {NetworkFitnessFunctionType} from "../whiskerNet/NetworkFitness/NetworkFitnessFunctionType";
+} from "../agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
+import {EventSequenceNovelty} from "../agentTraining/neuroevolution/networkFitness/Novelty/EventSequenceNovelty";
+import {ActivationFunction} from "../agentTraining/neuroevolution/networkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../agentTraining/neuroevolution/networkGenerators/NeatChromosomeGenerator";
+import {NeatestParameter} from "../agentTraining/neuroevolution/hyperparameter/NeatestParameter";
+import {CosineStateNovelty} from "../agentTraining/neuroevolution/networkFitness/Novelty/CosineStateNovelty";
+import {NetworkFitnessFunctionType} from "../agentTraining/neuroevolution/networkFitness/NetworkFitnessFunctionType";
 import {
     DiversityMetric,
     ManyObjectiveNeatestParameter
-} from "../whiskerNet/HyperParameter/ManyObjectiveNeatestParameter";
-import {UniformNeatCrossover} from "../whiskerNet/Operators/UniformNeatCrossover";
-import {MioNeatestParameter} from "../whiskerNet/HyperParameter/MioNeatestParameter";
-import {NewsdNeatestParameter} from "../whiskerNet/HyperParameter/NewsdNeatestParameter";
-import {NoveltyFitness} from "../whiskerNet/NetworkFitness/Novelty/NoveltyFitness";
-import {ReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ReliableCoverageFitness";
-import {ManyObjectiveReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ManyObjectiveReliableCoverageFitness";
+} from "../agentTraining/neuroevolution/hyperparameter/ManyObjectiveNeatestParameter";
+import {UniformNeatCrossover} from "../agentTraining/neuroevolution/operators/UniformNeatCrossover";
+import {MioNeatestParameter} from "../agentTraining/neuroevolution/hyperparameter/MioNeatestParameter";
+import {NewsdNeatestParameter} from "../agentTraining/neuroevolution/hyperparameter/NewsdNeatestParameter";
+import {NoveltyFitness} from "../agentTraining/neuroevolution/networkFitness/Novelty/NoveltyFitness";
+import {ReliableCoverageFitness} from "../agentTraining/neuroevolution/networkFitness/ReliableCoverageFitness";
+import {ManyObjectiveReliableCoverageFitness} from "../agentTraining/neuroevolution/networkFitness/ManyObjectiveReliableCoverageFitness";
+import {FeatureExtraction} from "../agentTraining/featureExtraction/FeatureExtraction";
+import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
 
 
 class ConfigException implements Error {
@@ -579,7 +579,7 @@ export class WhiskerSearchConfiguration {
                 const outActivationFunction = this.getClassificationType() == 'multiLabel' ?
                     ActivationFunction.SIGMOID : ActivationFunction.SOFTMAX;
                 return new NeatChromosomeGenerator(
-                    InputExtraction.extractFeatures(Container.vm),
+                    FeatureExtraction.getFeatureMap(Container.vm),
                     outputSpace,
                     this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,

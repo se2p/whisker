@@ -1,32 +1,38 @@
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {
     FixedIterationsStoppingCondition
 } from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {
-    NeatParameter
-} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
-import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
-import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 import {generateNetworkInputs} from "../../TestUtils";
 import logger from "../../../../src/util/logger";
 import {ScratchScriptSnippet} from "../../../../src/types/ScratchScriptSnippet";
+import {
+    NeatChromosomeGenerator
+} from "../../../../src/whisker/agentTraining/neuroevolution/networkGenerators/NeatChromosomeGenerator";
+import {NeatParameter} from "../../../../src/whisker/agentTraining/neuroevolution/hyperparameter/NeatParameter";
+import {
+    ActivationFunction,
+} from "../../../../src/whisker/agentTraining/neuroevolution/networkComponents/ActivationFunction";
+import {NeatMutation} from "../../../../src/whisker/agentTraining/neuroevolution/operators/NeatMutation";
+import {NetworkChromosome} from "../../../../src/whisker/agentTraining/neuroevolution/networks/NetworkChromosome";
+import {
+    NetworkFitnessFunction
+} from "../../../../src/whisker/agentTraining/neuroevolution/networkFitness/NetworkFitnessFunction";
+import {NeatCrossover} from "../../../../src/whisker/agentTraining/neuroevolution/operators/NeatCrossover";
+import {
+    NeatPopulation
+} from "../../../../src/whisker/agentTraining/neuroevolution/neuroevolutionPopulations/NeatPopulation";
+import {NeuroevolutionUtil} from "../../../../src/whisker/agentTraining/neuroevolution/misc/NeuroevolutionUtil";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
 
 describe('Test NEAT', () => {
 

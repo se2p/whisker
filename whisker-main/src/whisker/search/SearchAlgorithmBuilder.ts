@@ -28,7 +28,6 @@ import {MOSA} from "./algorithms/MOSA";
 import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
 import {FixedIterationsStoppingCondition} from "./stoppingconditions/FixedIterationsStoppingCondition";
 import {RankSelection} from "./operators/RankSelection";
-import {SearchAlgorithmType} from "./algorithms/SearchAlgorithmType";
 import {OnePlusOneEA} from "./algorithms/OnePlusOneEA";
 import {RandomSearch} from "./algorithms/RandomSearch";
 import {Chromosome} from "./Chromosome";
@@ -40,16 +39,15 @@ import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
 import {SimpleGA} from "./algorithms/SimpleGA";
-import {NEAT} from "../whiskerNet/Algorithms/NEAT";
+import {NEAT} from "../agentTraining/neuroevolution/algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {Neatest} from "../whiskerNet/Algorithms/Neatest";
+import {Neatest} from "../agentTraining/neuroevolution/algorithms/Neatest";
 import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
-import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {MosaNeatest} from "../whiskerNet/Algorithms/MosaNeatest";
-import {MioNeatest} from "../whiskerNet/Algorithms/MioNeatest";
-import {NewsdNeatest} from "../whiskerNet/Algorithms/NewsdNeatest";
+import {MosaNeatest} from "../agentTraining/neuroevolution/algorithms/MosaNeatest";
+import {MioNeatest} from "../agentTraining/neuroevolution/algorithms/MioNeatest";
+import {NewsdNeatest} from "../agentTraining/neuroevolution/algorithms/NewsdNeatest";
+import {SearchAlgorithmType} from "./algorithms/SearchAlgorithmType";
 
 /**
  * A builder to set the necessary properties of a search algorithm and build this.
@@ -254,7 +252,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildRandom();
         }
 
-        SearchAlgorithmBuilder.initializeCoverageMappings();
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
@@ -276,7 +273,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'MOSA' search algorithm with all necessary properties.
      */
     private _buildMOSA(): SearchAlgorithm<C> {
-        const searchAlgorithm: SearchAlgorithm<C> = new MOSA();
+        const searchAlgorithm: SearchAlgorithm<C> = new MOSA<C>();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
         searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
@@ -299,7 +296,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'Random' search algorithm with all necessary properties.
      */
     private _buildRandom(): SearchAlgorithm<C> {
-        const searchAlgorithm: SearchAlgorithm<C> = new RandomSearch();
+        const searchAlgorithm: SearchAlgorithm<C> = new RandomSearch<C>();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
@@ -309,7 +306,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'One + One' search algorithm with all necessary properties.
      */
     private _buildOnePlusOne() {
-        const searchAlgorithm: SearchAlgorithm<C> = new OnePlusOneEA();
+        const searchAlgorithm: SearchAlgorithm<C> = new OnePlusOneEA<C>();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
 
@@ -320,7 +317,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'Simple GA' search algorithm with all necessary properties.
      */
     private _buildSimpleGA() {
-        const searchAlgorithm: SearchAlgorithm<C> = new SimpleGA();
+        const searchAlgorithm: SearchAlgorithm<C> = new SimpleGA<C>();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
@@ -408,25 +405,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
-    }
-
-    /**
-     * Initializes mappings for assessing the achieved coverages during the test generation.
-     */
-    public static initializeCoverageMappings(): void {
-        const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
-        const statementMap = new Map<StatementFitnessFunction, number>();
-        for (const statement of statements) {
-            statementMap.set(statement, 0);
-        }
-        StatisticsCollector.getInstance().statements = statementMap;
-
-        const branches = new BranchCoverageFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
-        const branchMap = new Map<BranchCoverageFitnessFunction, number>();
-        for (const branch of branches) {
-            branchMap.set(branch, 0);
-        }
-        StatisticsCollector.getInstance().branches = branchMap;
     }
 
 

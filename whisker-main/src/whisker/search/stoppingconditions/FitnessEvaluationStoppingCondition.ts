@@ -14,11 +14,11 @@ export class FitnessEvaluationStoppingCondition<T extends Chromosome> implements
     }
 
     async getProgress(): Promise<number> {
-        return StatisticsCollector.getInstance().numberFitnessEvaluations / this._maxEvaluations;
+        return StatisticsCollector.getInstance().evaluations / this._maxEvaluations;
     }
 
     async isFinished(): Promise<boolean> {
-        return StatisticsCollector.getInstance().numberFitnessEvaluations >= this._maxEvaluations;
+        return StatisticsCollector.getInstance().evaluations >= this._maxEvaluations;
     }
 
     get maxEvaluations(): number {

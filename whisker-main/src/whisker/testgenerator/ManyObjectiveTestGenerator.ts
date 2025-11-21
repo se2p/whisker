@@ -31,14 +31,14 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
     async generateTests(): Promise<WhiskerTestListWithSummary> {
 
         // TODO: Ensure this is a many-objective algorithm taking all objectives
-        const searchAlgorithm = this.buildSearchAlgorithm(true);
+        const searchAlgorithm = this.buildOptimizationAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinct(archive.values());
         const testSuite = await this.getTestSuite(testChromosomes);
 
-        await this.collectStatistics(testSuite);
+        this.collectStatistics(testSuite);
         const summary = await this.summarizeSolution(archive);
 
         return new WhiskerTestListWithSummary(testSuite, summary);

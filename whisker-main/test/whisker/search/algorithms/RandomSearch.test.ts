@@ -31,6 +31,7 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 import logger from "../../../../src/util/logger";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 
 describe('RandomSearch', () => {
 
@@ -48,7 +49,7 @@ describe('RandomSearch', () => {
         const properties = {
             populationSize: 1,
             chromosomeLength: 2,
-            stoppingCondition: new OneOfStoppingCondition(
+            stoppingCondition: new OneOfStoppingCondition<BitstringChromosome>(
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
             mutationProbability: undefined,
@@ -75,7 +76,7 @@ describe('RandomSearch', () => {
     });
 
     test('Setter', () => {
-        const stoppingCondition = new OneOfStoppingCondition(
+        const stoppingCondition = new OneOfStoppingCondition<BitstringChromosome>(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition()
         );
@@ -106,7 +107,7 @@ describe('RandomSearch', () => {
         expect(randomSearch["_fitnessFunction"]).toBe(fitnessFunction);
 
         expect(function () {
-            randomSearch.setSelectionOperator(null);
+            randomSearch.setSelectionOperator();
         }).toThrow();
     });
 

@@ -2,9 +2,8 @@ import {WhiskerSearchConfiguration} from "./WhiskerSearchConfiguration";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import VMWrapper from "../../vm/vm-wrapper";
 import TestDriver from "../../test/test-driver.js";
-import {ScratchPosition} from "../scratch/ScratchPosition";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {GradientDescent} from "../whiskerNet/Misc/GradientDescent";
+import {GradientDescent} from "../agentTraining/neuroevolution/misc/GradientDescent";
 import {ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis';
 
 
@@ -14,7 +13,6 @@ export class Container {
     static vmWrapper: VMWrapper;
     static testDriver: TestDriver;
     static acceleration: number;
-    static pathToGoal: ScratchPosition[];
     static isNeuroevolution: boolean
     static cfg: ControlFlowGraph;
     static cdg: ControlDependenceGraph;

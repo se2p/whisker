@@ -27,7 +27,7 @@ import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
-//TODO: This way of using the mouse down event turns out to work better for NE, maybe also worth a try for SB-Algorithms
+//TODO: This way of using the mouse down event turns out to work better for NE, maybe also worth a try for SB-algorithms
 export class MouseDownForStepsEvent extends ScratchEvent {
 
     private _steps: number;

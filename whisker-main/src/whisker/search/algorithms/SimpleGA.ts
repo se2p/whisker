@@ -27,7 +27,6 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import logger from '../../../util/logger';
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -95,7 +94,6 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._startTime = Date.now();
 
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
         logger.debug(`Simple GA started at ${this._startTime}`);
@@ -158,7 +156,6 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
             (this._fitnessFunction.compare(candidateFitness, this._bestFitness) == 0 && candidateLength < this._bestLength)) {
             if (await this._fitnessFunction.isOptimal(candidateFitness) && !await this._fitnessFunction.isOptimal(this._bestFitness)) {
-                StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
                     (this._iterations + 1) * this._properties.populationSize;
                 StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
@@ -229,7 +226,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._startTime;
     }
 
-    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+    setLocalSearchOperators(): void {
         throw new Error('Method not implemented.');
     }
 }

@@ -43,14 +43,8 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
      * @return A mutated deep copy of the given chromosome.
      */
     override async apply(chromosome: TestChromosome): Promise<TestChromosome> {
-        // If we have some information about lastImprovedFitnessCodon use this codon as a stopping point for mutation.
         // Value of 2 equals clicking Flag, hence no improvement.
-        if(chromosome.lastImprovedFitnessCodon > 2){
-            return super.applyUpTo(chromosome, chromosome.lastImprovedFitnessCodon + this._reservedCodons);
-        }
-        // Else if we have some information about lastImprovedCoverageCodon use this codon as a stopping point for mutation.
-        // Value of 2 equals clicking Flag, hence no improvement.
-        else if(chromosome.lastImprovedCodon > 2){
+        if(chromosome.lastImprovedCodon > 2){
             return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + this._reservedCodons);
         }
         // Otherwise, mutate the whole chromosome.

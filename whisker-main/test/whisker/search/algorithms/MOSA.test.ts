@@ -56,7 +56,7 @@ describe('MOSA', () => {
         logger.suggest.deny(/.*/, "debug");
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mosa');
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations),
+        const stoppingCondition = new OneOfStoppingCondition<BitstringChromosome>(new FixedIterationsStoppingCondition(maxIterations),
             new OptimalSolutionStoppingCondition());
 
         const properties = {
@@ -114,7 +114,7 @@ describe('MOSA', () => {
 
     test('Setter', () => {
 
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition());
+        const stoppingCondition = new OneOfStoppingCondition<BitstringChromosome>(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition());
         const properties = {
             populationSize,
             chromosomeLength,

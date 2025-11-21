@@ -30,7 +30,6 @@ import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import logger from "../../../util/logger";
-import {Selection} from '../Selection';
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 /**
@@ -285,7 +284,6 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
         }
         await this.updateParameters();
         StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
         this._uncoveredIndependentFitnessFunctions = new Map<number, FitnessFunction<C>>(this.getIndependentStatements());
     }
@@ -340,7 +338,6 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
                     if (this._archiveUncovered.has(fitnessFunctionKey)) {
                         this._archiveUncovered.delete(fitnessFunctionKey);
                     }
@@ -562,11 +559,11 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
         return this._startTime;
     }
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+    setFitnessFunction(): void {
         throw new Error('Method not implemented.');
     }
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
+    setSelectionOperator(): void {
         throw new Error('Method not implemented.');
     }
 }

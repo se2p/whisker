@@ -15,7 +15,6 @@ const {relativeToServantDir} = require("./util");
  * @property {string} [groundTruth] Path to ground truth data for Neatest + Backpropagation
  * @property {string} [configPath] Path to Whisker configuration file
  * @property {number} numberOfJobs Number of parallel test executions
- * @property {boolean} [minimiseSuite] Minimises network suite based on branch coverage
  * @property {string[]} [mutators] Mutation operators to apply for mutation testing
  * @property {string} [downloadMutants] Download the generated mutants
  * @property {number} [mutationBudget] Timeout for mutation analysis
@@ -230,13 +229,6 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionMinimiseSuite() {
-        return this.option(
-            '-mi, --minimise-suite',
-            'minimises the network suite based on branch coverage',
-        );
-    }
-
     optionMutators() {
         // Option can be used by specifying multiple arguments separated by spaces:
         //      -m ROR LOR AOR
@@ -409,7 +401,6 @@ const subCommands = [
             'path to dynamic test suite',
             (testPath) => util.processFilePathExists(testPath, 'json'))
         .optionActivationTraceRepetitions()
-        .optionMinimiseSuite()
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()

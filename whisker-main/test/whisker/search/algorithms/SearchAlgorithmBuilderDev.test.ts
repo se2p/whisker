@@ -56,7 +56,7 @@ describe('BuillderBitstringChromosome', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
         const iterations = 100;
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        const stoppingCondition = new OneOfStoppingCondition<BitstringChromosome>(new FixedIterationsStoppingCondition(iterations));
 
         const properties = {
             populationSize,

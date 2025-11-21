@@ -167,13 +167,13 @@ export class KeyPressEvent extends ScratchEvent {
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
                 break;
             case "codon":
+                this._steps = args[0] % Container.config.getPressDurationUpperBound();
+                break;
             case "activation":
                 this._steps = args[0];
                 break;
         }
-        if (!Container.isNeuroevolution) {
-            this._steps %= Container.config.getPressDurationUpperBound();
-        }
+
         // If the event has been selected ensure that it is executed for at least one step.
         if (this._steps < 1) {
             this._steps = 1;
