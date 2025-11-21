@@ -81,6 +81,27 @@ export default class Arrays {
         }
     }
 
+    static removeElem<T>(array: T[], element: T): T[] {
+        return array.filter((x) => !isEqual(x, element));
+    }
+
+    /**
+     * Removes all elements passing the `test` from the given `array`. The array is modified in-place.
+     *
+     * @param array the array from which to remove elements
+     * @param test the test telling whether an element is to be removed
+     */
+    static removeIf<T>(array: Array<T>, test: (t: T) => boolean): void {
+        let i = 0;
+        while (i < array.length) {
+            if (test(array[i])) {
+                Arrays.removeAt(array, i);
+            } else {
+                i++;
+            }
+        }
+    }
+
     /**
      * Removes all elements in the given array.
      *
