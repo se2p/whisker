@@ -79,12 +79,20 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         super(blockID, canonicalizeInputs(block), target, project);
     }
 
+    override hasParent(): boolean {
+        return this.block.parent !== null;
+    }
+
     override getParent(): BlockNode | null {
         if (!this.hasParent()) {
             return null;
         }
 
         return this._getBlockNode(this.block.parent);
+    }
+    
+    override hasNext(): boolean {
+        return this.block.next !== null;
     }
 
     override getNext(): BlockNode | null {
@@ -144,14 +152,6 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         }
 
         return blockIDs;
-    }
-
-    override hasParent(): boolean {
-        return this.block.parent !== null;
-    }
-
-    override hasNext(): boolean {
-        return this.block.next !== null;
     }
 
     override hasInputNode(input: BlockNode): InputKey | null {
