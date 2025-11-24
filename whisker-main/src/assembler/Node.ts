@@ -44,29 +44,29 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
         this._project = project;
     }
 
-    public get blockID(): BlockID {
+    get blockID(): BlockID {
         return this._blockID;
     }
 
-    public get block(): B {
+    get block(): B {
         return this._block;
     }
 
-    public get target(): WrappedTarget {
+    get target(): WrappedTarget {
         return this._target;
     }
 
-    public abstract getScriptRoot(): N;
+    abstract getScriptRoot(): N;
 
-    public abstract getStackRoot(): N | null;
+    abstract getStackRoot(): N | null;
 
-    public abstract getParent(): N | null;
+    abstract getParent(): N | null;
 
-    public abstract getParentID(): BlockID | null;
+    abstract getParentID(): BlockID | null;
 
-    public abstract getNext(): N | null;
+    abstract getNext(): N | null;
 
-    public abstract getNextID(): BlockID | null;
+    abstract getNextID(): BlockID | null;
 
     /**
      * Starting at this node, follows the chain of `next` nodes to the very end of the stack, and returns an array with
@@ -75,14 +75,14 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      *
      * @param skipSelf whether to exclude the block ID of the start noode
      */
-    public abstract getNextIDs(skipSelf: boolean): Array<BlockID>;
+    abstract getNextIDs(skipSelf: boolean): Array<BlockID>;
 
     /**
      * Follows the chain of `next` blocks until it points to `null`, and returns the ID of the last block encountered.
      */
-    public abstract getLastID(): BlockID;
+    abstract getLastID(): BlockID;
 
-    public abstract getX(): number | null;
+    abstract getX(): number | null;
 
     /**
      * Returns the block IDs of the node's `parent` and `next` block (if any), plus the block IDs of the
@@ -90,44 +90,44 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      *
      * @see _getInputBlockIDs
      */
-    public abstract getReferencedBlockIDs(): Array<BlockID>;
+    abstract getReferencedBlockIDs(): Array<BlockID>;
 
     /**
      * Tells whether this block is the root block (i.e., the first block) of a script or a substack.
      */
-    public abstract isRootOfScriptOrSubstack(): boolean;
+    abstract isRootOfScriptOrSubstack(): boolean;
 
-    public abstract isRootOfSubstack(): boolean;
+    abstract isRootOfSubstack(): boolean;
 
-    public abstract isTosInSubstackOf(parent: N): boolean;
+    abstract isTosInSubstackOf(parent: N): boolean;
 
-    public abstract isTosInSubstack2Of(parent: N): boolean;
+    abstract isTosInSubstack2Of(parent: N): boolean;
 
-    public abstract hasNext(): boolean;
+    abstract hasNext(): boolean;
 
-    public abstract hasParent(): boolean;
+    abstract hasParent(): boolean;
 
-    public abstract hasInputNode(input: N): InputKey | null;
+    abstract hasInputNode(input: N): InputKey | null;
 
-    public abstract isTopLevel(): boolean;
+    abstract isTopLevel(): boolean;
 
-    public abstract isHatBlock(): boolean;
+    abstract isHatBlock(): boolean;
 
-    public abstract isCapBlock(): boolean;
+    abstract isCapBlock(): boolean;
 
-    public abstract isCBlock(): boolean;
+    abstract isCBlock(): boolean;
 
-    public abstract isStackBlock(): boolean;
+    abstract isStackBlock(): boolean;
 
-    public abstract isStackable(): boolean;
+    abstract isStackable(): boolean;
 
-    public abstract isReporterBlock(): boolean;
+    abstract isReporterBlock(): boolean;
 
-    public abstract isMotionBlock(): boolean;
+    abstract isMotionBlock(): boolean;
 
-    public abstract isShadow(): boolean;
+    abstract isShadow(): boolean;
 
-    public isObscured(): boolean {
+    isObscured(): boolean {
         // A shadow-block can be  obscured by a reporter block that was dropped on top of it. Then, the shadow-block
         // has the "topLevel" attribute set to true. See also the JSDoc for the ObscuredShadowInput type.
         return this.isShadow() && this.isTopLevel();
@@ -137,51 +137,53 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      * Tells whether the current block can be live code (i.e., not dead code). In general, blocks of unconnected scripts
      * are always dead code. All other blocks can be live code.
      */
-    public abstract canBeLive(): boolean;
+    abstract canBeLive(): boolean;
 
     /**
      * Tells whether this node has a substack.
      */
-    public abstract hasSubstack(): boolean;
+    abstract hasSubstack(): boolean;
 
     /**
      * Tells whether this node has a substack with the given node as its tos.
      *
      * @param tos the tos node of the substack
      */
-    public abstract hasSubstack(tos: N): boolean;
+    abstract hasSubstack(tos: N): boolean;
 
     /**
      * Tells whether this node has a substack2.
      */
-    public abstract hasSubstack2(): boolean;
+    abstract hasSubstack2(): boolean;
 
     /**
      * Tells whether this node has a substack2 with the given node as its tos.
      *
      * @param tos the tos node of the substack2
      */
-    public abstract hasSubstack2(tos: N): boolean;
+    abstract hasSubstack2(tos: N): boolean;
 
-    public abstract getInputNode(key: InputKey): N | null;
+    abstract getInputNode(key: InputKey): N | null;
 
-    public abstract getInputNodes(skipSubstack: boolean): Array<N>;
+    abstract getInputNodes(skipSubstack: boolean): Array<N>;
 
-    public abstract supportsInput(key: InputKey): boolean;
+    abstract supportsInput(key: InputKey): boolean;
 
-    public abstract getFieldKeys(): Array<FieldKey>;
+    abstract isInputOf(parent: N): InputKey | null;
 
-    public abstract hasField(key: FieldKey): boolean;
+    abstract getFieldKeys(): Array<FieldKey>;
 
-    public abstract getField(key: FieldKey): Field;
+    abstract hasField(key: FieldKey): boolean;
 
-    public toJSON(): B {
+    abstract getField(key: FieldKey): Field;
+
+    toJSON(): B {
         return this.block;
     }
 
-    public abstract toString(): string;
+    abstract toString(): string;
 
-    public abstract [Symbol.iterator](): Iterator<N>;
+    abstract [Symbol.iterator](): Iterator<N>;
 }
 
 /**
@@ -358,6 +360,10 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return keys.length === 0 ? null : keys[0];
     }
 
+    override isInputOf(parent: BlockNode): InputKey | null {
+        return parent.hasInputNode(this);
+    }
+
     override isTopLevel(): boolean {
         return isTopLevelBlock(this.block);
     }
@@ -420,7 +426,7 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
             this.block.inputs?.SUBSTACK2?.[1] === substack2.blockID;
     }
 
-    public override getInputNode(key: InputKey): BlockNode | null {
+    override getInputNode(key: InputKey): BlockNode | null {
         if (!(key in this.block.inputs)) {
             return null;
         }
@@ -434,7 +440,7 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return this._getBlockNode(blockID);
     }
 
-    public override getInputNodes(skipSubstack: boolean): Array<BlockNode> {
+    override getInputNodes(skipSubstack: boolean): Array<BlockNode> {
         return Object.keys(this._block.inputs)
             .filter((key: InputKey) => !skipSubstack || (key !== "SUBSTACK" && key !== "SUBSTACK2"))
             .map((key: InputKey) => this.getInputNode(key))
@@ -556,6 +562,10 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
     }
 
     override hasInputNode(): null {
+        return null;
+    }
+
+    override isInputOf(): null {
         return null;
     }
 
