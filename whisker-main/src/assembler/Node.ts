@@ -145,7 +145,7 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
     abstract hasSubstack(): boolean;
 
     /**
-     * Tells whether this node has a substack with the given node as its tos.
+     * Tells whether this node has a substack with the given node as its "tos" (top of substack).
      *
      * @param tos the tos node of the substack
      */
@@ -157,7 +157,7 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
     abstract hasSubstack2(): boolean;
 
     /**
-     * Tells whether this node has a substack2 with the given node as its tos.
+     * Tells whether this node has a substack2 with the given node as its "tos" (top of substack).
      *
      * @param tos the tos node of the substack2
      */
