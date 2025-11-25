@@ -37,12 +37,12 @@ import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSum
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
 import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
-import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
 import logger from "../util/logger";
 import {SearchResult} from "../types/SearchResult";
+import {BasicNeuroevolutionParameter} from "./agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
 
 export class Search {
 
@@ -56,6 +56,7 @@ export class Search {
         logger.info("test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
+        TestGenerator.initializeCoverageMappings();
         return await testGenerator.generateTests(project);
     }
 
@@ -105,7 +106,7 @@ export class Search {
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
         let stoppingCondition: StoppingCondition<Chromosome>;
-        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
+        if (config.searchAlgorithmProperties instanceof BasicNeuroevolutionParameter) {
             let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
             if (stoppingCondition instanceof FixedTimeStoppingCondition) {
