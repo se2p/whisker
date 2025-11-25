@@ -20,6 +20,12 @@ export class NoSuchBlockError extends CustomError {
     }
 }
 
+export class InvalidBlockError extends CustomError {
+    constructor(override readonly message: string) {
+        super(message);
+    }
+}
+
 export class ValidationError extends CustomError {
     constructor(override readonly message: string) {
         super(message);
