@@ -52,7 +52,6 @@ export abstract class TestGenerator {
 
     constructor(configuration: WhiskerSearchConfiguration) {
         this._config = configuration;
-        TestGenerator.initializeCoverageMappings();
     }
 
     public abstract generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>;
