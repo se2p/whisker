@@ -53,7 +53,7 @@ import {colorParamOptions} from "./blocks/categories/Pen";
 import {NonExhaustiveCaseDistinction} from "../whisker/core/exceptions/NonExhaustiveCaseDistinction";
 import logger from "../util/logger";
 import Statistics from "../whisker/utils/Statistics";
-import {emptyInputMeta, InputMeta, Meta} from "./utils/meta";
+import {BlockMeta, emptyBlockMeta, emptyInputMeta, findLastID, InputMeta, Meta} from "./utils/meta";
 
 export type Node = BlockNode | VarListNode;
 export type WrappedTarget = Target<BlockNode, VarListNode, VarListNode>;
@@ -89,6 +89,25 @@ const keepAllInputs: InputFilterOpts = {
     skipBroadcasts: false,
     skipUnobscuredPrimitiveInputs: false,
 };
+
+export interface TraversalOptions {
+    // Whether to include substacks or not.
+    substacks: boolean;
+    // Whether to transitively include the next blocks.
+    nextBlocks: boolean;
+    // If nextBlocks is true, where to stop, or null if all next-blocks should be included.
+    lastBlock: BlockID | null;
+}
+
+/**
+ * Includes the block, all inputs and substacks, but stops at the block's next block.
+ */
+const withInputsAndSubstacks: TraversalOptions = Object.freeze({
+    // inputs: true,
+    substacks: true,
+    nextBlocks: false,
+    lastBlock: null,
+});
 
 /**
  * How far new scripts are placed away from existing ones.
@@ -160,6 +179,27 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      * @see _getInputBlockIDs
      */
     abstract getReferencedBlockIDs(): Array<BlockID>;
+
+    public getBlockMeta(traversal?: Partial<TraversalOptions>): BlockMeta {
+        return this._getBlockMeta({...withInputsAndSubstacks, ...traversal});
+    }
+
+    protected abstract _getBlockMeta(traversal: TraversalOptions): BlockMeta;
+
+    /**
+     * Returns a "slice" of the stack this node belongs to, starting at this node, and ending at the given node.
+     * Slices to the very end of the stack in any of these cases:
+     * - The `blockID` does not exist (the BlockID is dangling).
+     * - The `blockID` does exist, but the corresponding node is not part of the same stack as `this`.
+     * - `blockID` is `null`.
+     *
+     * @param blockID the blockID block (inclusive)
+     */
+     abstract sliceTo(blockID: BlockID | null): BlockMeta;
+
+     sliceToEnd(): BlockMeta {
+        return this.sliceTo(null); // slice until "next" is null (i.e., the very end)
+    }
 
     /**
      * Tells whether this block is the root block (i.e., the first block) of a script or a substack.
@@ -525,6 +565,31 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         }
 
         return blockIDs;
+    }
+
+    override sliceTo(lastBlock: BlockID | null): BlockMeta {
+        return this._getBlockMeta({substacks: true, nextBlocks: true, lastBlock});
+    }
+
+    protected override _getBlockMeta(traversal: TraversalOptions): BlockMeta {
+        const rootID = this.blockID;
+        const lastBlock = traversal.nextBlocks ? traversal.lastBlock : rootID;
+        let blockMeta = emptyBlockMeta(rootID, lastBlock);
+
+        // Begin the traversal at the root block.
+        this._collectMetadata([blockMeta.rootID], blockMeta, traversal.substacks);
+
+        // Very important for the next steps so as not to unintentionally modify the underlying Block of the Node!
+        blockMeta = deepCopy(blockMeta);
+
+        const root = blockMeta.blocks[rootID] as Block;
+        root.parent = null; // avoid dangling IDs
+
+        blockMeta.lastID = findLastID(blockMeta.rootID, blockMeta.blocks); // need to find actual last block
+        const last = blockMeta.blocks[blockMeta.lastID] as Block;
+        last.next = null; // avoid dangling IDs
+
+        return blockMeta;
     }
 
     override hasInputNode(input: BlockNode): InputKey | null {
@@ -1585,6 +1650,36 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
 
     override hasSubstack2(): false {
         return false;
+    }
+
+    protected override _getBlockMeta(): BlockMeta {
+        const blockMeta = emptyBlockMeta(this.blockID, this.blockID);
+        blockMeta.blocks[this.blockID] = this.block;
+
+        const [type, name, id] = this.block;
+        if (type === primitiveInputTypes.variable) {
+            const isSpriteOnly = id in this.target.variables;
+            if (isSpriteOnly) {
+                blockMeta.variables[id] = this.target.variables[id];
+            } else {
+                blockMeta.stageVariables[id] = [name, 0]; // 0 as dummy/default value
+            }
+        } else if (type === primitiveInputTypes.list) {
+            const isSpriteOnly = id in this.target.lists[id];
+            if (isSpriteOnly) {
+                blockMeta.lists[id] = this.target.lists[id];
+            } else {
+                blockMeta.stageLists[id] = [name, []]; // [] as dummy/default value
+            }
+        } else {
+            throw new NonExhaustiveCaseDistinction(type, `Unhandled input type "${type}"`);
+        }
+
+        return deepCopy<BlockMeta>(blockMeta);
+    }
+
+    override sliceTo(): BlockMeta {
+        return this._getBlockMeta();
     }
 
     override getInputNode(): null {
