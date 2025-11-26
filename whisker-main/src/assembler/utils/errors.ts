@@ -10,6 +10,12 @@ export abstract class CustomError extends Error {
     }
 }
 
+export class NoSuchSpriteError extends CustomError {
+    constructor(name: string) {
+        super(`Sprite "${name}" does not exist`);
+    }
+}
+
 export class NoSuchBlockError extends CustomError {
     constructor(private readonly _blockID: BlockID) {
         super(`Block "${_blockID}" does not exist`);

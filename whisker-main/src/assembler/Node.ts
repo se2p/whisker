@@ -1,30 +1,58 @@
 import {
     Block,
     BlockID,
-    isBlock,
+    isBlock, isBlockID,
     isStackableBlock,
     isTopLevelBlock,
     ScratchBlock,
     TopLevelBlock,
     VarList
 } from "./blocks/Block";
-import {Target} from "./project/Target";
+import {Sprite, Stage, Target} from "./project/Target";
 import {deepCopy} from "./utils/Objects";
 import {canonicalizeInputs, WrappedProject} from "./utils/helpers";
-import {Input, InputKey, primitiveInputTypes} from "./blocks/Inputs";
-import {NoSuchBlockError, NoSuchKeyError} from "./utils/errors";
+import {
+    BroadCastInput, ConnectedListBlock, ConnectedVariableBlock,
+    Input,
+    InputKey,
+    isDeletedInput,
+    isNoShadowInput, ListInput,
+    primitiveInputTypes,
+    shadowTypes, VariableInput
+} from "./blocks/Inputs";
+import {InvalidBlockError, NoSuchBlockError, NoSuchKeyError, NoSuchSpriteError} from "./utils/errors";
 import {Pair} from "../whisker/utils/Pair";
-import {getBlockIDs, supportsInput} from "./utils/blocks";
+import {getBlockIDs, supportsInput, variableName} from "./utils/blocks";
 import {isHatBlock} from "./blocks/shapes/HatBlock";
 import {isStackBlock} from "./blocks/shapes/StackBlock";
 import {isCBlock} from "./blocks/shapes/CBlock";
 import {isCapBlock} from "./blocks/shapes/CapBlock";
-import {isMotionBlock} from "./blocks/categories/Motion";
+import {isMotionBlock, rotationStyles} from "./blocks/categories/Motion";
 import {isReporterBlock} from "./blocks/shapes/Reporter";
-import {Field, FieldKey} from "./blocks/Fields";
+import {broadcastToField, Field, FieldKey, listToField, variableToField} from "./blocks/Fields";
+import Arrays from "../whisker/utils/Arrays";
+import {looksEffects} from "./blocks/categories/Looks";
+import {soundEffects} from "./blocks/categories/Sound";
+import {keys} from "./blocks/categories/Events";
+import {STAGE_NAME} from "./utils/selectors";
+import {sensingCurrentOptions, spriteProperties, stageProperties} from "./blocks/categories/Sensing";
+import {operators} from "./blocks/categories/Operators";
+import {colorParamOptions} from "./blocks/categories/Pen";
+import {NonExhaustiveCaseDistinction} from "../whisker/core/exceptions/NonExhaustiveCaseDistinction";
+import logger from "../util/logger";
+import Statistics from "../whisker/utils/Statistics";
 
 export type Node = BlockNode | VarListNode;
 export type WrappedTarget = Target<BlockNode, VarListNode, VarListNode>;
+export type WrappedSprite = Sprite<BlockNode, VarListNode, VarListNode>;
+export type WrappedStage = Stage<BlockNode, VarListNode, VarListNode>;
+
+type VarListInput = ConnectedVariableBlock | ConnectedListBlock;
+
+/**
+ * How far new scripts are placed away from existing ones.
+ */
+const xOffset = 400;
 
 abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements Iterable<N> {
     protected readonly _blockID: BlockID;
@@ -177,6 +205,17 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
 
     abstract getField(key: FieldKey): Field;
 
+    abstract getPossibleFieldValues(key: FieldKey, skipCurrent: boolean): Array<Field>;
+
+    abstract switchToValidFieldValueIfNecessary(key: FieldKey): void;
+
+    abstract getPossibleBroadcastInputs(skipCurrent: boolean): Array<BroadCastInput>;
+
+    /**
+     * Turns this block into a standalone script, disconnecting it from its `parent` block.
+     */
+    abstract makeStandaloneScript(): void;
+
     toJSON(): B {
         return this.block;
     }
@@ -194,8 +233,34 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         super(blockID, canonicalizeInputs(block), target, project);
     }
 
+    private _getStage(): WrappedStage {
+        return this._project.targets.find(({isStage}) => isStage) as WrappedStage;
+    }
+
+    private _getSprite(name: string): WrappedSprite {
+        const sprite = this._project.targets.find((target) => target.name === name);
+
+        if (sprite) {
+            return sprite as WrappedSprite;
+        }
+
+        throw new NoSuchSpriteError(name);
+    }
+
+    private _getOtherSpriteNames(): Array<string> {
+        const names = this._project.targets
+            .filter(({isStage}) => !isStage)
+            .map(({name}) => name);
+
+        if (this._target.isStage) { // Avoid filtering out a **sprite** with the name "Stage".
+            return names;
+        }
+
+        return names.filter((name) => name !== this._target.name);
+    }
+
     override getX(): number | null {
-        if (!this.isTopLevel()){
+        if (!this.isTopLevel()) {
             return null;
         }
 
@@ -270,6 +335,19 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return this.block.parent;
     }
 
+    setParent(parent: BlockNode): void {
+        if (parent === null) {
+            this.block.parent = null;
+            return;
+        }
+
+        if (parent.target.name !== this.target.name) {
+            throw new InvalidBlockError(`Blocks must belong to the same target ("${this.target.name}")`);
+        }
+
+        this.block.parent = parent.blockID;
+    }
+
     override hasNext(): boolean {
         return this.block.next !== null;
     }
@@ -284,6 +362,19 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
 
     override getNextID(): BlockID | null {
         return this.block.next;
+    }
+
+    setNext(next: BlockNode): void {
+        if (next === null) {
+            this.block.next = null;
+            return;
+        }
+
+        if (next.target.name !== this.target.name) {
+            throw new InvalidBlockError(`Blocks must belong to the same target ("${this.target.name}")`);
+        }
+
+        this.block.next = next.blockID;
     }
 
     override getNextIDs(skipSelf: boolean): Array<BlockID> {
@@ -467,6 +558,480 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return deepCopy<Field>(this.block.fields[key]);
     }
 
+    override getPossibleFieldValues(key: FieldKey, skipCurrent: boolean): Array<Field> {
+        if (!this.hasField(key)) {
+            return [];
+        }
+
+        const opcode = this.block.opcode;
+        const fieldValues = [];
+
+        switch (key) {
+            case "STYLE":
+                fieldValues.push(...rotationStyles);
+                break;
+
+            case "EFFECT":
+                if (opcode === "looks_changeeffectby" || opcode === "looks_seteffectto") {
+                    fieldValues.push(...looksEffects);
+                }
+
+                if (opcode === "sound_changeeffectby" || opcode === "sound_seteffectto") {
+                    fieldValues.push(...soundEffects);
+                }
+
+                break;
+
+            case "FRONT_BACK":
+                fieldValues.push("front", "back");
+                break;
+
+            case "FORWARD_BACKWARD":
+                fieldValues.push("forward", "backward");
+                break;
+
+            case "NUMBER_NAME":
+                fieldValues.push("number", "name");
+                break;
+
+            case "KEY_OPTION":
+                fieldValues.push(...keys);
+                break;
+
+            case "BACKDROP": {
+                const backdrops = this._getStage().costumes.map(({name}) => name);
+
+                fieldValues.push(...backdrops);
+
+                if (opcode === "looks_backdrops") {
+                    fieldValues.push("next backdrop", "previous backdrop", "random backdrop");
+                }
+
+                break;
+            }
+
+            case "WHENGREATERTHANMENU":
+                fieldValues.push("LOUDNESS", "TIMER");
+                break;
+
+            case "BROADCAST_OPTION":
+                fieldValues.push(...Object.entries(this._getStage().broadcasts));
+                break;
+
+            case "STOP_OPTION":
+                fieldValues.push("other scripts in sprite");
+
+                // These choices are only available if the "control_stop" block isn't connected to a `next` block.
+                // (A "control_stop" block may change its shape depending on the selected option.)
+                if (!this.hasNext()) {
+                    fieldValues.push("all", "this script");
+                }
+
+                break;
+
+            case "DRAG_MODE":
+                fieldValues.push("draggable", "not draggable");
+                break;
+
+            case "PROPERTY": { // field of block with opcode "sensing_of"
+                // The options in the rectangular drop-down menu change depending on which target is selected in the
+                // oval-shaped drop-down menu
+                const [shadowType, inputBlock, obscuredBlock] = this.block.inputs.OBJECT;
+                const shadowBlock = (shadowType === shadowTypes.obscuredShadow ? obscuredBlock : inputBlock) as BlockID;
+                const [targetName] = this.target.blocks[shadowBlock].getField("OBJECT");
+                const sensingStage = targetName === STAGE_NAME;
+                const properties = sensingStage ? stageProperties : spriteProperties;
+                const variables = (sensingStage ? this._getStage() : this._getSprite(targetName)).variables;
+                const variableNames = Object.values(variables).map((v) => variableName(v));
+                fieldValues.push(...properties, ...variableNames);
+                break;
+            }
+
+            case "CURRENTMENU":
+                fieldValues.push(...sensingCurrentOptions);
+                break;
+
+            case "OPERATOR":
+                fieldValues.push(...operators);
+                break;
+
+            case "VARIABLE": {
+                const stageVariables = Object.entries(this._getStage().variables);
+                fieldValues.push(...stageVariables);
+
+                if (!this._target.isStage) {
+                    const ownVariables = Object.entries(this._target.variables);
+                    fieldValues.push(...ownVariables);
+                }
+
+                break;
+            }
+
+            case "LIST": {
+                const stageLists = Object.entries(this._getStage().lists);
+                fieldValues.push(...stageLists);
+
+                if (!this._target.isStage) {
+                    const ownLists = Object.entries(this._target.lists);
+                    fieldValues.push(...ownLists);
+                }
+
+                break;
+            }
+
+            case "TO":
+                fieldValues.push(...this._getOtherSpriteNames(), "_random_", "_mouse_");
+                break;
+
+            case "TOWARDS":
+                fieldValues.push(...this._getOtherSpriteNames(), "_mouse_");
+                break;
+
+            case "COSTUME":
+                fieldValues.push(...this.target.costumes.map(({name}) => name));
+                break;
+
+            case "SOUND_MENU": {
+                const sounds = this.target.sounds.map(({name}) => name);
+
+                // Special handling required: While it is not possible to delete the last costume of a sprite, one
+                // can very well delete the last sound asset. In this case, we mimic the behavior of the Scratch IDE
+                // and only offer the empty string (which seems to stand for "no sound") for choice.
+                if (sounds.length === 0) {
+                    sounds.push("");
+                }
+
+                fieldValues.push(...sounds);
+                break;
+            }
+
+            case "CLONE_OPTION":
+                fieldValues.push(...this._getOtherSpriteNames());
+
+                if (!this._target.isStage) {
+                    fieldValues.push("_myself_");
+                }
+
+                break;
+
+            case "TOUCHINGOBJECTMENU":
+                fieldValues.push(...this._getOtherSpriteNames(), "_mouse_", "_edge_");
+                break;
+
+            case "DISTANCETOMENU":
+                fieldValues.push(...this._getOtherSpriteNames(), "_mouse_");
+                break;
+
+            case "OBJECT":
+                fieldValues.push(...this._getOtherSpriteNames(), STAGE_NAME);
+                break;
+
+            case "VALUE":
+                logger.warn("Argument definitions in the signature of custom blocks currently not handled");
+                break;
+
+            case "colorParam":
+                fieldValues.push(...colorParamOptions);
+                break;
+
+            default:
+                throw new NonExhaustiveCaseDistinction(key, `Unhandled field key "${key}"`);
+        }
+
+        const fields = fieldValues.map((value): Field => {
+            if (key === "BROADCAST_OPTION") {
+                return broadcastToField(value);
+            }
+
+            if (key === "VARIABLE") {
+                return variableToField(value);
+            }
+
+            if (key === "LIST") {
+                return listToField(value);
+            }
+
+            return [value, null];
+        });
+
+        if (skipCurrent) {
+            const current = this.block.fields[key];
+            return Arrays.removeElem(fields, current);
+        }
+
+        return fields;
+    }
+
+    override switchToValidFieldValueIfNecessary(key: FieldKey): void {
+        if (!this.getFieldKeys().includes(key)) {
+            throw new NoSuchKeyError(key);
+        }
+
+        const values = this.getPossibleFieldValues(key, false);
+
+        if (values.length === 0) {
+            logger.warn(`Warning: Cannot switch to valid field value for key "${key}"!`);
+            return;
+        }
+
+        const [current] = this.block.fields[key];
+
+        if (values.some(([value]) => value === current)) {
+            return; // already valid entry selected
+        }
+
+        // Try to find a valid value with the lowest string edit distance to the current selection, and switch to it.
+        const distances = values.map(([value]) =>
+            Statistics.levenshteinDistance(current.toLocaleLowerCase(), value.toLocaleLowerCase()));
+        const idx = distances.indexOf(Math.min(...distances));
+        this.setField(key, values[idx]);
+    }
+
+    setField(key: FieldKey, field: Field): void {
+        if (!this.hasField(key)) {
+            throw new NoSuchKeyError(`Block "${this.block.opcode}" does not support field "${key}"`);
+        }
+
+        this.block.fields[key] = field as Field;
+
+        // If switching to a different target in the "sensing_of_object_menu" block, we might have to change the sensed
+        // property in its parent (the "sensing_of" block), too.
+        if (key === "OBJECT") {
+            this.getParent().switchToValidFieldValueIfNecessary("PROPERTY");
+        }
+    }
+
+    override getPossibleBroadcastInputs(skipCurrentInput: boolean): Array<BroadCastInput> {
+        if (!Object.keys(this.block.inputs).includes("BROADCAST_INPUT")) {
+            return [];
+        }
+
+        const broadcasts = Object.entries(this._getStage().broadcasts);
+        const inputs = broadcasts.map<BroadCastInput>(([id, name]) => [primitiveInputTypes.broadcast, name, id]);
+
+        if (skipCurrentInput) {
+            const [shadowType, unobscured, obscured] = this.block.inputs["BROADCAST_INPUT"];
+            const toSkip = (shadowType === shadowTypes.unobscuredShadow ? unobscured : obscured) as BroadCastInput;
+            return Arrays.removeElem(inputs, toSkip);
+        }
+
+        return inputs;
+    }
+
+    setInput(key: InputKey, newInput: Input, replace: boolean): void {
+        if (!supportsInput(this.block, key)) {
+            throw new NoSuchKeyError(`Block "${this.block.opcode}" does not take input "${key}"`);
+        }
+
+        // If `replace` is truthy, the new input is just set, without trying to obscure the existing input.
+        // Boolean inputs and SUBSTACK(2) are always just set.
+        if (replace || isDeletedInput(newInput) || isNoShadowInput(newInput)) {
+            this.block.inputs[key] = newInput;
+            return;
+        }
+
+        const [currentShadow, currentInputBlock, currentObscuredBlock] = this.block.inputs[key];
+
+        // Note: the obscured part of the new input is never inserted.
+        const [newShadow, newInputBlock] = newInput;
+
+        // If the new input is unobscured, it simply replaces the current input.
+        if (newShadow === shadowTypes.unobscuredShadow) {
+            this.block.inputs[key] = [
+                shadowTypes.unobscuredShadow,
+                newInputBlock,
+            ];
+
+            return;
+        }
+
+        // If the current input is unobscured, it is now obscured by the new input.
+        if (currentShadow === shadowTypes.unobscuredShadow) {
+            this.block.inputs[key] = [
+                shadowTypes.obscuredShadow,
+                newInputBlock,
+                currentInputBlock,
+            ];
+
+            return;
+        }
+
+        // If the current input is obscured, the obscuring block is replaced with the new input. The current obscured
+        // input stays the same.
+        if (currentShadow === shadowTypes.obscuredShadow) {
+            this.block.inputs[key] = [
+                shadowTypes.obscuredShadow,
+                newInputBlock,
+                currentObscuredBlock,
+            ];
+
+            return;
+        }
+
+        throw new Error(`Unhandled combination of shadow types "${currentShadow}" and "${newShadow}"`);
+    }
+
+    setBlockAsInput(key: InputKey, blockID: BlockID): BlockNode | null {
+        const inputs = this.block.inputs;
+
+        if (!(key in inputs) || isDeletedInput(inputs[key])) {
+            // Input key does not exist (yet), or input has been deleted. This is only possible for boolean inputs or
+            // substacks.
+            inputs[key] = [
+                shadowTypes.noShadow,
+                blockID,
+            ];
+
+            return null;
+        }
+
+        const [inputType, oldInput, obscuredInput] = inputs[key];
+        switch (inputType) {
+            case shadowTypes.unobscuredShadow:
+                // The new input obscures the current input.
+                inputs[key] = [
+                    shadowTypes.obscuredShadow,
+                    blockID,
+                    oldInput,
+                ];
+
+                if (isBlockID(oldInput)) {
+                    const inputNode = this.target.blocks[oldInput];
+                    if (inputNode.isShadow()) {
+                        // Obscured oval-shaped drop-down menus must become standalone scripts!
+                        inputNode.makeStandaloneScript();
+                    }
+                }
+
+                return null;
+            case shadowTypes.noShadow:
+                // Replace existing input
+                inputs[key] = [
+                    shadowTypes.noShadow,
+                    blockID,
+                ];
+                return this._getBlockNode(oldInput);
+            case shadowTypes.obscuredShadow:
+                // Replace the old obscuring input with the new input. The obscured input stays the same.
+                inputs[key] = [
+                    shadowTypes.obscuredShadow,
+                    blockID,
+                    obscuredInput,
+                ];
+                return isBlockID(oldInput) ? this._getBlockNode(oldInput) : null;
+            default:
+                throw new NonExhaustiveCaseDistinction(inputType, `Unhandled shadow type "${inputType}"`);
+        }
+    }
+
+    setVarListBlockAsInput(key: InputKey, varListInput: VariableInput | ListInput): BlockNode | null {
+        varListInput = varListInput.slice(0, 3) as VarListInput; // remove x and y coordinates if any
+        const inputs = this.block.inputs;
+
+        if (!(key in inputs) || isDeletedInput(inputs[key])) {
+            throw new Error(`Input "${key}" does not exist, or cannot take a variable/list block`);
+        }
+
+        const [inputType, oldInput, obscuredInput] = inputs[key];
+        switch (inputType) {
+            case shadowTypes.unobscuredShadow:
+                // The new input obscures the current input.
+                inputs[key] = [
+                    shadowTypes.obscuredShadow,
+                    varListInput,
+                    oldInput,
+                ];
+
+                if (isBlockID(oldInput)) {
+                    const inputNode = this.target.blocks[oldInput];
+                    if (inputNode.isShadow()) {
+                        // Obscured oval-shaped drop-down menus must become standalone scripts!
+                        inputNode.makeStandaloneScript();
+                    }
+                }
+
+                return null;
+            case shadowTypes.noShadow:
+                throw new Error(`Input "${key}" cannot take variable/list block`);
+            case shadowTypes.obscuredShadow:
+                // Replace the old obscuring input with the new input. The obscured input stays the same.
+                inputs[key] = [
+                    shadowTypes.obscuredShadow,
+                    varListInput,
+                    obscuredInput,
+                ];
+                return isBlockID(oldInput) ? this._getBlockNode(oldInput) : null;
+            default:
+                throw new NonExhaustiveCaseDistinction(inputType, `Unhandled shadow type "${inputType}"`);
+        }
+    }
+
+    setNonTopLevel(): void {
+        this.block.topLevel = false;
+        delete this.block['x'];
+        delete this.block['y'];
+    }
+
+    setTopLevel(x: number, y: number): void {
+        this.block['x'] = x;
+        this.block['y'] = y;
+        this.block.topLevel = true;
+    }
+
+    private _maxX(): number {
+        const blocks = Object.values(this.target.blocks);
+        const xValues = blocks
+            .filter((b) => b.isTopLevel() && !b.isShadow() && b.blockID !== this.blockID)
+            .map((b) => b.getX());
+        return Math.max(-xOffset, ...xValues);
+    }
+
+    override makeStandaloneScript(): void {
+        this.setTopLevel(this._maxX() + xOffset, 0);
+        this.block.parent = null;
+    }
+
+    setChildByKey(key: "next" | "SUBSTACK" | "SUBSTACK2", child: BlockNode): void {
+        switch (key) {
+            case "next":
+                this.setNext(child);
+                return;
+            case "SUBSTACK":
+                this.setSubstack(child);
+                return;
+            case "SUBSTACK2":
+                this.setSubstack2(child);
+                return;
+            default:
+                throw new NonExhaustiveCaseDistinction(key, `Unhandled key "${key}"`);
+        }
+    }
+
+    setSubstack(substack: BlockNode): void {
+        this._setSubstackByKey("SUBSTACK", substack);
+    }
+
+    setSubstack2(substack2: BlockNode): void {
+        this._setSubstackByKey("SUBSTACK2", substack2);
+    }
+
+    private _setSubstackByKey(key: "SUBSTACK" | "SUBSTACK2", substack: BlockNode): void {
+        if (substack === null) {
+            this._deleteSubstackByKey(key);
+            return;
+        }
+
+        if (substack.target.name !== this.target.name) {
+            throw new InvalidBlockError(`Blocks must belong to the same target (${this.target.name})`);
+        }
+
+        this.block.inputs[key] = [shadowTypes.noShadow, substack.blockID];
+    }
+
+    private _deleteSubstackByKey(key: "SUBSTACK" | "SUBSTACK2"): void {
+        delete this.block.inputs[key];
+    }
+
     override toString(): string {
         return `${this.block.opcode} ("${this.blockID}")`;
     }
@@ -639,6 +1204,22 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
 
     override getFieldKeys(): [] {
         return [];
+    }
+
+    override getPossibleFieldValues(): [] {
+        return [];
+    }
+
+    override switchToValidFieldValueIfNecessary(_key: FieldKey): void {
+        // does not have a field
+    }
+
+    override getPossibleBroadcastInputs(): [] {
+        return [];
+    }
+
+    override makeStandaloneScript(): void {
+        // already standalone
     }
 
     override toString(): string {
