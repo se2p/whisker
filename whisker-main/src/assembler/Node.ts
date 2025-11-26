@@ -12,17 +12,17 @@ import {Sprite, Stage, Target} from "./project/Target";
 import {deepCopy} from "./utils/Objects";
 import {canonicalizeInputs, WrappedProject} from "./utils/helpers";
 import {
-    BroadCastInput, ConnectedListBlock, ConnectedVariableBlock,
+    BroadCastInput, ConnectedListBlock, ConnectedVariableBlock, deletedInput,
     Input,
     InputKey,
     isDeletedInput,
-    isNoShadowInput, ListInput,
+    isNoShadowInput, isUnobscuredShadowInput, ListInput, PrimitiveInput, PrimitiveInputType,
     primitiveInputTypes,
     shadowTypes, VariableInput
 } from "./blocks/Inputs";
 import {InvalidBlockError, NoSuchBlockError, NoSuchKeyError, NoSuchSpriteError} from "./utils/errors";
 import {Pair} from "../whisker/utils/Pair";
-import {getBlockIDs, supportsInput, variableName} from "./utils/blocks";
+import {getBlockIDs, getInputKeys, supportsInput, variableName} from "./utils/blocks";
 import {isHatBlock} from "./blocks/shapes/HatBlock";
 import {isStackBlock} from "./blocks/shapes/StackBlock";
 import {isCBlock} from "./blocks/shapes/CBlock";
@@ -48,6 +48,16 @@ export type WrappedSprite = Sprite<BlockNode, VarListNode, VarListNode>;
 export type WrappedStage = Stage<BlockNode, VarListNode, VarListNode>;
 
 type VarListInput = ConnectedVariableBlock | ConnectedListBlock;
+
+interface DeletionResult {
+    deleted?: BlockNode;
+    revealed?: BlockNode;
+}
+
+interface DeletionOptions {
+    skipSubstacks: boolean;
+    skipNext: boolean;
+}
 
 /**
  * How far new scripts are placed away from existing ones.
@@ -215,6 +225,41 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      * Turns this block into a standalone script, disconnecting it from its `parent` block.
      */
     abstract makeStandaloneScript(): void;
+
+    abstract canDeleteInput(key: InputKey): boolean;
+
+    /**
+     * Transitively deletes the block and all children attached to it (but not the `parent`),
+     * - including all blocks of substacks, and
+     * - including the `next` block, whose inputs and `next` block are also deleted, and so on.
+     * Returns all nodes that were deleted in the process.
+     *
+     * This mimics the action of dragging a block back into the toolbox on the left-hand side in the Scratch IDE.
+     * Doing so disconnects the block, its inputs and all next blocks from the script, and deletes them.
+     */
+    public abstract deleteCascade(): Array<N>;
+
+    /**
+     * Deletes the block and all its inputs,
+     * - including all blocks of substacks, but
+     * - excluding the next block.
+     * Returns all nodes that were deleted in the process.
+     *
+     * The same as `delete()` for blocks that do not have substacks.
+     *
+     * Like right-clicking on a C-Block in the Scratch IDE, and selecting "Delete n Blocks".
+     */
+    public abstract deleteCascadeSubstacks(): Array<N>;
+
+    /**
+     * Deletes the block and its inputs, but
+     * - excluding substacks, and
+     * - excluding the `next` block.
+     * Returns all nodes that were deleted in the process.
+     *
+     * Like right-clicking on a block in the Scratch IDE, and selecting "Delete Block".
+     */
+    public abstract delete(): Array<N>;
 
     toJSON(): B {
         return this.block;
@@ -1032,6 +1077,156 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         delete this.block.inputs[key];
     }
 
+    override canDeleteInput(key: InputKey): boolean {
+        if (!getInputKeys(this.block).includes(key)) {
+            return false;
+        }
+
+        const input = this.block.inputs[key];
+        if (isUnobscuredShadowInput(input)) {
+            const [, inputBlock] = input;
+            if (isBlockID(inputBlock)) {
+                // Attempting to delete an oval-shaped drop-down menu... This cannot work!
+                return false;
+            }
+
+            // Cannot delete...
+            // (1) oval-shaped drop-down menus for broadcasts (otherwise, project fails to load)
+            // (2) color inputs (otherwise, project fails to load)
+            // (3) angle inputs (project does load, but angle defaults to 0 – debatable?)
+            const blacklist: Array<PrimitiveInputType> = [
+                primitiveInputTypes.broadcast,
+                primitiveInputTypes.color,
+                primitiveInputTypes.angle,
+            ];
+            const [primitiveInputType] = inputBlock;
+            if (blacklist.includes(primitiveInputType)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public deleteInput(key: InputKey): DeletionResult {
+        if (!this.canDeleteInput(key)) {
+            const blockID = this.blockID;
+            const opcode = this.block.opcode;
+            throw new InvalidBlockError(`Cannot delete input "${key}" of block "${blockID}" with opcode "${opcode}"`);
+        }
+
+        const inputs = this.block.inputs;
+
+        if (!(key in inputs)) {
+            // The current block is a C-block or boolean block but no substack or hexagonal input has been set yet.
+            // In these cases, the key is actually absent.
+            return {};
+        }
+
+        const [type, input, obscuredInput] = inputs[key];
+        switch (type) {
+            case shadowTypes.unobscuredShadow:
+                if (input === null) {
+                    // The current block is a C-block or boolean block whose substack or hexagonal input has already
+                    // been deleted. type === 1 and input === null is a dummy that represents the absence of an input.
+                    return {};
+                }
+
+                // The input must be a PrimitiveShadowInput, and accepts literal text (or numbers), so just clear it.
+                (input as PrimitiveInput)[1] = "";
+                return {};
+            case shadowTypes.noShadow:
+                // It's a reference to the first block in a substack, or a conditional block. Instead of just
+                // deleting the key, we do the same as the Scratch IDE, and use a "dummy" input to signal the
+                // absence of any input.
+                inputs[key] = deletedInput();
+                return {
+                    deleted: this._getBlockNode(input),
+                };
+            case shadowTypes.obscuredShadow: {
+                // Remove the obscuring block to reveal the obscured block.
+                inputs[key] = [
+                    shadowTypes.unobscuredShadow,
+                    obscuredInput,
+                ];
+
+                return {
+                    ...(isBlockID(input) && {deleted: this._getBlockNode(input)}),
+                    ...(isBlockID(obscuredInput) && {revealed: this._getBlockNode(obscuredInput)}),
+                };
+            }
+            default:
+                throw new NonExhaustiveCaseDistinction(type, `Unhandled input type "${type}"`);
+        }
+    }
+
+    deleteInputBlock(toDelete: BlockNode): void {
+        if (!this.hasInputNode(toDelete)) {
+            throw new NoSuchBlockError(toDelete.blockID);
+        }
+
+        if (toDelete.isShadow()) {
+            throw new InvalidBlockError(`Must not delete drop-down menu block "${toDelete.blockID}"`);
+        }
+
+        for (const [inputKey, input] of Object.entries(this.block.inputs)) {
+            if (input[1] === toDelete.blockID) {
+                this.deleteInput(inputKey as InputKey);
+            }
+        }
+    }
+
+    override deleteCascade(): Array<BlockNode> {
+        return this._delete({skipSubstacks: false, skipNext: false});
+    }
+
+    override deleteCascadeSubstacks(): Array<BlockNode> {
+        return this._delete({skipSubstacks: false});
+    }
+
+    override delete(): Array<BlockNode> {
+        return this._delete();
+    }
+
+    private _delete(delOpts: Partial<DeletionOptions> = {}): Array<BlockNode> {
+        delOpts = {
+            skipSubstacks: true,
+            skipNext: true,
+            ...delOpts,
+        };
+
+        const inputs = Object.entries(this.block.inputs);
+
+        if (delOpts.skipSubstacks) {
+            Arrays.removeIf(inputs, ([key]) => key === "SUBSTACK" || key === "SUBSTACK2");
+        }
+
+        const deletedBlocks = new Array<BlockNode>();
+
+        // Delete inputs.
+        for (const [, input] of inputs) {
+            for (const blockID of getBlockIDs(input)) {
+                const deletedInputs = this._getBlockNode(blockID).deleteCascade();
+                deletedBlocks.push(...deletedInputs);
+            }
+        }
+
+        const next = this.getNext();
+
+        // Delete this block itself.
+        delete this.target.blocks[this.blockID];
+        deletedBlocks.push(this);
+
+        if (!next || delOpts.skipNext) {
+            return deletedBlocks;
+        }
+
+        // Delete all next blocks.
+        const deletedNexts = next.deleteCascade();
+        deletedBlocks.push(...deletedNexts);
+        return deletedBlocks;
+    }
+
     override toString(): string {
         return `${this.block.opcode} ("${this.blockID}")`;
     }
@@ -1220,6 +1415,23 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
 
     override makeStandaloneScript(): void {
         // already standalone
+    }
+
+    override canDeleteInput(_key: InputKey): false {
+        return false;
+    }
+
+    override delete(): [VarListNode] {
+        delete this.target.blocks[this.blockID];
+        return [this];
+    }
+
+    override deleteCascade(): [VarListNode] {
+        return this.delete();
+    }
+
+    override deleteCascadeSubstacks(): [VarListNode] {
+        return this.delete();
     }
 
     override toString(): string {
