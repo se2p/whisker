@@ -349,7 +349,15 @@ export class NetworkExecutor {
      * @param inputs the inputs based on which an activationTrace will be recorded.
      */
     private _recordActivationTrace(network: NetworkChromosome, step: number, inputs: InputFeatures) {
-        if (network.recordNetworkStatistics && step > 0 && (step % 5 == 0 || step == 1)) {
+        // With higher skipFrame values, we see fewer overall frames/steps.
+        // Hence, we scale the sample frequency based on the skipFrame parameter.
+        let sampleFrequency = 1;
+        if (this._skipFrame === 1) {
+            sampleFrequency = 5;
+        } else if (this._skipFrame === 2 || this._skipFrame === 3) {
+            sampleFrequency = 2;
+        }
+        if (network.recordNetworkStatistics && step > 0 && (step % sampleFrequency === 0 || step === 1)) {
             network.setUpInputs(inputs);
             network.updateActivationTrace(step);
         }

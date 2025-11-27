@@ -42,6 +42,11 @@ export class NeatestSuiteExecutor extends AgentExecutor {
      */
     protected testName: string
 
+    /**
+     * The loaded agents.
+     */
+    private _agents: NeatChromosome[] = [];
+
 
     protected constructor(project: ArrayBuffer, vm: VirtualMachine,
                           properties: Record<string, number | string | string[] | boolean>,
@@ -75,6 +80,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
             await this.collectActivationTrace(agents);
         }
 
+        this._agents = agents;
         return agents;
 
     }
@@ -123,8 +129,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
             const projectMutation = `${this.projectName}-${mutant.mutantName}`;
             logger.debug(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
-            this.statementArchive.clear();
-            this.branchArchive.clear();
+            this.initialiseCoverageMaps(this._vm);
             for (let i = 0; i < agents.length; i++) {
                 logger.debug(`Executing test ${i}`);
                 const test = agents[i];
@@ -146,7 +151,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
     }
 
     /**
-     * Initialises the used parameter for test execution.
+     * Initializes the used parameter for test execution.
      */
     private initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
@@ -164,7 +169,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
      * Executes a single dynamic test case and records corresponding statistics.
      * @param test the dynamic test case to execute.
      * @param recordExecution determines whether we want to record this execution by updating the archive and
-     * analysing network metrics.
+     * analyzing network metrics.
      */
     private async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<SpriteTrace> {
         test.recordNetworkStatistics = true;
@@ -219,7 +224,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
         const results = await super.updateTestStatistics(testCases, projectName, testName);
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
-            const isMutant = this.isMutant(test, testCases[i], true);
+            const isMutant = this.isMutant(test, this._agents[i], true);
             results[i].score = test.score;
             results[i].playTime = test.playTime;
             results[i].isMutant = isMutant;
@@ -262,7 +267,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
     }
 
     /**
-     * Loads a given Scratch mutant by initialising the VmWrapper and the NetworkExecutor with the mutant.
+     * Loads a given Scratch mutant by initializing the VmWrapper and the NetworkExecutor with the mutant.
      * @param mutant a mutant of a Scratch project.
      */
     private async loadMutant(mutant: Project): Promise<void> {
