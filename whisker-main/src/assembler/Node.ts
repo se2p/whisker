@@ -1181,20 +1181,14 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
     }
 
     override deleteCascadeSubstacks(): Array<BlockNode> {
-        return this._delete({skipSubstacks: false});
+        return this._delete({skipSubstacks: false, skipNext: true});
     }
 
     override delete(): Array<BlockNode> {
-        return this._delete();
+        return this._delete({skipSubstacks: true, skipNext: true});
     }
 
-    private _delete(delOpts: Partial<DeletionOptions> = {}): Array<BlockNode> {
-        delOpts = {
-            skipSubstacks: true,
-            skipNext: true,
-            ...delOpts,
-        };
-
+    private _delete(delOpts: DeletionOptions): Array<BlockNode> {
         const inputs = Object.entries(this.block.inputs);
 
         if (delOpts.skipSubstacks) {
