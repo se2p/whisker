@@ -102,8 +102,7 @@ export interface TraversalOptions {
 /**
  * Includes the block, all inputs and substacks, but stops at the block's next block.
  */
-const withInputsAndSubstacks: TraversalOptions = Object.freeze({
-    // inputs: true,
+export const traversalWithInputsAndSubstacks: TraversalOptions = Object.freeze({
     substacks: true,
     nextBlocks: false,
     lastBlock: null,
@@ -180,11 +179,7 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      */
     abstract getReferencedBlockIDs(): Array<BlockID>;
 
-    public getBlockMeta(traversal?: Partial<TraversalOptions>): BlockMeta {
-        return this._getBlockMeta({...withInputsAndSubstacks, ...traversal});
-    }
-
-    protected abstract _getBlockMeta(traversal: TraversalOptions): BlockMeta;
+    abstract getBlockMeta(traversal: TraversalOptions): BlockMeta;
 
     /**
      * Returns a "slice" of the stack this node belongs to, starting at this node, and ending at the given node.
@@ -568,10 +563,10 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
     }
 
     override sliceTo(lastBlock: BlockID | null): BlockMeta {
-        return this._getBlockMeta({substacks: true, nextBlocks: true, lastBlock});
+        return this.getBlockMeta({substacks: true, nextBlocks: true, lastBlock});
     }
 
-    protected override _getBlockMeta(traversal: TraversalOptions): BlockMeta {
+    override getBlockMeta(traversal: TraversalOptions): BlockMeta {
         const rootID = this.blockID;
         const lastBlock = traversal.nextBlocks ? traversal.lastBlock : rootID;
         let blockMeta = emptyBlockMeta(rootID, lastBlock);
@@ -1652,7 +1647,7 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
         return false;
     }
 
-    protected override _getBlockMeta(): BlockMeta {
+    override getBlockMeta(traversal: TraversalOptions): BlockMeta {
         const blockMeta = emptyBlockMeta(this.blockID, this.blockID);
         blockMeta.blocks[this.blockID] = this.block;
 
@@ -1679,7 +1674,7 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
     }
 
     override sliceTo(): BlockMeta {
-        return this._getBlockMeta();
+        return this.getBlockMeta({substacks: false, nextBlocks: false, lastBlock: null});
     }
 
     override getInputNode(): null {
