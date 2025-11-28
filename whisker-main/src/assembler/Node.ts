@@ -81,15 +81,6 @@ export interface InputFilterOpts {
     skipUnobscuredPrimitiveInputs: boolean;
 }
 
-const keepAllInputs: InputFilterOpts = {
-    skipSubstacks: false,
-    skipDeletedInputs: false,
-    skipClearedInputs: false,
-    skipUnobscuredShadowBlocks: false,
-    skipBroadcasts: false,
-    skipUnobscuredPrimitiveInputs: false,
-};
-
 interface ITraversal {
     // Whether to include substacks or not.
     substacks: boolean;
@@ -280,7 +271,7 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      * Tells which inputs the block currently has. Some input keys must always be present, e.g., for oval inputs,
      * while others may be absent (e.g., for boolean inputs or SUBSTACK(2)).
      */
-    abstract getInputKeys(opts: Partial<InputFilterOpts>): Array<InputKey>;
+    abstract getInputKeys(opts: InputFilterOpts): Array<InputKey>;
 
     abstract getInputBlockIDsRecursively(includeSubstacks: boolean, excludeShadow: boolean): Array<BlockID>;
 
@@ -811,7 +802,7 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         }
     }
 
-    override getInputKeys(opts: Partial<InputFilterOpts> = {}): Array<InputKey> {
+    override getInputKeys(opts: InputFilterOpts): Array<InputKey> {
         return this._getInputs(opts).map(([key]) => key);
     }
 
@@ -829,12 +820,7 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return blockIDs;
     }
 
-    private _getInputs(opts: Partial<InputFilterOpts> = {}): Array<Pair<InputKey, InputMeta>> {
-        opts = {
-            ...keepAllInputs,
-            ...opts,
-        };
-
+    private _getInputs(opts: InputFilterOpts): Array<Pair<InputKey, InputMeta>> {
         let keys = Object.keys(this.block.inputs) as Array<InputKey>;
 
         if (opts.skipSubstacks) {
