@@ -95,7 +95,6 @@ interface ITraversal {
     substacks: boolean;
     // Whether to transitively include the next blocks.
     nextBlocks: boolean;
-
 }
 
 interface TraversalWithoutNext extends ITraversal {
@@ -113,15 +112,6 @@ export type TraversalOptions =
     | TraversalWithoutNext
     | TraversalWithNext
     ;
-
-/**
- * Includes the block, all inputs and substacks, but stops at the block's next block.
- */
-export const traversalWithInputsAndSubstacks: TraversalOptions = Object.freeze({
-    substacks: true,
-    nextBlocks: false,
-    lastBlock: null,
-});
 
 /**
  * How far new scripts are placed away from existing ones.
@@ -197,11 +187,9 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
     abstract getBlockMeta(traversal: TraversalOptions): BlockMeta;
 
     /**
-     * Returns a "slice" of the stack this node belongs to, starting at this node, and ending at the given node.
-     * Slices to the very end of the stack in any of these cases:
-     * - The `blockID` does not exist (the BlockID is dangling).
-     * - The `blockID` does exist, but the corresponding node is not part of the same stack as `this`.
-     * - `blockID` is `null`.
+     * Returns a "slice" of the stack this node belongs to, starting at this node, and ending at the given node
+     * (inclusive.) Slices to the very end of the stack if the `blockID` is `null`. Throws an error if the given
+     * `blockID` is not encountered.
      *
      * @param blockID the blockID block (inclusive)
      */
@@ -583,8 +571,7 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
 
     override getBlockMeta(traversal: TraversalOptions): BlockMeta {
         const rootID = this.blockID;
-        const lastBlock = traversal.nextBlocks ? traversal.lastBlock : rootID;
-        let blockMeta = emptyBlockMeta(rootID, lastBlock);
+        let blockMeta = emptyBlockMeta(rootID, traversal.nextBlocks ? traversal.lastBlock : rootID);
 
         // Begin the traversal at the root block.
         this._collectMetadata([blockMeta.rootID], blockMeta, traversal.substacks);
@@ -592,10 +579,17 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         // Very important for the next steps so as not to unintentionally modify the underlying Block of the Node!
         blockMeta = deepCopy(blockMeta);
 
+        const actualLastID = findLastID(blockMeta.rootID, blockMeta.blocks);
+
+        if (blockMeta.lastID === null) {
+            blockMeta.lastID =  actualLastID;
+        } else if (blockMeta.lastID !== actualLastID) {
+            throw new InvalidBlockError(`The given block with ID "${blockMeta.lastID}" was not encountered`);
+        }
+
         const root = blockMeta.blocks[rootID] as Block;
         root.parent = null; // avoid dangling IDs
 
-        blockMeta.lastID = findLastID(blockMeta.rootID, blockMeta.blocks); // need to find actual last block
         const last = blockMeta.blocks[blockMeta.lastID] as Block;
         last.next = null; // avoid dangling IDs
 
@@ -1663,6 +1657,10 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
     }
 
     override getBlockMeta(traversal: TraversalOptions): BlockMeta {
+        if (traversal.nextBlocks && traversal.lastBlock !== this.blockID) {
+            throw new InvalidBlockError(`Did not expect to be given the block ID "${traversal.lastBlock}"`);
+        }
+
         const blockMeta = emptyBlockMeta(this.blockID, this.blockID);
         blockMeta.blocks[this.blockID] = this.block;
 
@@ -1689,7 +1687,7 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
     }
 
     override sliceTo(blockID: BlockID | null): BlockMeta {
-        return this.getBlockMeta({substacks: false, nextBlocks: false});
+        return this.getBlockMeta({substacks: false, nextBlocks: true, lastBlock: blockID});
     }
 
     override getInputNode(): null {
