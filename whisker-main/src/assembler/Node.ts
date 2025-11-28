@@ -90,14 +90,29 @@ const keepAllInputs: InputFilterOpts = {
     skipUnobscuredPrimitiveInputs: false,
 };
 
-export interface TraversalOptions {
+interface ITraversal {
     // Whether to include substacks or not.
     substacks: boolean;
     // Whether to transitively include the next blocks.
     nextBlocks: boolean;
-    // If nextBlocks is true, where to stop, or null if all next-blocks should be included.
+
+}
+
+interface TraversalWithoutNext extends ITraversal {
+    nextBlocks: false;
+}
+
+interface TraversalWithNext extends ITraversal {
+    nextBlocks: true;
+
+    // The ID of the block where to stop, or null if all next-blocks should be included.
     lastBlock: BlockID | null;
 }
+
+export type TraversalOptions =
+    | TraversalWithoutNext
+    | TraversalWithNext
+    ;
 
 /**
  * Includes the block, all inputs and substacks, but stops at the block's next block.
@@ -1673,8 +1688,8 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
         return deepCopy<BlockMeta>(blockMeta);
     }
 
-    override sliceTo(): BlockMeta {
-        return this.getBlockMeta({substacks: false, nextBlocks: false, lastBlock: null});
+    override sliceTo(blockID: BlockID | null): BlockMeta {
+        return this.getBlockMeta({substacks: false, nextBlocks: false});
     }
 
     override getInputNode(): null {
