@@ -1,7 +1,8 @@
 import {
     Block,
     BlockID,
-    isBlock, isBlockID,
+    isBlock,
+    isBlockID,
     isStackableBlock,
     isTopLevelBlock,
     ScratchBlock,
@@ -12,16 +13,27 @@ import {Sprite, Stage, Target} from "./project/Target";
 import {deepCopy} from "./utils/Objects";
 import {canonicalizeInputs, WrappedProject} from "./utils/helpers";
 import {
-    BroadCastInput, ConnectedListBlock, ConnectedVariableBlock, deletedInput,
+    BroadCastInput,
+    ConnectedListBlock,
+    ConnectedVariableBlock,
+    deletedInput,
     Input,
     InputKey,
+    inputRefersToShadowBlock, isBroadCastInput, isClearedInput,
     isDeletedInput,
-    isNoShadowInput, isUnobscuredShadowInput, ListInput, PrimitiveInput, PrimitiveInputType,
+    isNoShadowInput,
+    isObscuredShadowInput,
+    isPrimitiveInput,
+    isUnobscuredShadowInput,
+    ListInput,
+    PrimitiveInput,
+    PrimitiveInputType,
     primitiveInputTypes,
-    shadowTypes, VariableInput
+    shadowTypes,
+    VariableInput
 } from "./blocks/Inputs";
 import {InvalidBlockError, NoSuchBlockError, NoSuchKeyError, NoSuchSpriteError} from "./utils/errors";
-import {Pair} from "../whisker/utils/Pair";
+import {pair, Pair} from "../whisker/utils/Pair";
 import {getBlockIDs, getInputKeys, supportsInput, variableName} from "./utils/blocks";
 import {isHatBlock} from "./blocks/shapes/HatBlock";
 import {isStackBlock} from "./blocks/shapes/StackBlock";
@@ -41,6 +53,7 @@ import {colorParamOptions} from "./blocks/categories/Pen";
 import {NonExhaustiveCaseDistinction} from "../whisker/core/exceptions/NonExhaustiveCaseDistinction";
 import logger from "../util/logger";
 import Statistics from "../whisker/utils/Statistics";
+import {BlockMeta, emptyBlockMeta, emptyInputMeta, findLastID, InputMeta, Meta} from "./utils/meta";
 
 export type Node = BlockNode | VarListNode;
 export type WrappedTarget = Target<BlockNode, VarListNode, VarListNode>;
@@ -58,6 +71,38 @@ interface DeletionOptions {
     skipSubstacks: boolean;
     skipNext: boolean;
 }
+
+export interface InputFilterOpts {
+    skipSubstacks: boolean;
+    skipDeletedInputs: boolean;
+    skipClearedInputs: boolean;
+    skipUnobscuredShadowBlocks: boolean;
+    skipBroadcasts: boolean;
+    skipUnobscuredPrimitiveInputs: boolean;
+}
+
+interface ITraversal {
+    // Whether to include substacks or not.
+    substacks: boolean;
+    // Whether to transitively include the next blocks.
+    nextBlocks: boolean;
+}
+
+interface TraversalWithoutNext extends ITraversal {
+    nextBlocks: false;
+}
+
+interface TraversalWithNext extends ITraversal {
+    nextBlocks: true;
+
+    // The ID of the block where to stop, or null if all next-blocks should be included.
+    lastBlock: BlockID | null;
+}
+
+export type TraversalOptions =
+    | TraversalWithoutNext
+    | TraversalWithNext
+    ;
 
 /**
  * How far new scripts are placed away from existing ones.
@@ -129,6 +174,21 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
      * @see _getInputBlockIDs
      */
     abstract getReferencedBlockIDs(): Array<BlockID>;
+
+    abstract getBlockMeta(traversal: TraversalOptions): BlockMeta;
+
+    /**
+     * Returns a "slice" of the stack this node belongs to, starting at this node, and ending at the given node
+     * (inclusive.) Slices to the very end of the stack if the `blockID` is `null`. Throws an error if the given
+     * `blockID` is not encountered.
+     *
+     * @param blockID the blockID block (inclusive)
+     */
+     abstract sliceTo(blockID: BlockID | null): BlockMeta;
+
+     sliceToEnd(): BlockMeta {
+        return this.sliceTo(null); // slice until "next" is null (i.e., the very end)
+    }
 
     /**
      * Tells whether this block is the root block (i.e., the first block) of a script or a substack.
@@ -204,6 +264,16 @@ abstract class BlockWrapper<B extends ScratchBlock, N extends Node> implements I
     abstract getInputNode(key: InputKey): N | null;
 
     abstract getInputNodes(skipSubstack: boolean): Array<N>;
+
+    abstract getInputMeta(key: InputKey): InputMeta;
+
+    /**
+     * Tells which inputs the block currently has. Some input keys must always be present, e.g., for oval inputs,
+     * while others may be absent (e.g., for boolean inputs or SUBSTACK(2)).
+     */
+    abstract getInputKeys(opts: InputFilterOpts): Array<InputKey>;
+
+    abstract getInputBlockIDsRecursively(includeSubstacks: boolean, excludeShadow: boolean): Array<BlockID>;
 
     abstract supportsInput(key: InputKey): boolean;
 
@@ -486,6 +556,37 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return blockIDs;
     }
 
+    override sliceTo(lastBlock: BlockID | null): BlockMeta {
+        return this.getBlockMeta({substacks: true, nextBlocks: true, lastBlock});
+    }
+
+    override getBlockMeta(traversal: TraversalOptions): BlockMeta {
+        const rootID = this.blockID;
+        let blockMeta = emptyBlockMeta(rootID, traversal.nextBlocks ? traversal.lastBlock : rootID);
+
+        // Begin the traversal at the root block.
+        this._collectMetadata([blockMeta.rootID], blockMeta, traversal.substacks);
+
+        // Very important for the next steps so as not to unintentionally modify the underlying Block of the Node!
+        blockMeta = deepCopy(blockMeta);
+
+        const actualLastID = findLastID(blockMeta.rootID, blockMeta.blocks);
+
+        if (blockMeta.lastID === null) {
+            blockMeta.lastID =  actualLastID;
+        } else if (blockMeta.lastID !== actualLastID) {
+            throw new InvalidBlockError(`The given block with ID "${blockMeta.lastID}" was not encountered`);
+        }
+
+        const root = blockMeta.blocks[rootID] as Block;
+        root.parent = null; // avoid dangling IDs
+
+        const last = blockMeta.blocks[blockMeta.lastID] as Block;
+        last.next = null; // avoid dangling IDs
+
+        return blockMeta;
+    }
+
     override hasInputNode(input: BlockNode): InputKey | null {
         if (input.target.name !== this.target.name) {
             return null;
@@ -536,6 +637,14 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
         return this.block.shadow;
     }
 
+    isObscuredInput(key: InputKey): boolean {
+        if (key in this.block.inputs) {
+            return isUnobscuredShadowInput(this.block.inputs[key]);
+        }
+
+        throw new NoSuchKeyError(`Block "${this.block.opcode}" does not have input "${key}"`);
+    }
+
     override canBeLive(): boolean {
         if (this.isHatBlock()) {
             return true;
@@ -581,6 +690,168 @@ export class BlockNode extends BlockWrapper<Block, BlockNode> {
             .filter((key: InputKey) => !skipSubstack || (key !== "SUBSTACK" && key !== "SUBSTACK2"))
             .map((key: InputKey) => this.getInputNode(key))
             .filter((node) => node !== null);
+    }
+
+    override getInputMeta(key: InputKey): InputMeta {
+        if (!getInputKeys(this.block).includes(key)) {
+            throw new NoSuchKeyError(`Block "${this.block.opcode}" does not take input "${key}"`);
+        }
+
+        if (!(key in this.block.inputs)) {
+            // Only happens for C-Blocks or boolean blocks, when there's no SUBSTACK(2) or hexagonal input present.
+            return emptyInputMeta(deletedInput(), false, false);
+        }
+
+        const input = this.block.inputs[key];
+        const shadow = inputRefersToShadowBlock(this.block.opcode, key);
+        const obscured = isObscuredShadowInput(input);
+        let inputMeta = emptyInputMeta(input, shadow, obscured);
+        this._collectMetadata(getBlockIDs(input), inputMeta, true);
+
+        // Very important for the next steps so as not to unintentionally modify the underlying Block of the Node!
+        inputMeta = deepCopy(inputMeta);
+
+        // Avoid dangling references in inputs to this block.
+        for (const blockID of getBlockIDs(input)) {
+            // By construction, the inputBlock is a Block, and its parent is always this.blockID. No other blocks can
+            // have this.blockID as parent. (If anything, they have blockID as parent.)
+            const inputBlock = inputMeta.blocks[blockID] as Block;
+            inputBlock.parent = null; // obscured drop-down menus actually already have parent === null
+        }
+
+        return inputMeta;
+    }
+
+    private _collectMetadata(workQueue: Array<BlockID>, meta: Meta, collectSubstacks: boolean): void {
+        const lastID = meta.type === "Block" ? meta.lastID : null;
+
+        while (workQueue.length !== 0) {
+            // Handle the block itself by copying its JSON definition to the metadata object:
+            const currentBlockID = workQueue.shift();
+            const current = this._getBlockNode(currentBlockID);
+            const block = deepCopy<Block>(current.block);
+            meta.blocks[currentBlockID] = block;
+
+            /*
+             * Handle the metadata of the block:
+             * (1) "Primitive" inputs can be (a) literal numbers and strings, or (b) variables, lists, and broadcasts.
+             *     The former (a) are already fully captured by the block's JSON object. The latter (b) require special
+             *     care as they are orthogonal to blocks.
+             * (2) "Regular" inputs are represented as a Block object, and can be referred to via their block ID.
+             *     We can handle them like any other block -> just queue them up for processing.
+             */
+            current._collectPrimitiveInputs(meta);  // (1)
+            workQueue.push(...current._getInputBlockIDs(collectSubstacks, false)); // (2)
+
+            if (!collectSubstacks) {
+                // Avoid dangling block IDs in Meta: delete reference to the SUBSTACK(2).
+                for (const key of ["SUBSTACK", "SUBSTACK2"] as Array<InputKey>) {
+                    if (key in block.inputs) {
+                        block.inputs[key] = deletedInput();
+                    }
+                }
+            }
+
+            // `next` blocks, if present, are always included, unless this is the last block.
+            if (currentBlockID !== lastID && current.hasNext()) {
+                workQueue.push(current.getNextID());
+            }
+        }
+    }
+
+    private _collectPrimitiveInputs(meta: Meta): void {
+        for (const input of Object.values(this.block.inputs)) {
+            const [, inputBlock, maybeObscuredBlock] = input;
+            this._collectPrimitiveInput(inputBlock, meta);
+            this._collectPrimitiveInput(maybeObscuredBlock, meta);
+        }
+    }
+
+    private _collectPrimitiveInput(input: BlockID | PrimitiveInput, meta: Meta): void {
+        if (!isPrimitiveInput(input)) {
+            return;
+        }
+
+        const [type, name, id] = input;
+
+        switch (type) {
+            case primitiveInputTypes.variable: {
+                const isSpriteOnly = id in this.target.variables;
+                if (isSpriteOnly) {
+                    meta.variables[id] = this.target.variables[id];
+                } else {
+                    // It's a stage variable, but we don't have its value, so 0 will have to do.
+                    meta.stageVariables[id] = [name, 0];
+                }
+                break;
+            }
+            case primitiveInputTypes.list: {
+                const isSpriteOnly = id in this.target.lists;
+                if (isSpriteOnly) {
+                    meta.lists[id] = this.target.lists[id];
+                } else {
+                    // It's a stage list, but we don't have its value, so [] will have to do.
+                    meta.stageLists[id] = [name, []];
+                }
+                break;
+            }
+            case primitiveInputTypes.broadcast:
+                // Broadcasts are stored in the stage, but luckily id and name is all we need.
+                meta.broadcasts[id] = name;
+                break;
+        }
+    }
+
+    override getInputKeys(opts: InputFilterOpts): Array<InputKey> {
+        return this._getInputs(opts).map(([key]) => key);
+    }
+
+    override getInputBlockIDsRecursively(collectSubstacks: boolean, skipShadow: boolean): Array<BlockID> {
+        const blockIDs = new Array<BlockID>();
+        const workQueue = this._getInputBlockIDs(collectSubstacks, skipShadow);
+
+        while (workQueue.length > 0) {
+            const currentID = workQueue.shift();
+            blockIDs.push(currentID);
+            const inputs = this._getBlockNode(currentID)._getInputBlockIDs(collectSubstacks, skipShadow);
+            workQueue.push(...inputs);
+        }
+
+        return blockIDs;
+    }
+
+    private _getInputs(opts: InputFilterOpts): Array<Pair<InputKey, InputMeta>> {
+        let keys = Object.keys(this.block.inputs) as Array<InputKey>;
+
+        if (opts.skipSubstacks) {
+            keys = keys.filter((key) => !(key === "SUBSTACK" || key === "SUBSTACK2"));
+        }
+
+        return keys.map((key) => pair(key, this.getInputMeta(key))).filter(([, inputDep]) => {
+            const {input, input: [, inputBlock], shadow, obscured} = inputDep;
+
+            if (opts.skipDeletedInputs && isDeletedInput(input)) {
+                return false;
+            }
+
+            if (opts.skipClearedInputs && isClearedInput(input)) {
+                return false;
+            }
+
+            if (opts.skipUnobscuredShadowBlocks && shadow && !obscured) {
+                return false;
+            }
+
+            if (opts.skipBroadcasts && isUnobscuredShadowInput(input) && isBroadCastInput(inputBlock)) {
+                return false;
+            }
+
+            if (opts.skipUnobscuredPrimitiveInputs && isUnobscuredShadowInput(input) && isPrimitiveInput(inputBlock)) {
+                return false;
+            }
+
+            return true;
+        });
     }
 
     override supportsInput(key: InputKey): boolean {
@@ -1371,11 +1642,57 @@ export class VarListNode extends BlockWrapper<VarList, VarListNode> {
         return false;
     }
 
+    override getBlockMeta(traversal: TraversalOptions): BlockMeta {
+        if (traversal.nextBlocks && traversal.lastBlock !== this.blockID) {
+            throw new InvalidBlockError(`Did not expect to be given the block ID "${traversal.lastBlock}"`);
+        }
+
+        const blockMeta = emptyBlockMeta(this.blockID, this.blockID);
+        blockMeta.blocks[this.blockID] = this.block;
+
+        const [type, name, id] = this.block;
+        if (type === primitiveInputTypes.variable) {
+            const isSpriteOnly = id in this.target.variables;
+            if (isSpriteOnly) {
+                blockMeta.variables[id] = this.target.variables[id];
+            } else {
+                blockMeta.stageVariables[id] = [name, 0]; // 0 as dummy/default value
+            }
+        } else if (type === primitiveInputTypes.list) {
+            const isSpriteOnly = id in this.target.lists[id];
+            if (isSpriteOnly) {
+                blockMeta.lists[id] = this.target.lists[id];
+            } else {
+                blockMeta.stageLists[id] = [name, []]; // [] as dummy/default value
+            }
+        } else {
+            throw new NonExhaustiveCaseDistinction(type, `Unhandled input type "${type}"`);
+        }
+
+        return deepCopy<BlockMeta>(blockMeta);
+    }
+
+    override sliceTo(blockID: BlockID | null): BlockMeta {
+        return this.getBlockMeta({substacks: false, nextBlocks: true, lastBlock: blockID});
+    }
+
     override getInputNode(): null {
         return null;
     }
 
     override getInputNodes(): [] {
+        return [];
+    }
+
+    override getInputMeta(key: InputKey): never {
+        throw new NoSuchKeyError(`Variable/list block does not take input "${key}"`);
+    }
+
+    override getInputKeys(): [] {
+        return [];
+    }
+
+    override getInputBlockIDsRecursively(): [] {
         return [];
     }
 
