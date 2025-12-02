@@ -23,12 +23,20 @@ import {
 import {ListID, VariableID} from "./project/Target";
 import {List, Variable} from "./blocks/categories/Data";
 import {deepCopy} from "./utils/Objects";
-import {getInputKeys} from "./utils/blocks";
+import {getInputKeys, listName, variableName} from "./utils/blocks";
 import {checkForProblems, ID, throwErrorIfValueUndefined, validate, WrappedProject, wrapProject} from "./utils/helpers";
-import {ExprKey, InputKey, isObscuredShadowInput} from "./blocks/Inputs";
+import {
+    BroadCastInput,
+    ExprKey,
+    InputKey,
+    isObscuredShadowInput, ListInput,
+    primitiveInputTypes,
+    shadowTypes, UnobscuredShadowInput, VariableInput
+} from "./blocks/Inputs";
 import {Pair} from "../whisker/utils/Pair";
 import {broadcastInputToField, Field} from "./blocks/Fields";
 import {hashCode} from "../repair/utils/hashCode";
+import {BlockMeta, emptyBlockMeta, emptyInputMeta, InputMeta, Meta} from "./utils/meta";
 
 /**
  * An API to programmatically modify the `project.json` of Scratch projects.
@@ -798,6 +806,170 @@ export class Assembler {
         }
 
         throw new NoSuchListError(listID);
+    }
+
+    //endregion
+    //------------------------------------------------------------------------------------------------------------------
+    //region Meta
+
+    /**
+     * Returns an object with metadata for the requested statement. The block IDs in the returned object are the same
+     * as the ones used by the project. If `skipSubstacks` is `true,` the metadata of substack inputs is skipped. This
+     * can be useful, e.g., if only the data for a C-block itself are desired.
+     *
+     * @param statement the ID of the statement to query
+     * @param skipSubstack whether to skip metadata of substack inputs, defaults to `false`
+     */
+    public getStmtMeta(statement: BlockID, skipSubstack = false): BlockMeta {
+        return this.getBlockMeta(statement, skipSubstack);
+    }
+
+    /**
+     * Returns an object with metadata for the requested expression.
+     *
+     * @param exprSel the selector for the expression
+     */
+    public getExprMeta(exprSel: ExprSelector): Meta {
+        const node = this._getNode(exprSel.blockID);
+        return exprSel.key ? node.getInputMeta(exprSel.key) : node.getBlockMeta({substacks: false, nextBlocks: false});
+    }
+
+    /**
+     * Returns an object with metadata for the requested block. The block IDs in the returned object are the same
+     * as the ones used by the project. If `skipSubstacks` is `true`, the metadata of substack inputs is skipped. This
+     * can be useful, e.g., if only the data for a C-block itself are desired.
+     *
+     * @param block the ID of the block to query
+     * @param skipSubstack whether to skip metadata of substack inputs, defaults to `false`
+     */
+    public getBlockMeta(block: BlockID, skipSubstack = false): BlockMeta {
+        return this._getNode(block).getBlockMeta({substacks: !skipSubstack, nextBlocks: false});
+    }
+
+    /**
+     * Returns an object with metadata for the requested input.
+     *
+     * @param blockID the ID of the block that uses the input
+     * @param key the key identifying the input
+     */
+    public getInputMeta({blockID, key}: InputSelector): InputMeta {
+        return this._getNode(blockID).getInputMeta(key);
+    }
+
+    /**
+     * Returns an object with metadata for the requested script. The script is identified by the ID of its root block.
+     * If called with the ID of a non-root block, a "slice" of the script is returned, starting at the given block,
+     * and ending at the last block in the script. The block IDs in the returned object are the same as the ones used
+     * by the project.
+     *
+     * @param script the script to query
+     */
+    public getScriptMeta(script: BlockID): BlockMeta {
+        const topLevelBlock = this._getNode(script);
+
+        if (!topLevelBlock.isTopLevel) {
+            throw new NoSuchScriptError(`Script with root "${script}" does not exist`);
+        }
+
+        return topLevelBlock.sliceToEnd();
+    }
+
+    /**
+     * Returns an object with metadata for the requested stack of blocks/statements. The slice starts at the given
+     * start point and contains the end point. The block IDs in the returned object are the same as the ones used by
+     * the project.
+     *
+     * @param start the ID of the starting block
+     * @param end the ID of the end block, or `null` (slice to the end, the default)
+     */
+    public getStackMeta(start: BlockID, end: BlockID | null = null): BlockMeta {
+        return this._getNode(start).sliceTo(end);
+    }
+
+    /**
+     * Returns the current state of the specified field.
+     *
+     * @param blockID the ID of the block to which the field belongs
+     * @param key the key to identify the field
+     */
+    public getFieldValue({blockID, key}: FieldSelector): Field {
+        const node = this._getNode(blockID);
+        return node.getField(key);
+    }
+
+    /**
+     * Returns the current state of the specified drop-down menu. Supports all fields, and primitive inputs with key
+     * `"BROADCAST_INPUT"`.
+     *
+     * @param blockID the ID of the block the drop-down menu belongs to
+     * @param key the key to identify the drop-down menu
+     */
+    public getDropDownValue({blockID, key}: DropDownSelector): Field {
+        const node = this._getNode(blockID);
+
+        if (key !== "BROADCAST_INPUT") {
+            return node.getField(key);
+        }
+
+        const {input: [shadowType, unobscuredInput, obscuredInput]} = node.getInputMeta(key);
+        const broadcastInput = shadowType === shadowTypes.unobscuredShadow ? unobscuredInput : obscuredInput;
+        return broadcastInputToField(broadcastInput as BroadCastInput);
+    }
+
+    /**
+     * Converts the specified variable to a reporter block.
+     *
+     * @param variableID the ID of the variable
+     */
+    public getVariableAsBlockMeta(variableID: VariableID): BlockMeta {
+        const [variable, isStage] = this._getVariable(variableID);
+        const blockID = this._generateFreshID("variable");
+        const meta = emptyBlockMeta(blockID, blockID);
+        meta.blocks[blockID] = [primitiveInputTypes.variable, variableName(variable), variableID, 0, 0];
+        (isStage ? meta.stageVariables : meta.variables)[variableID] = variable;
+        return deepCopy(meta);
+    }
+
+    /**
+     * Converts the specified list to a reporter block.
+     *
+     * @param listID the ID of the list
+     */
+    public getListAsBlockMeta(listID: ListID): BlockMeta {
+        const [list, isStage] = this._getList(listID);
+        const blockID = this._generateFreshID("list");
+        const meta = emptyBlockMeta(blockID, blockID);
+        meta.blocks[blockID] = [primitiveInputTypes.list, listName(list), listID, 0, 0];
+        (isStage ? meta.stageLists : meta.lists)[listID] = list;
+        return deepCopy(meta);
+    }
+
+    /**
+     * Converts the specified variable to an input.
+     *
+     * @param variableID the ID of the variable
+     */
+    public getVariableAsInputMeta(variableID: VariableID): InputMeta {
+        const [variable, isStage] = this._getVariable(variableID);
+        const variableInput: VariableInput = [primitiveInputTypes.variable, variableName(variable), variableID];
+        const input: UnobscuredShadowInput = [shadowTypes.unobscuredShadow, variableInput];
+        const meta = emptyInputMeta(input, false, false);
+        (isStage ? meta.stageVariables : meta.variables)[variableID] = variable;
+        return deepCopy(meta);
+    }
+
+    /**
+     * Converts the specified list to an input.
+     *
+     * @param listID the ID of the list
+     */
+    public getListAsInputMeta(listID: ListID): InputMeta {
+        const [list, isStage] = this._getList(listID);
+        const listInput: ListInput = [primitiveInputTypes.list, listName(list), listID];
+        const input: UnobscuredShadowInput = [shadowTypes.unobscuredShadow, listInput];
+        const meta = emptyInputMeta(input, false, false);
+        (isStage ? meta.stageLists : meta.lists)[listID] = list;
+        return deepCopy(meta);
     }
 
     //endregion
