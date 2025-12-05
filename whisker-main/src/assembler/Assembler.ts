@@ -282,6 +282,12 @@ export class Assembler {
         return this._getStmts().map(({blockID}) => blockID);
     }
 
+    /**
+     * Returns all sequentially composed statements (i.e., directly connected to each other in a parent-next
+     * relationship) starting at the statement with the given ID.
+     *
+     * @param rootID The ID of the statement to start at
+     */
     public getStmtsOf(rootID: BlockID): Array<BlockID> {
         return [...this._getNode(rootID)].map(({blockID}) => blockID);
     }
