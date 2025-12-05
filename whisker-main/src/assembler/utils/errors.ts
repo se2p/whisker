@@ -1,4 +1,5 @@
 import {BlockID} from "../blocks/Block";
+import {ListID, VariableID} from "../project/Target";
 
 export abstract class CustomError extends Error {
     protected constructor(override readonly message: string) {
@@ -13,6 +14,16 @@ export abstract class CustomError extends Error {
 export class NoSuchSpriteError extends CustomError {
     constructor(name: string) {
         super(`Sprite "${name}" does not exist`);
+    }
+}
+
+export class NoSuchScriptError extends CustomError {
+    constructor(arg: BlockID | NoSuchBlockError) {
+        if (arg instanceof NoSuchBlockError) {
+            arg = arg.blockID;
+        }
+
+        super(`Script with root "${arg}" does not exist`);
     }
 }
 
@@ -41,5 +52,17 @@ export class ValidationError extends CustomError {
 export class NoSuchKeyError extends CustomError {
     constructor(override readonly message: string) {
         super(message);
+    }
+}
+
+export class NoSuchVariableError extends CustomError {
+    constructor(variableID: VariableID) {
+        super(`Variable with ID "${variableID}" does not exist`);
+    }
+}
+
+export class NoSuchListError extends CustomError {
+    constructor(listID: ListID) {
+        super(`List with ID "${listID}" does not exist`);
     }
 }
