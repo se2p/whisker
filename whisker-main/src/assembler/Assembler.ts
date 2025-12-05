@@ -778,7 +778,7 @@ export class Assembler {
     }
 
     /**
-     * Returns the variables of the stage.
+     * Returns the lists of the stage.
      */
     public getStageLists(): Array<ListID> {
         return this.getListsOfTarget(STAGE_NAME);
