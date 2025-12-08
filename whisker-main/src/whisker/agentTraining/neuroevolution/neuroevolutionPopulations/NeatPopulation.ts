@@ -330,18 +330,20 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             return newSpecies;
         }
 
-        // Otherwise, search for compatible species the network can be assigned to.
+        // Find the closest compatible species.
+        let closestSpecies: Species<NeatChromosome> = null;
+        let minDistance = Number.MAX_VALUE;
         for (const specie of this.species) {
-            // Skip empty species
-            if (specie.networks.length == 0) {
-                continue;
+            const compatDistance = this.compatibilityDistance(specie.representative, network);
+            if (compatDistance < minDistance && compatDistance < this._compatibilityThreshold) {
+                closestSpecies = specie;
+                minDistance = compatDistance;
             }
+        }
 
-            const compatDistance = this.compatibilityDistance(network, specie.representative);
-            if (compatDistance < this._compatibilityThreshold) {
-                specie.networks.push(network);
-                return specie;
-            }
+        if (closestSpecies != null) {
+            closestSpecies.networks.push(network);
+            return closestSpecies;
         }
 
         // If the network fits into no species, create a new one.
