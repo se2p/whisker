@@ -75,9 +75,10 @@ export class Neatest extends NEAT {
                 this._population.updatePopulationStatistics();
 
                 // Switch if we stopped improving for a set number of generations.
-                const remainingTargets = this._getUncoveredObjectives().length;
-                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount &&
-                    remainingTargets > 1) {
+                const remainingTargets = this._getUncoveredObjectives()
+                    .filter(target => target.getNodeId() !== currentTarget.getNodeId());
+                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount
+                    && remainingTargets.length > 1) {
                     this._switchedObjectives.add(currentTarget);
                     logger.debug("Switching Target " + currentTarget.getNodeId() + " due to missing improvement.");
                     break;

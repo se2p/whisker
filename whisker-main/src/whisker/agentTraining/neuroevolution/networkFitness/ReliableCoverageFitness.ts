@@ -6,7 +6,6 @@ import {Randomness} from "../../../utils/Randomness";
 import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import {ClassificationType, NeuroevolutionEventSelection} from "../hyperparameter/BasicNeuroevolutionParameter";
 import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
-import logger from "../../../../util/logger";
 
 
 export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -81,10 +80,6 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         // Reset network attributes.
         this.restoreNetworkAttributes(network, playTime, score, trace, finalState, coverage, branchCoverage);
         StatisticsCollector.getInstance().evaluations = trueFitnessEvaluations;
-
-        if (network.targetObjective) {
-            logger.debug(`Achieved fitness for ${network.targetObjective}: ${network.fitness}`);
-        }
     }
 
     /**
