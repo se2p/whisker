@@ -638,7 +638,7 @@ const runAllTests = async function () {
 
             const suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project,
                 Whisker.scratch.vm, properties, Whisker.tests);
-            const [csv, mutantPrograms, spriteTraces] = await suiteExecutor.execute(Whisker.modelTester);
+            const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
             summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
