@@ -282,13 +282,16 @@ class TestRunner extends EventEmitter {
     async _executeUserModels(vm, modelTester, project, props, modelProps,
                              testResults, projectName) {
         let csv = "";
+        const modifiedProps = {...props};
+        const startSeed = modifiedProps.seed ? Number(modifiedProps.seed) : Date.now();
         for (let i = 0; i < modelProps.repetitions; i++) {
             modelTester.clearRepetitionCoverage();
             for (const uM of modelTester.userModelIndices()) {
-                this.util = await this._loadProject(vm, project, props, modelTester);
+                modifiedProps.seed = startSeed + modelTester.runIndex;
+                this.util = await this._loadProject(vm, project, modifiedProps, modelTester);
                 this.vmWrapper.nextUserModelIndex = uM;
                 const startTime = Date.now();
-                const result = await this._executeTest(vm, null, props, modelProps, 0);
+                const result = await this._executeTest(vm, null, modifiedProps, modelProps, 0);
                 this.emit(TestRunner.TEST_MODEL, result);
                 testResults.push(result);
                 const duration = (Date.now() - startTime) / 1000;
