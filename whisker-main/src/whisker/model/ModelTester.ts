@@ -221,6 +221,12 @@ export class ModelTester extends EventEmitter {
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
     }
 
+    getDurationForUserModel(modelDuration: number): number {
+        return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
+            ? Math.min(modelDuration, this._runningUserModel.maxDuration)
+            : modelDuration;
+    }
+
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         if (!this.someModelLoaded()) {
             return;

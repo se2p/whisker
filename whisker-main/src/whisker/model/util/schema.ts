@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {CheckJSON, ConditionJSON} from "../checks/newCheck";
 import {UserInputJSON} from "../inputs/newUserInput";
+import {UserModel} from "../components/UserModel";
 
 export type Position = { x: number; y: number; }
 export type ArgType = string | number | string[] | boolean;
@@ -11,6 +12,15 @@ const EdgeID = z.string();
 type NodeID = string;
 const NodeID = z.string();
 
+type GraphID = string;
+const GraphID = z.string().default(() => `id_undefined${nextId()}`);
+
+export type NodeType = "standard" | "special";
+
+export const NodeType = z.union([
+    z.literal("standard"),
+    z.literal("special"),
+]);
 
 export interface ModelNodeJSON {
     id: NodeID;
@@ -91,22 +101,22 @@ export const StorageValueType = z.tuple([z.literal("string"), z.string()])
     .or(z.tuple([z.literal("exprType"), z.string().or(z.array(z.string()))]));
 
 export interface IModelJSON {
-    id: string;
+    id: GraphID;
     usage: ModelUsage;
-    startNodeId: string;
-    stopAllNodeIds: string[];
+    startNodeId: NodeID;
+    stopAllNodeIds: NodeID[];
     edges: IModelEdgeJSON[];
     nodes: ModelNodeJSON[];
     initialStorage: Record<string, StorageValueType>;
 }
 
 const IModelJSON = z.object({
-    id: z.string().default(() => `id_undefined${nextId()}`),
+    id: GraphID,
     usage: ModelUsage,
     startNodeId: z.string({
         invalid_type_error: "Expected exactly one start node"
     }),
-    stopAllNodeIds: z.array(z.string()).default([]),
+    stopAllNodeIds: z.array(NodeID).default([]),
     edges: z.array(ModelEdgeJSON),
     nodes: z.array(ModelNodeJSON),
     initialStorage: z.record(z.string(), StorageValueType).default(() => ({})),
@@ -115,11 +125,13 @@ const IModelJSON = z.object({
 export interface UserModelJSON extends IModelJSON {
     usage: "user";
     edges: UserModelEdgeJSON[];
+    maxDuration?: number
 }
 
 const UserModelJSON = IModelJSON.extend({
     usage: z.literal("user"),
     edges: z.array(UserModelEdgeJSON),
+    maxDuration: z.number().optional().default(UserModel.NO_DURATION),
 });
 
 export type StartType = "GreenFlag" | "Event" | "CloneCreated" | "Backdrop" | "Key" | "Click" | "Loudness";
