@@ -77,12 +77,6 @@ class TestRunner extends EventEmitter {
      */
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
-        if (!modelProps.repetitions) {
-            modelProps.repetitions = 1;
-        }
-        if (!modelProps.duration) {
-            modelProps.duration = 35000;
-        }
 
         this.activateTracing(vm, props);
 

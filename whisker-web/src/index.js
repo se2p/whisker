@@ -416,11 +416,9 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     const setMutators = document.querySelector('#container').mutators;
     const mutantDownload = document.querySelector('#container').downloadMutants;
 
-    let duration = Number(document.querySelector('#model-duration').value);
-    if (duration) {
-        duration = duration * 1000;
-    }
-    const repetitions = Number(document.querySelector('#model-repetitions').value);
+    const durationValue = Number(document.querySelector('#model-duration').value);
+    const duration = (durationValue <= 0 || Number.isNaN() ? 35 : durationValue) * 1000;
+    const repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
 
     const props = {
         accelerationFactor: $('#acceleration-value').text(),
