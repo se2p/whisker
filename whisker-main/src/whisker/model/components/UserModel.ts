@@ -51,7 +51,7 @@ export class UserModel extends AbstractModel<UserModelEdge> {
     }
 
     override toJSON(): UserModelJSON {
-        const json: UserModelJSON = {
+        return {
             usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
@@ -59,10 +59,7 @@ export class UserModel extends AbstractModel<UserModelEdge> {
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
             initialStorage: this.initialStorage,
+            maxDuration: this._maxDuration,
         };
-        if (this.hasMaxDuration) {
-            json.maxDuration = this._maxDuration;
-        }
-        return json;
     }
 }

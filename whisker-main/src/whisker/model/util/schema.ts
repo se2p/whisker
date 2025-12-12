@@ -118,7 +118,7 @@ const IModelJSON = z.object({
 export interface UserModelJSON extends IModelJSON {
     usage: "user";
     edges: UserModelEdgeJSON[];
-    maxDuration?: number
+    maxDuration: number
 }
 
 const UserModelJSON = IModelJSON.extend({
