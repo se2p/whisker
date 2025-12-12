@@ -32,8 +32,8 @@ export const MOUSE_NAME = "_mouse_";
 
 export type MultiMap<K, V> = Map<K, Set<V>>;
 
-export type ScratchBaseTypes = number | string | boolean
-export type ScratchRoundInputType = ScratchBaseTypes | ScratchBaseTypes[];
+type ScratchBaseTypes = number | string | boolean
+type ScratchRoundInputType = ScratchBaseTypes | ScratchBaseTypes[];
 export type XYBounds = { x: { min: number, max: number }, y: { min: number, max: number } };
 
 type DirectionSubType = {
