@@ -74,7 +74,7 @@ export class MoveSteps extends BoundedCheck<MoveStepsJSON, CheckFun0> {
         };
     }
 
-    protected _updatedBound(s: Sprite, currentBounds: XYBounds): XYBounds {
+    private _updatedBound(s: Sprite, currentBounds: XYBounds): XYBounds {
         return this._boundsNeedUpdate(s) ? getXYBounds(s) : currentBounds;
     }
 
