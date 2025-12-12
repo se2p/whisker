@@ -47,6 +47,7 @@ export class MoveSteps extends BoundedCheck<MoveStepsJSON, CheckFun0> {
     }
 
     protected get attrName(): AttrName {
+        // here it does not matter if the returned value is "x" or "y" because they need updates under the same events
         return "x";
     }
 
