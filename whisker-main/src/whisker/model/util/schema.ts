@@ -15,13 +15,6 @@ const NodeID = z.string();
 type GraphID = string;
 const GraphID = z.string().default(() => `id_undefined${nextId()}`);
 
-export type NodeType = "standard" | "special";
-
-export const NodeType = z.union([
-    z.literal("standard"),
-    z.literal("special"),
-]);
-
 export interface ModelNodeJSON {
     id: NodeID;
     label: string;
