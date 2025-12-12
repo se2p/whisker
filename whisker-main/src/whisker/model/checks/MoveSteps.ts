@@ -65,7 +65,8 @@ export class MoveSteps extends BoundedCheck<MoveStepsJSON, CheckFun0> {
         const spriteName = sprite.name;
 
         this._registerOnMoveEvent(spriteName);
-        let bound = this._updatedBound(sprite, getXYBounds(sprite));
+        this._boundsNeedUpdate(sprite);
+        let bounds = getXYBounds(sprite);
 
         return () => {
             const reason = {};

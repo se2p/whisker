@@ -635,16 +635,11 @@ export function convertToRgbNumbers(pR: ArgType, pG: ArgType, pB: ArgType): [num
 }
 
 export function hexToRgb(hexString: string): [number, number, number] {
-    let start = hexString.indexOf("#") + 1;
-    if (start == 0) {
-        start = hexString.indexOf("0x") + 2;
-        if (start == 1) {
-            start = 0;
-        }
-    }
-    const r = parseInt(hexString.substring(start, start + 2), 16);
-    const g = parseInt(hexString.substring(start + 2, start + 4), 16);
-    const b = parseInt(hexString.substring(start + 4, start + 6), 16);
+    // If necessary, remove the prefix "#" or "0x" from the string to retain just the hex digits.
+    hexString = hexString.replace(/^(#|0x)/, "");
+    const r = parseInt(hexString.substring(0, 2), 16);
+    const g = parseInt(hexString.substring(2, 4), 16);
+    const b = parseInt(hexString.substring(4, 6), 16);
     return [r, g, b];
 }
 
