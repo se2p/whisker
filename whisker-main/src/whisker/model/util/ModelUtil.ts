@@ -438,6 +438,8 @@ export function movedCorrectAmountOfSteps(s: Sprite, expected: number,
     }
     const actual = getMovedSteps(s);
     const expectedAbsDist = Math.abs(expected);
+    // The floating point operations cause some slight offset of 0.xyz -> epsilon to accept a slightly wrong value.
+    // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
     const distanceCorrect = approxEq(actual, expectedAbsDist, 0.9);
     const isCloseToBounds = s.x - expectedAbsDist <= bounds.x.min || s.x + expectedAbsDist >= bounds.x.max
         || s.y - expectedAbsDist <= bounds.y.min || s.y + expectedAbsDist >= bounds.y.max;
@@ -445,8 +447,6 @@ export function movedCorrectAmountOfSteps(s: Sprite, expected: number,
     const movedDirection = getExpectedDirectionForSprite1LookingAtSprite2(s.old, s);
     const oldMovedForwards = checkDirectionWithinDelta(s.old, movedDirection);
     const directionCorrect = forward || !oldMovedForwards;
-    // The floating point operations cause some slight offset of 0.xyz -> epsilon to accept a slightly wrong value.
-    // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
     const correct = directionCorrect && (distanceCorrect || isCloseToBounds);
     if (reason) {
         reason["actualDistance"] = numberToReasonString(actual);
