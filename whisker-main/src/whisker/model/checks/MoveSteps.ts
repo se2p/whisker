@@ -70,8 +70,8 @@ export class MoveSteps extends BoundedCheck<MoveStepsJSON, CheckFun0> {
 
         return () => {
             const reason = {};
-            bound = this._updatedBound(sprite, bound);
-            const correct = movedCorrectAmountOfSteps(sprite, this._args[1], bound, reason);
+            bounds = this._updatedBound(sprite, bounds);
+            const correct = movedCorrectAmountOfSteps(sprite, this._args[1], bounds, reason);
             return result(correct, reason, this.negated);
         };
     }
