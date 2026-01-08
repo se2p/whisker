@@ -60,6 +60,7 @@ async function openNewBrowser() {
         headless,
         args,
         devtools: false,
+        defaultViewport: null,
 
         // If specified, use the given version of Chromium/Chrome instead of the one bundled with Puppeteer.
         // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
