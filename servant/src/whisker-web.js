@@ -56,11 +56,10 @@ async function openNewBrowser() {
 
     logger.info("Opening browser...");
 
-    const browser = await openNewBrowserWithRetry({
+    const browserOpts = {
         headless,
         args,
         devtools: false,
-        defaultViewport: null,
 
         // If specified, use the given version of Chromium/Chrome instead of the one bundled with Puppeteer.
         // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
@@ -68,7 +67,15 @@ async function openNewBrowser() {
         // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
         // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
         executablePath: process.env.CHROME_BIN || null,
-    });
+    };
+
+    // Quality of life: Dynamically adjust browser page viewport to window size in headful mode. Otherwise, the default
+    // dimensions of 800 x 600 will be used.
+    if (!headless) {
+        browserOpts["defaultViewport"] = null;
+    }
+
+    const browser = await openNewBrowserWithRetry(browserOpts);
 
     await logGraphicsFeatureStatus(browser);
 
