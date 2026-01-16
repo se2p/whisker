@@ -644,11 +644,15 @@ export function hexToRgb(hexString: string): [number, number, number] {
 }
 
 export function toScratchString(value: ScratchRoundInputType): string {
-    if (typeof value == "string" || typeof value == "boolean" || typeof value == "number") {
+    if (!Array.isArray(value)) {
         return value.toString();
     }
+
     const strings = value.map(v => toScratchString(v));
-    return strings.join(strings.some(s => s.length != 1 || s.trim().length !== 1) ? " " : "");
+    const delim = strings.some(s => s.length !== 1) ? " " : "";
+    // ["a", "b", "c"] → "abc"
+    // ["a", "foo", "bar"] → "a foo bar"
+    return strings.join(delim);
 }
 
 export function toScratchNumber(value: ScratchRoundInputType): number {
