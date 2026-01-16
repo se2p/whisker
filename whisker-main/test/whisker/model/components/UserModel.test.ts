@@ -18,6 +18,7 @@ describe('User model', () => {
             id: p.id,
             startNodeId: "start",
             stopAllNodeIds: [],
+            maxDuration: UserModel.NO_DURATION,
             nodes: [
                 {
                     id: "start",

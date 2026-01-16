@@ -17,6 +17,9 @@ import {StorageValueType, UserModelJSON} from "../util/schema";
  * taken. So that it not gets ambiguous.
  */
 export class UserModel extends AbstractModel<UserModelEdge> {
+    public static readonly NO_DURATION = -1;
+    private readonly _maxDuration: number;
+
     /**
      * Construct a user model (graph) with a string identifier. This model acts as a user playing/using the Scratch
      * program and provides inputs for the program.
@@ -27,14 +30,24 @@ export class UserModel extends AbstractModel<UserModelEdge> {
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      * @param initialStorage Initial values of the graph storage before the execution starts
+     * @param maxDuration Maximum duration for running this UserModel
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, UserModelNode>, edges: Record<string, UserModelEdge>,
-                stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
+                stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>, maxDuration = UserModel.NO_DURATION) {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
+        this._maxDuration = maxDuration;
     }
 
     override get usage(): "user" {
         return "user";
+    }
+
+    get hasMaxDuration(): boolean {
+        return this._maxDuration !== UserModel.NO_DURATION;
+    }
+
+    get maxDuration(): number {
+        return this._maxDuration;
     }
 
     override toJSON(): UserModelJSON {
@@ -46,6 +59,7 @@ export class UserModel extends AbstractModel<UserModelEdge> {
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
             initialStorage: this.initialStorage,
+            maxDuration: this._maxDuration,
         };
     }
 }

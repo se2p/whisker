@@ -92,11 +92,11 @@ function loadModel(raw: ModelJSON): Model {
 }
 
 function loadUserModel(raw: UserModelJSON): UserModel {
-    const {id, startNodeId, stopAllNodeIds, initialStorage} = raw;
+    const {id, startNodeId, stopAllNodeIds, initialStorage, maxDuration} = raw;
     const nodes = loadNodes<UserModelEdge>(raw);
     const edges = loadUserModelEdges(raw);
     addConnections(id, nodes, edges);
-    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage);
+    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage, maxDuration);
 }
 
 function loadProgramModel(raw: ProgramModelJSON): ProgramModel {

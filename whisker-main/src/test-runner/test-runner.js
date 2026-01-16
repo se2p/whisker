@@ -661,12 +661,13 @@ class TestRunner extends EventEmitter {
             await this._determineCoverages(test, props);
         } else if (this.vmWrapper.modelTester.someModelLoaded()) {
             let updateResultStatus = true;
+            const duration = this.vmWrapper.modelTester.getDurationForUserModel(modelProps.duration);
             // this code executes a User Model or executes the Models without inputs depending on the userModelIndex
             try {
                 // wait until either a maximal duration or until the model stops
                 await testDriver.runUntil(() => {
                     return !this.vmWrapper.modelTester.running();
-                }, modelProps.duration);
+                }, duration);
             } catch (e) {
                 // probably run aborted
                 logger.error(e);
