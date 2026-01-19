@@ -26,22 +26,6 @@ export class ModelResult {
          * @type {Object.<string, ModelCoverageResult>}
          */
         this.coverage = {};
-
-        /**
-         * @type {string[]}
-         */
-        this.log = [];
-
-        /**
-         * @type {string[]}
-         */
-        this.edgeTrace = [];
-
-        /**
-         * States of the variables
-         * @type {string[]}
-         */
-        this.state = [];
     }
 
     /**
