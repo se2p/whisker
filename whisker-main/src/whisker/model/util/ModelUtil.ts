@@ -11,11 +11,12 @@ import {
     VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
-import {ArgType} from "./schema";
-import {attributeNames, effectNames} from "../checks/CheckTypes";
+import {ArgType, Position} from "./schema";
+import {attributeNames, AttrName, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
-import {approxEq} from "../checks/Comparison";
-import {CheckResult, pass, Reason, result} from "../checks/CheckResult";
+import {approxEq, approxGt, approxLt, EPSILON, Interval} from "../checks/Comparison";
+import {CheckResult, fail, pass, Reason} from "../checks/CheckResult";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {OracleModel} from "../components/AbstractModel";
 
 export interface Dependencies {
@@ -31,6 +32,15 @@ export const MOUSE_NAME = "_mouse_";
 
 export type MultiMap<K, V> = Map<K, Set<V>>;
 
+type ScratchBaseTypes = number | string | boolean
+type ScratchRoundInputType = ScratchBaseTypes | ScratchBaseTypes[];
+export type XYBounds = { x: { min: number, max: number }, y: { min: number, max: number } };
+
+type DirectionSubType = {
+    direction: number,
+    rotationStyle: string
+};
+
 const DEFAULT_CYCLIC_DELTA = 3.0;
 const _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
 const _modelMap: Map<string, OracleModel> = new Map<string, OracleModel>();
@@ -43,6 +53,10 @@ export function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void
     } else {
         map.set(key, new Set([value]));
     }
+}
+
+export function getXYBounds(s: Sprite): XYBounds {
+    return {x: s.getRangeOfX(), y: s.getRangeOfY()};
 }
 
 /**
@@ -172,7 +186,7 @@ export function getExpectedDirectionForSprite1LookingAtTarget(s1: Sprite, x: num
     return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
 }
 
-export function checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = DEFAULT_CYCLIC_DELTA, useMode = false): boolean {
+export function checkDirectionWithinDelta(sprite: DirectionSubType, expected: number, delta = DEFAULT_CYCLIC_DELTA, useMode = false): boolean {
     if (!useMode || sprite.rotationStyle == "all round") {
         return checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, delta);
     }
@@ -211,13 +225,13 @@ export function checkCyclicValueWithinDelta(actual: number, expected: number, mi
 export function getExpressionForEval(t: TestDriver, pToEval: ArgType, graphId: string): Expression {
     // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
     const code = String(pToEval);
-    const result = {expr: `(t, $, $$) => ${code}`, varDependencies: [], attrDependencies: []};
+    const result = {expr: `(t, $, $$, $MU) => ${code}`, varDependencies: [], attrDependencies: []};
     const $ = (s: string, a: string, c: boolean) =>
         getValueForSubExpression(t, s, a, c, result);
     const $$ = get$$Function(graphId);
     try {
         // fill dependencies and check if the expression works
-        eval(`($, $$) => ${code}`)($, $$);
+        eval(`($, $$, $MU) => ${code}`)($, $$, new DependencyMU(result, t));
     } catch (e: unknown) {
         if (e instanceof SyntaxError) {
             throw new ExpressionSyntaxError(e.message);
@@ -247,7 +261,8 @@ export function evaluateExpression(t: TestDriver, expression: string, graphId: s
     const $ = (spriteName: string, attribute: string, custom: boolean) =>
         getValueForSubExpression(t, spriteName, attribute, custom, undefined, log, clone);
     const $$ = get$$Function(graphId, log);
-    return eval(expression)(t, $, $$);
+    const $MU = new ModelUtil(t, log, clone);
+    return eval(expression)(t, $, $$, $MU);
 }
 
 /**
@@ -392,7 +407,7 @@ export function getNumberFunction(text: ArgType, t: TestDriver, graphId: string)
  * @param pos2 The second point.
  * @return The distance between the two points.
  */
-export function getDistance(pos1: { x: number, y: number }, pos2: { x: number, y: number }): number {
+export function getDistance(pos1: Position, pos2: Position): number {
     const a = pos1.x - pos2.x;
     const b = pos1.y - pos2.y;
     return Math.hypot(a, b);
@@ -412,23 +427,39 @@ export function numberToReasonString(num: number, digits = 1): string {
     return typeof num !== "number" || Number.isInteger(num) ? String(num) : num.toFixed(digits);
 }
 
-export function movedCorrectAmountOfSteps(s: Sprite, expected: number, negated = false): CheckResult {
+function clamp(value: number, bounds: Interval): number {
+    return Math.max(Math.min(value, bounds.max), bounds.min);
+}
+
+export function movedCorrectAmountOfSteps(s: Sprite, expected: number,
+                                          bounds: XYBounds = null, reason: Reason = null): boolean {
+    if (bounds === null) {
+        bounds = getXYBounds(s);
+    }
     const actual = getMovedSteps(s);
+    const expectedAbsDist = Math.abs(expected);
+    // The floating point operations cause some slight offset of 0.xyz -> epsilon to accept a slightly wrong value.
+    // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
+    const distanceCorrect = approxEq(actual, expectedAbsDist, 0.9);
+    const isCloseToBounds = s.x - expectedAbsDist <= bounds.x.min || s.x + expectedAbsDist >= bounds.x.max
+        || s.y - expectedAbsDist <= bounds.y.min || s.y + expectedAbsDist >= bounds.y.max;
     const forward = expected >= 0;
     const movedDirection = getExpectedDirectionForSprite1LookingAtSprite2(s.old, s);
     const oldMovedForwards = checkDirectionWithinDelta(s.old, movedDirection);
     const directionCorrect = forward || !oldMovedForwards;
-    // The floating point operations cause some slight offset of 0.xyz -> epsilon to accept a slightly wrong value.
-    // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
-    const correct = directionCorrect && approxEq(actual, Math.abs(expected), 0.9);
-    return result(correct, {
-        actualDistance: numberToReasonString(actual),
-        expectedDistance: numberToReasonString(expected),
-        oldDirection: numberToReasonString(s.old.direction),
-        movedDirection: numberToReasonString(movedDirection),
-        x: numberToReasonString(s.x),
-        y: numberToReasonString(s.y),
-    }, negated);
+    const correct = directionCorrect && (distanceCorrect || isCloseToBounds);
+    if (reason) {
+        reason["actualDistance"] = numberToReasonString(actual);
+        reason["expectedDistance"] = numberToReasonString(expected);
+        reason["oldDir"] = numberToReasonString(s.old.direction);
+        reason["movedDir"] = numberToReasonString(movedDirection);
+        reason["x"] = numberToReasonString(s.x);
+        reason["oldX"] = numberToReasonString(s.old.x);
+        reason["y"] = numberToReasonString(s.y);
+        reason["oldY"] = numberToReasonString(s.old.y);
+    }
+
+    return correct;
 }
 
 export function flipDirectionHorizontally(direction: number): number {
@@ -522,7 +553,12 @@ function getValueForSubExpression(t: TestDriver, spriteName: string, attribute: 
             }
         }
         if (dependencies) {
-            dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
+            if (attribute === "pos") {
+                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: "x"});
+                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: "y"});
+            } else {
+                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
+            }
         }
         if (log) {
             log[`${spriteName}.${attribute}`] = String(variable);
@@ -596,4 +632,324 @@ export function convertToRgbNumbers(pR: ArgType, pG: ArgType, pB: ArgType): [num
         throw new RGBRangeError();
     }
     return [r, g, b];
+}
+
+export function hexToRgb(hexString: string): [number, number, number] {
+    // If necessary, remove the prefix "#" or "0x" from the string to retain just the hex digits.
+    hexString = hexString.replace(/^(#|0x)/, "");
+    const r = parseInt(hexString.substring(0, 2), 16);
+    const g = parseInt(hexString.substring(2, 4), 16);
+    const b = parseInt(hexString.substring(4, 6), 16);
+    return [r, g, b];
+}
+
+export function toScratchString(value: ScratchRoundInputType): string {
+    if (!Array.isArray(value)) {
+        return value.toString();
+    }
+
+    const strings = value.map(v => toScratchString(v));
+    const delim = strings.some(s => s.length !== 1) ? " " : "";
+    // ["a", "b", "c"] → "abc"
+    // ["a", "foo", "bar"] → "a foo bar"
+    return strings.join(delim);
+}
+
+export function toScratchNumber(value: ScratchRoundInputType): number {
+    const res: number = typeof value == "string" || typeof value == "boolean" || typeof value == "number"
+        ? Number(value)
+        : Number(toScratchString(value));
+    return Number.isNaN(res) ? 0 : res;
+}
+
+export function toScratchBoolean(value: ScratchRoundInputType): boolean {
+    return !(value === 0 || value === "0" || String(value).toLowerCase() === "false" || value === "" || value === false);
+}
+
+export function isConsideredNumber(value: ScratchRoundInputType): boolean {
+    return !Number.isNaN(Number(value));
+}
+
+export function scratchCmp(left: ScratchRoundInputType, right: ScratchRoundInputType, comp: "<" | "==" | ">", epsilon = EPSILON): boolean {
+    const compareNum = isConsideredNumber(left) && isConsideredNumber(right);
+    const leftValue = compareNum ? toScratchNumber(left) : toScratchString(left).toLowerCase();
+    const rightValue = compareNum ? toScratchNumber(right) : toScratchString(right).toLowerCase();
+    switch (comp) {
+        case "<":
+            return approxLt(leftValue, rightValue, epsilon);
+        case "==":
+            return approxEq(leftValue, rightValue, epsilon);
+        case ">":
+            return approxGt(leftValue, rightValue, epsilon);
+        default:
+            throw new NonExhaustiveCaseDistinction(comp);
+    }
+}
+
+export function scratchStringContains(value: ScratchRoundInputType, substring: ScratchRoundInputType): boolean {
+    return toScratchString(value).toLowerCase()
+        .includes(toScratchString(substring).toLowerCase());
+}
+
+export function scratchListContains(list: ScratchBaseTypes[], element: ScratchRoundInputType): boolean {
+    return list.some(e => scratchCmp(e, element, "=="));
+}
+
+export function scratchOpMod(left: ScratchRoundInputType, right: ScratchRoundInputType): number {
+    const leftNum = toScratchNumber(left);
+    const rightNum = toScratchNumber(right);
+    const modResult = leftNum % rightNum;
+    if (leftNum >= 0 && rightNum >= 0 || leftNum <= 0 && rightNum <= 0) {
+        return modResult;
+    }
+    if (leftNum < 0) {
+        return modResult - rightNum;
+    }
+    return modResult === 0 ? 0 : -modResult;
+}
+
+export function scratchCalc(left: ScratchRoundInputType, right: ScratchRoundInputType, operator: "+" | "-" | "*" | "/" | "%"): number {
+    switch (operator) {
+        case "-":
+            return toScratchNumber(left) - toScratchNumber(right);
+        case "+":
+            return toScratchNumber(left) + toScratchNumber(right);
+        case "*":
+            return toScratchNumber(left) * toScratchNumber(right);
+        case "/":
+            return toScratchNumber(left) / toScratchNumber(right);
+        case "%":
+            return scratchOpMod(left, right);
+    }
+}
+
+export function getBounds(s: Sprite, t: TestDriver, attr: AttrName): Interval {
+    switch (attr) {
+        case "x":
+            return {...s.getRangeOfX()};
+        case "y":
+            return {...s.getRangeOfY()};
+        case "size":
+            return {...s.getRangeOfSize()};
+        case "layerOrder":
+            return {min: 1, max: currentMaxLayer(t)};
+        case "direction":
+            return {min: -180, max: 180};
+        case "volume":
+            return {min: 0, max: 100};
+        case "currentCostume":
+            return {min: 0, max: s.getCostumeCount()};
+        // the wiki states bounds for effects but the actual value of the effects has no bounds
+        default:
+            return null;
+    }
+}
+
+class ModelUtil {
+    private readonly _log: Reason;
+    private readonly _counters: Record<string, number>;
+    private readonly _testDriver: TestDriver;
+    private readonly _clone: Sprite | null;
+
+    constructor(testDriver: TestDriver, log: Reason = {}, clone: Sprite | null = null) {
+        this._testDriver = testDriver;
+        this._log = log;
+        this._counters = {
+            "<": 0,
+            "==": 0,
+            ">": 0,
+            "+": 0,
+            "-": 0,
+            "*": 0,
+            "/": 0,
+            "%": 0,
+            "dist": 0,
+        };
+        this._clone = clone;
+    }
+
+    public cmp(op1: ScratchRoundInputType, op2: ScratchRoundInputType, comp: "<" | "==" | ">", epsilon = EPSILON): boolean {
+        if (isConsideredNumber(op1) && isConsideredNumber(op2)) {
+            this._log[`cmp_${comp}_${++this._counters[comp]}`] = Math.abs(toScratchNumber(op1) - toScratchNumber(op2));
+        }
+        return scratchCmp(op1, op2, comp, epsilon);
+    }
+
+    public calc(left: ScratchRoundInputType, right: ScratchRoundInputType, operator: "+" | "-" | "*" | "/" | "%"): number {
+        const result = scratchCalc(left, right, operator);
+        this._log[`calc_${operator}_${++this._counters[operator]}`] = result;
+        return result;
+    }
+
+    public stepsCorrect(s: Sprite, expected: number): boolean {
+        return movedCorrectAmountOfSteps(s, expected, null, this._log);
+    }
+
+    public toStr(input: ScratchRoundInputType): string {
+        return toScratchString(input);
+    }
+
+    public log(key: string, value: unknown) {
+        this._log[key] = value;
+    }
+
+    public xCordEqual(s1: string, s2: string) {
+        return this.cmp(this._getTarget(s1).x, this._getTarget(s2).x, "==");
+    }
+
+    public yCordEqual(s1: string, s2: string) {
+        return this.cmp(this._getTarget(s1).y, this._getTarget(s2).y, "==");
+    }
+
+    public posEqual(s1: string, s2: string) {
+        const t1 = this._getTarget(s1);
+        const t2 = this._getTarget(s2);
+        return this.cmp(t1.x, t2.x, "==") && this.cmp(t1.y, t2.y, "==");
+    }
+
+    public attrChange(spriteName: string, attr: AttrName, expected: number, epsilon = EPSILON): boolean {
+        const sprite: Sprite = this._getSprite(spriteName);
+        const before = sprite.old[attr];
+        const after = sprite[attr];
+        return this.cmp(this.calc(after, before, "-"), expected, "==", epsilon);
+    }
+
+    public glidingChange(spriteName: string, attr: "x" | "y", expected: number, epsilon = EPSILON): boolean {
+        if (Number.isNaN(expected)) {
+            return true; // target is probably not available
+        }
+        const sprite: Sprite = this._getSprite(spriteName);
+        const before = sprite.old[attr];
+        const after = sprite[attr];
+        const dif = after - before;
+        this.log('sprite.x', sprite.x);
+        this.log('sprite.y', sprite.y);
+        this.log(`${attr}Change`, dif);
+        this.log(`d(expected,actual)`, Math.abs(dif - expected));
+        return approxEq(dif, expected, epsilon);
+    }
+
+    public attrComp(spriteName: string, attr: AttrName, expected: ScratchRoundInputType): boolean {
+        const s = this._getSprite(spriteName);
+        const actual = s[attr];
+        this.log("value", actual);
+        this.log("expected", expected);
+        if (attr === "direction") {
+            return checkDirectionWithinDelta(s, expected as number);
+        }
+        const bound = getBounds(s, this._testDriver, attr);
+        return this.cmp(actual, expected, "==")
+            || (bound !== null) && this.cmp(clamp(actual, bound), clamp(toScratchNumber(expected), bound), "==");
+    }
+
+    public dist(spriteName: string, other: string): number {
+        const dist = getDistance(this._getTarget(spriteName), this._getTarget(other));
+        this._log[`dist_${++this._counters["dist"]}`] = dist;
+        return dist;
+    }
+
+    public colorTouchColor(sprite: string, color1: [number, number, number], color2: [number, number, number]): boolean {
+        const s = this._getSprite(sprite);
+        return s.isColorTouchingColor(color1, color2) || s.isColorTouchingColor(color2, color1);
+    }
+
+    public touchingObj(sprite: string, obj: string): boolean {
+        if (obj === "_edge_") {
+            return this._getSprite(sprite).isTouchingEdge();
+        }
+        if (obj === MOUSE_NAME) {
+            return this._getSprite(sprite).isTouchingMouse();
+        }
+        return this._getSprite(sprite).isTouchingSprite(obj);
+    }
+
+    public touchColor(sprite: string, color: [number, number, number]): boolean {
+        return this._getSprite(sprite).isTouchingColor(color);
+    }
+
+    private _getTarget(s: string): Position {
+        if (s === MOUSE_NAME) {
+            return this._testDriver.getMousePos();
+        }
+        return this._getSprite(s);
+    }
+
+    private _getSprite(s: string): Sprite {
+        return getSprite(this._testDriver, s, this._clone);
+    }
+}
+
+class DependencyMU extends ModelUtil {
+    private readonly _dependencies: Dependencies;
+
+    constructor(dependencies: Dependencies, testDriver: TestDriver, log: Reason = {}, clone: Sprite | null = null) {
+        super(testDriver, log, clone);
+        this._dependencies = dependencies;
+    }
+
+    public override dist(spriteName: string, other: string): number {
+        this._add(spriteName, "x", "y");
+        this._add(other, "x", "y");
+        return super.dist(spriteName, other);
+    }
+
+    public override stepsCorrect(s: Sprite, expected: number): boolean {
+        this._add(s.name, "x", "y");
+        return super.stepsCorrect(s, expected);
+    }
+
+    public override attrComp(spriteName: string, attr: AttrName, expected: ScratchRoundInputType): boolean {
+        this._dependencies.attrDependencies.push({spriteName, attrName: attr});
+        return super.attrComp(spriteName, attr, expected);
+    }
+
+    public override attrChange(spriteName: string, attr: AttrName, expected: number, epsilon: number = EPSILON): boolean {
+        this._dependencies.attrDependencies.push({spriteName, attrName: attr});
+        return super.attrChange(spriteName, attr, expected, epsilon);
+    }
+
+    public override xCordEqual(s1: string, s2: string): boolean {
+        this._add(s1, "x");
+        this._add(s2, "x");
+        return super.xCordEqual(s1, s2);
+    }
+
+    public override yCordEqual(s1: string, s2: string): boolean {
+        this._add(s1, "y");
+        this._add(s2, "y");
+        return super.xCordEqual(s1, s2);
+    }
+
+    public override posEqual(s1: string, s2: string): boolean {
+        this._add(s1, "x", "y");
+        this._add(s2, "x", "y");
+        return super.posEqual(s1, s2);
+    }
+
+    public override glidingChange(spriteName: string, attr: "x" | "y", expected: number, epsilon: number = EPSILON): boolean {
+        this._add(spriteName, attr);
+        return super.glidingChange(spriteName, attr, expected, epsilon);
+    }
+
+    public override colorTouchColor(sprite: string, color1: [number, number, number], color2: [number, number, number]): boolean {
+        this._add(sprite, "x", "y", "visible", "direction");
+        return super.colorTouchColor(sprite, color1, color2);
+    }
+
+    public override touchingObj(sprite: string, obj: string): boolean {
+        this._add(sprite, "x", "y", "visible", "direction");
+        this._add(obj, "x", "y", "visible", "direction");
+        return super.touchingObj(sprite, obj);
+    }
+
+    public override touchColor(sprite: string, color: [number, number, number]): boolean {
+        this._add(sprite, "x", "y", "visible", "direction");
+        return super.touchColor(sprite, color);
+    }
+
+    private _add(spriteName: string, ...attrNames: AttrName[]): void {
+        if (spriteName !== MOUSE_NAME && spriteName !== "_edge_") {
+            attrNames.forEach(attrName => this._dependencies.attrDependencies.push({spriteName, attrName}));
+        }
+    }
 }

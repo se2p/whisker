@@ -1,9 +1,11 @@
-import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
+import {BoundedCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {NumberLike, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
-import {movedCorrectAmountOfSteps} from "../util/ModelUtil";
+import {AttrName, NumberLike, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {getXYBounds, movedCorrectAmountOfSteps, XYBounds} from "../util/ModelUtil";
+import {result} from "./CheckResult";
+import Sprite from "../../../vm/sprite";
 
 const name = "MoveSteps" as const;
 
@@ -34,7 +36,7 @@ export const MoveStepsJSON = ICheckJSON.extend({
     args: MoveStepsArgs,
 });
 
-export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
+export class MoveSteps extends BoundedCheck<MoveStepsJSON, CheckFun0> {
 
     constructor(edgeLabel: string, json: SlimCheckJSON<MoveStepsJSON>) {
         super(edgeLabel, {...json, name});
@@ -42,6 +44,11 @@ export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
 
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(MoveStepsArgs.safeParse(args));
+    }
+
+    protected get attrName(): AttrName {
+        // here it does not matter if the returned value is "x" or "y" because they need updates under the same events
+        return "x";
     }
 
     protected _validate(checkJSON: MoveStepsJSON): MoveStepsJSON {
@@ -58,8 +65,19 @@ export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
         const spriteName = sprite.name;
 
         this._registerOnMoveEvent(spriteName);
+        this._boundsNeedUpdate(sprite);
+        let bounds = getXYBounds(sprite);
 
-        return () => movedCorrectAmountOfSteps(sprite, this._args[1]);
+        return () => {
+            const reason = {};
+            bounds = this._updatedBound(sprite, bounds);
+            const correct = movedCorrectAmountOfSteps(sprite, this._args[1], bounds, reason);
+            return result(correct, reason, this.negated);
+        };
+    }
+
+    private _updatedBound(s: Sprite, currentBounds: XYBounds): XYBounds {
+        return this._boundsNeedUpdate(s) ? getXYBounds(s) : currentBounds;
     }
 
     protected _contradicts(that: MoveSteps): boolean {

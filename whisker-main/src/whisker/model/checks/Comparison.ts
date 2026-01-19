@@ -101,32 +101,32 @@ export function approxEq(operand1: AttributeType, operand2: AttributeType, epsil
     return approxEqNum(operand1, operand2, epsilon);
 }
 
-function approxNeq(operand1: AttributeType, operand2: AttributeType) {
-    return !approxEq(operand1, operand2);
+function approxNeq(operand1: AttributeType, operand2: AttributeType, epsilon = EPSILON) {
+    return !approxEq(operand1, operand2, epsilon);
 }
 
-function approxLeq(x: AttributeType, y: AttributeType) {
+function approxLeq(x: AttributeType, y: AttributeType, epsilon = EPSILON) {
     if (x <= y) {
         return true;
     }
 
-    return approxEqNum(x, y);
+    return approxEqNum(x, y, epsilon);
 }
 
-function approxGt(x: AttributeType, y: AttributeType) {
-    return !approxLeq(x, y);
+export function approxGt(x: AttributeType, y: AttributeType, epsilon = EPSILON): boolean {
+    return !approxLeq(x, y, epsilon);
 }
 
-function approxGeq(x: AttributeType, y: AttributeType) {
+function approxGeq(x: AttributeType, y: AttributeType, epsilon = EPSILON) {
     if (x >= y) {
         return true;
     }
 
-    return approxEqNum(x, y);
+    return approxEqNum(x, y, epsilon);
 }
 
-function approxLt(x: AttributeType, y: AttributeType) {
-    return !approxGeq(x, y);
+export function approxLt(x: AttributeType, y: AttributeType, epsilon = EPSILON): boolean {
+    return !approxGeq(x, y, epsilon);
 }
 
 class Eq<T extends Interval | null> extends AbstractComparison<T> {
