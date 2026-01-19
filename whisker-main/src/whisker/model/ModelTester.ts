@@ -3,13 +3,11 @@ import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import {ModelResult} from "../../test-runner/model-result";
-import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
-import {ProgramModelEdge} from "./components/ProgramModelEdge";
 import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
@@ -288,7 +286,6 @@ export class ModelTester extends EventEmitter {
         if (result) {
             const [takenEdge, steps] = result;
             this._checkUtility!.registerEffectCheck(takenEdge, steps, model.programEndStep);
-            this._edgeTrace(takenEdge);
         }
         return model.stopped();
     }
@@ -384,22 +381,6 @@ export class ModelTester extends EventEmitter {
         this._log(output);
     }
 
-    private _edgeTrace(transition: AbstractEdge) {
-        const edgeID = transition.id;
-        const conditions = transition.conditions;
-        let edgeTrace = "'" + edgeID + "':";
-        for (let i = 0; i < conditions.length; i++) {
-            edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
-        }
-        if (transition instanceof ProgramModelEdge && transition.effects.length > 0) {
-            edgeTrace = edgeTrace + " => ";
-            for (let i = 0; i < transition.effects.length; i++) {
-                edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
-            }
-        }
-        this._result!.edgeTrace.push(edgeTrace);
-    }
-
     private _someCallbackActive(): boolean {
         return this._modelStepCallback?.isActive() || this._onTestEndCallback?.isActive();
     }
@@ -424,7 +405,6 @@ export class ModelTester extends EventEmitter {
             const models = [...this._programModels, ...this._onTestEndModels];
             models.forEach(model => {
                 if (model.stopped()) {
-                    this._result!.log.push("Model '" + model.id + "' stopped.");
                     this._log("---Model '" + model.id + "' stopped.");
                 }
             });
@@ -435,7 +415,6 @@ export class ModelTester extends EventEmitter {
             sprites.forEach((sprite: Sprite) => {
                 sprite.getVariables().forEach(variable => {
                     const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
-                    this._result!.state.push(varOutput);
                     log.push("--- " + varOutput);
                 });
             });
@@ -469,7 +448,6 @@ export class ModelTester extends EventEmitter {
             output += "\n -- " + effect.toString();
         });
         logger.error("EFFECTS CONTRADICTING", output);
-        this._result!.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
     }
 
