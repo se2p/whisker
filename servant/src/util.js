@@ -18,13 +18,19 @@ function relativeToServantDir(path) {
  * Assertion functions that throw an error when a requirement is violated.
  */
 
+class InvalidExtensionError extends InvalidArgumentError {
+    constructor(props) {
+        super(props);
+    }
+}
+
 function mustBeFile(path, allowedExtensions = [""]) {
     if (!fs.existsSync(path)) {
         throw new InvalidArgumentError('File must exist.');
     }
 
     if (!fs.lstatSync(path).isFile()) {
-        throw new InvalidArgumentError('Must be a file.')
+        throw new InvalidArgumentError('Must be a file.');
     }
 
     if (typeof allowedExtensions === "string") {
@@ -32,7 +38,7 @@ function mustBeFile(path, allowedExtensions = [""]) {
     }
 
     if (!allowedExtensions.some((ext) => path.endsWith(ext))) {
-        throw new InvalidArgumentError(`File must end in one of the following: ${allowedExtensions.join(", ")}`);
+        throw new InvalidExtensionError(`File must end in one of the following: ${allowedExtensions.join(", ")}`);
     }
 }
 
@@ -42,7 +48,7 @@ function mustBeDirectory(path) {
     }
 
     if (!fs.lstatSync(path).isDirectory()) {
-        throw new InvalidArgumentError('Must be a directory.')
+        throw new InvalidArgumentError('Must be a directory.');
     }
 }
 
@@ -85,12 +91,16 @@ function processDirPathExists(path) {
 
 function processFileOrDirPathExists(path, optAllowedExtensions) {
     path = asAbsolutePath(path);
-    let isDirectory = undefined;
+    let isDirectory;
 
     try {
         mustBeFile(path, optAllowedExtensions);
         isDirectory = false;
-    } catch {
+    } catch (e) {
+        if (e instanceof InvalidExtensionError) {
+            throw e;
+        }
+
         try {
             mustBeDirectory(path);
             isDirectory = true;
@@ -147,4 +157,4 @@ module.exports = {
     processNumberOfJobs,
     asAbsolutePath,
     relativeToServantDir,
-}
+};
