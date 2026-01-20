@@ -12,6 +12,7 @@ import {SpriteTrace} from "../../testcase/ExecutionTrace";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 import logger from "../../../util/logger";
 import {TestCase} from "../../core/TestCase";
+import {ModelResult} from "../../../test-runner/model-result";
 
 export abstract class AgentExecutor {
 
@@ -180,12 +181,17 @@ export abstract class AgentExecutor {
      */
     protected async updateTestStatistics(agents: readonly TestCase[], projectName: string,
                                          agentName: string): Promise<AgentSuiteResults[]> {
-        const modelResKey = projectName;
-        const modelResults = Container.vmWrapper.getTestResultsForProjectName(modelResKey)[modelResKey]
-            .map(tr => tr.modelResult);
-        const modelResultCountEqual = modelResults.length === agents.length;
-        if (!modelResultCountEqual && Container.vmWrapper.modelTester.someModelLoaded()) {
-            console.debug("there were", modelResults.length, "model results but", agents.length, "dynamic test cases.");
+        const testResults = Container.vmWrapper.updateSummaryForProject(projectName);
+        let modelResults: ModelResult[] = null;
+        const enoughModelResults = testResults.length >= agents.length;
+        if (enoughModelResults) {
+            modelResults = testResults
+                .slice(testResults.length - agents.length, testResults.length)
+                .map(t => t.modelResult);
+        } else if (Container.vmWrapper.modelTester.someModelLoaded()) {
+            const temp = Container.vmWrapper.getTestResultsSummary();
+            console.debug("there were", testResults.length, "model results but", agents.length, "dynamic test cases. Projects:",
+                Object.keys(temp).map(key => `key: ${key}, value: ${temp[key].length}`));
         }
 
         const statements = [...this.statementArchive.keys()].map(st => st.getNodeId());
@@ -213,7 +219,7 @@ export abstract class AgentExecutor {
                 branchCoverageSuite: Math.round((archiveBrCovered / branches.length) * 100) / 100,
                 wonAgent: wonAgent,
                 wonSuite: wonSuite,
-                modelResult: modelResultCountEqual ? modelResults[i] : null
+                modelResult: enoughModelResults ? modelResults[i] : null
             };
             results.push(agentResults);
             StatisticsCollector.getInstance().addAgentSuiteResults(agentResults);

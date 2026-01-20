@@ -44,6 +44,8 @@ export class ModelTester extends EventEmitter {
     private _nextTestDriver = null;
     private _nextUmIndex = ModelTester.NO_USER_MODEL;
     private _executionCount = 0;
+    private _modelSummary: Record<string, TestResult[]> = {};
+    private _modelTestResults: TestResult[] = [];
 
     constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
@@ -86,6 +88,10 @@ export class ModelTester extends EventEmitter {
 
     set duration(value: number) {
         this._duration = value;
+    }
+
+    get summary(): Record<string, TestResult[]> {
+        return this._modelSummary;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -183,16 +189,20 @@ export class ModelTester extends EventEmitter {
         this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
-    stopModels(result: TestResult, updateResultStatus = true): boolean {
+    stopModels(result: TestResult, updateResultStatus = true, addToModelResults = true): void {
         const res = this._stopAndGetModelResult();
+        if (!result) {
+            result = new TestResult(null);
+        }
         result.modelResult = res;
-        if (res === null) {
-            return false;
+        if (res) {
+            if (updateResultStatus) {
+                result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
+            }
+            if (addToModelResults) {
+                this._modelTestResults.push(result);
+            }
         }
-        if (res && updateResultStatus) {
-            result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
-        }
-        return true;
     }
 
     /**
@@ -225,10 +235,30 @@ export class ModelTester extends EventEmitter {
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
     }
 
+    clear(): void {
+        this.clearCoverage();
+        this._modelSummary = {};
+        this._modelTestResults = [];
+    }
+
     getDurationForUserModel(): number {
         return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
             ? Math.min(this._duration, this._runningUserModel.maxDuration)
             : this._duration;
+    }
+
+    updateSummaryForProject(projectName: string): TestResult[] {
+        if (!this._modelSummary[projectName]) {
+            this._modelSummary[projectName] = [...this._modelTestResults];
+        } else if (this._modelTestResults?.length > 0) {
+            this._modelSummary[projectName].push(...this._modelTestResults);
+        }
+        this._modelTestResults = [];
+        return this._modelSummary[projectName];
+    }
+
+    clearCurrentModelResults(): void {
+        this._modelTestResults = [];
     }
 
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
@@ -395,52 +425,52 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     private _stopAndGetModelResult(): ModelResult | null {
-        if (!this.someModelLoaded()) {
+        if (!this.someModelLoaded() || !this._isRunning) {
             return null;
         }
-        if (this._isRunning) {
-            this._isRunning = false;
-            this._checkUtility!.stop();
-            this._modelStepCallback!.disable();
-            this._onTestEndCallback!.disable();
-            this._testDriver.vm.runtime.removeListener('targetWasCreated', this._onTargetCreatedListener);
-            if (this._testDriver.getTotalStepsExecuted() < 1) {
-                // the test execution did not even start
-                return null;
-            }
-            const models = [...this._programModels, ...this._onTestEndModels];
-            models.forEach(model => {
-                if (model.stopped()) {
-                    this._log("---Model '" + model.id + "' stopped.");
-                }
-            });
-            const sprites = this._testDriver!.getSprites(() => true, false);
-            const log = [];
-            log.push("--- State of variables:");
 
-            sprites.forEach((sprite: Sprite) => {
-                sprite.getVariables().forEach(variable => {
-                    const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
-                    log.push("--- " + varOutput);
-                });
-            });
-            if (log.length > 1) {
-                this._log(log.join("\n"));
-            }
-
-            const coverages: { covered: number, total: number } = {covered: 0, total: 0};
-
-            const programModels = [...this._programModels, ...this._onTestEndModels];
-            programModels.forEach(model => {
-                const currentCov = model.getCoverageCurrentRun(true);
-                coverages.covered += currentCov.covered;
-                coverages.total += currentCov.total;
-                this._result!.coverage[model.id] = currentCov;
-            });
-
-            this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
-            ++this._executionCount;
+        this._isRunning = false;
+        this._checkUtility!.stop();
+        this._modelStepCallback!.disable();
+        this._onTestEndCallback!.disable();
+        this._testDriver.vm.runtime.removeListener('targetWasCreated', this._onTargetCreatedListener);
+        if (this._testDriver.getTotalStepsExecuted() < 1) {
+            // the test execution did not even start
+            return null;
         }
+        const models = [...this._programModels, ...this._onTestEndModels];
+        models.forEach(model => {
+            if (model.stopped()) {
+                this._log("---Model '" + model.id + "' stopped.");
+            }
+        });
+        const sprites = this._testDriver!.getSprites(() => true, false);
+        const log = [];
+        log.push("--- State of variables:");
+
+        sprites.forEach((sprite: Sprite) => {
+            sprite.getVariables().forEach(variable => {
+                const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
+                log.push("--- " + varOutput);
+            });
+        });
+        if (log.length > 1) {
+            this._log(log.join("\n"));
+        }
+
+        const coverages: { covered: number, total: number } = {covered: 0, total: 0};
+
+        const programModels = [...this._programModels, ...this._onTestEndModels];
+        programModels.forEach(model => {
+            const currentCov = model.getCoverageCurrentRun();
+            coverages.covered += currentCov.covered;
+            coverages.total += currentCov.total;
+            this._result!.coverage[model.id] = currentCov;
+        });
+
+        this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
+        ++this._executionCount;
+
         return this._result!;
     }
 

@@ -587,7 +587,8 @@ const runAllTests = async function () {
     const durationValue = Number(document.querySelector('#model-duration').value);
     Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
     Whisker.modelTester.repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
-    Whisker.modelTester.clearCoverage();
+
+    Whisker.modelTester.clear();
 
     if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
         // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
@@ -638,7 +639,7 @@ const runAllTests = async function () {
             const suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project,
                 Whisker.scratch.vm, properties, Whisker.tests);
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
-            summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
+            summary = Container.vmWrapper.getTestResultsSummary();
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
                 await downloadMutants(properties.projectName, mutantPrograms);
