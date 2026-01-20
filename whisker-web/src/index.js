@@ -370,7 +370,7 @@ const _generateResults = function (coverage, coverageModels, summary) {
 };
 
 const _printSummaryForTestsAndModels = function (summary, coverage) {
-    const coverageModels = Whisker.modelTester.getTotalCoverage();
+    const coverageModels = Whisker.modelTester.getTotalCoverage(true);
 
     _generateResults(coverage, coverageModels, summary);
 

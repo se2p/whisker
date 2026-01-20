@@ -208,7 +208,7 @@ export class ModelTester extends EventEmitter {
     /**
      * Get the total coverage of the program models of all test runs.
      */
-    getTotalCoverage(): Record<string, CoverageResult> {
+    getTotalCoverage(log = false): Record<string, CoverageResult> {
         const coverage: Record<string, CoverageResult> = {};
         const programModels = [...this._programModels, ...this._onTestEndModels];
         const missedEdges: Record<string, string[]> = {};
@@ -216,11 +216,15 @@ export class ModelTester extends EventEmitter {
             const totalCov = model.getTotalCoverage();
             if (totalCov.missedEdges.length > 0) {
                 missedEdges[model.id] = totalCov.missedEdges;
-                logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
+                if (log) {
+                    logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
+                }
             }
             coverage[model.id] = {covered: totalCov.covered, total: totalCov.total};
         });
-        this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
+        if (log) {
+            this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
+        }
         return coverage;
     }
 
@@ -315,6 +319,7 @@ export class ModelTester extends EventEmitter {
         }
         this._onTestEndCallback?.disable();
         this._isRunning = true;
+        this._log("Done preparing models");
     }
 
     private _doOneStepOnOracleModel(model: OracleModel): boolean {
