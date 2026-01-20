@@ -1,5 +1,6 @@
 const VMWrapper = require('../vm/vm-wrapper');
 const TestDriver = require('./test-driver');
+const {Container} = require("../whisker/utils/Container");
 
 /**
  * Utility functionality for whisker to access the {@link TestDriver} and {@link VMWrapper}.
@@ -15,7 +16,10 @@ class WhiskerUtil {
         /**
          * @type {VMWrapper} A wrapper for the virtual machine.
          */
-        this.vmWrapper = new VMWrapper(vm, project, modelTester);
+        this.vmWrapper = new VMWrapper(vm, project, modelTester ?? Container.modelTester);
+        if (modelTester) {
+            Container.modelTester = modelTester;
+        }
 
         /**
          * @type {string} The project json.

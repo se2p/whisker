@@ -5,6 +5,7 @@ import TestDriver from "../../test/test-driver.js";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {GradientDescent} from "../agentTraining/neuroevolution/misc/GradientDescent";
 import {ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis';
+import {ModelTester} from "../model/ModelTester";
 
 
 export class Container {
@@ -20,4 +21,5 @@ export class Container {
     static backpropagationData: Record<string, unknown>;
     static backpropagationInstance: GradientDescent;
     static neatestTargetId: string
+    static modelTester: ModelTester
 }
