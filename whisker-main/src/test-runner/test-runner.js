@@ -17,6 +17,7 @@ const {ModelTester} = require("../whisker/model/ModelTester");
 const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
 const {serializeError} = require("../util/serialize-error");
 const {modelCsvHeader, modelResultToCsvData} = require("./model-result");
+const {Container} = require("../whisker/utils/Container");
 
 function enableAssertionLevelBlockTracing(assertions, assumptions) {
     assert.onExecutedAssertion = onExecuted.bind(null, assertions);
