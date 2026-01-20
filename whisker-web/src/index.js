@@ -416,10 +416,6 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     const setMutators = document.querySelector('#container').mutators;
     const mutantDownload = document.querySelector('#container').downloadMutants;
 
-    const durationValue = Number(document.querySelector('#model-duration').value);
-    const duration = (durationValue <= 0 || Number.isNaN() ? 35 : durationValue) * 1000;
-    const repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
-
     const props = {
         accelerationFactor: $('#acceleration-value').text(),
         seed: document.getElementById('seed').value,
@@ -448,7 +444,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         CoverageGenerator.prepareVM(vm);
 
         [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] =
-            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props, {duration, repetitions});
+            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props);
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
 
@@ -588,6 +584,9 @@ const _isNeatestSuite = function () {
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
+    const durationValue = Number(document.querySelector('#model-duration').value);
+    Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
+    Whisker.modelTester.repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
     Whisker.modelTester.clearCoverage();
 
     if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {

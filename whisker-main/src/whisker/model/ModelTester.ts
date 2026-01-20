@@ -27,6 +27,8 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly MODEL_LOG_MISSED_EDGES = "ModelLogMissedEdges";
     static readonly MODEL_ON_LOAD = "ModelOnLoad";
+    public repetitions = 0;
+    private _duration = 0;
     private _programModels: ProgramModel[] = [];
     private _cloneCreatedModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
@@ -80,6 +82,10 @@ export class ModelTester extends EventEmitter {
 
     get currentUserModelId(): string | null {
         return this._runningUserModel ? this._runningUserModel.id : null;
+    }
+
+    set duration(value: number) {
+        this._duration = value;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -219,10 +225,10 @@ export class ModelTester extends EventEmitter {
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
     }
 
-    getDurationForUserModel(modelDuration: number): number {
+    getDurationForUserModel(): number {
         return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
-            ? Math.min(modelDuration, this._runningUserModel.maxDuration)
-            : modelDuration;
+            ? Math.min(this._duration, this._runningUserModel.maxDuration)
+            : this._duration;
     }
 
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
