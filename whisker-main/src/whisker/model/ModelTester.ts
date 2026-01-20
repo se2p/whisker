@@ -192,9 +192,11 @@ export class ModelTester extends EventEmitter {
     stopModels(result: TestResult, updateResultStatus = true, addToModelResults = true): void {
         const res = this._stopAndGetModelResult();
         if (!result) {
+            this._log("No TestResult Found. Creating new one.");
             result = new TestResult(null);
         }
         result.modelResult = res;
+        this._log("Adding Model results to result");
         if (res) {
             if (updateResultStatus) {
                 result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
@@ -430,8 +432,11 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     private _stopAndGetModelResult(): ModelResult | null {
-        if (!this.someModelLoaded() || !this._isRunning) {
+        if (!this.someModelLoaded()) {
             return null;
+        }
+        if (!this._isRunning) {
+            return this._result;
         }
 
         this._isRunning = false;
