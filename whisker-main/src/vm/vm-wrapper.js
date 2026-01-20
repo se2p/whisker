@@ -598,7 +598,6 @@ class VMWrapper {
         await this.waitForProjectLoadFinished();
         await this.vm.loadProject(this._originalProjectJSON);
         this._totalStepsExecuted = 0;
-        this.prepareModelForNextRun();
     }
 
     /**
