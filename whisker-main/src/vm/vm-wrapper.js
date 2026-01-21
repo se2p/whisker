@@ -859,7 +859,7 @@ class VMWrapper {
      * @param projectName Name of the project
      * @return {TestResult[]}
      */
-    updateSummaryForProject(projectName) {
+    updateProgramModelSummaryForProject(projectName) {
         this.stopModels();
         return this.modelTester.updateSummaryForProject(projectName);
     }

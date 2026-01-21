@@ -181,7 +181,7 @@ export abstract class AgentExecutor {
      */
     protected async updateTestStatistics(agents: readonly TestCase[], projectName: string,
                                          agentName: string): Promise<AgentSuiteResults[]> {
-        const testResults = Container.vmWrapper.updateSummaryForProject(projectName);
+        const testResults = Container.vmWrapper.updateProgramModelSummaryForProject(projectName);
         let modelResults: ModelResult[] = null;
         const enoughModelResults = testResults.length >= agents.length;
         if (enoughModelResults) {
