@@ -13,9 +13,7 @@ class WhiskerUtil {
          */
         this.vm = vm;
 
-        /**
-         * @type {VMWrapper} A wrapper for the virtual machine.
-         */
+
         if (modelTester) {
             Container.modelTester = modelTester;
         }
