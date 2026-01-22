@@ -188,7 +188,7 @@ export abstract class AgentExecutor {
             modelResults = testResults
                 .slice(testResults.length - agents.length, testResults.length)
                 .map(t => t.modelResult);
-        } else if (Container.modelTester.someModelLoaded()) {
+        } else if (ModelTester.getInstance().someModelLoaded()) {
             const temp = Container.vmWrapper.getTestResultsSummary();
             console.debug("there were", testResults.length, "model results but", agents.length, "dynamic test cases. Projects:",
                 Object.keys(temp).map(key => `key: ${key}, value: ${temp[key].length}`));

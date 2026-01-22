@@ -46,8 +46,9 @@ export class ModelTester extends EventEmitter {
     private _executionCount = 0;
     private _modelSummary: Record<string, TestResult[]> = {};
     private _modelTestResults: TestResult[] = [];
+    private static readonly instance: ModelTester = new ModelTester();
 
-    constructor() {
+    private constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
         //  and the constructor be invoked instead. Then, we can stop (ab)using the non-null assertion operator `!`
         //  entirely in this file. However, restructuring initComponents() in index.js of whisker-web is curretnly a
@@ -60,6 +61,10 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
+    }
+
+    static getInstance(): ModelTester {
+        return this.instance;
     }
 
     get nextTestDriver(): TestDriver {

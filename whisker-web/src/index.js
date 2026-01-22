@@ -932,7 +932,7 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.modelTester = new ModelTester.ModelTester();
+    Whisker.modelTester = ModelTester.ModelTester.getInstance();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
         Whisker.outputRun.println.bind(Whisker.outputRun));

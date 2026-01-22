@@ -13,15 +13,10 @@ class WhiskerUtil {
          */
         this.vm = vm;
 
-
-        if (modelTester) {
-            Container.modelTester = modelTester;
-        }
-
         /**
          * @type {VMWrapper} A wrapper for the virtual machine.
          */
-        this.vmWrapper = new VMWrapper(vm, project, Container.modelTester);
+        this.vmWrapper = new VMWrapper(vm, project, modelTester);
 
         /**
          * @type {string} The project json.
