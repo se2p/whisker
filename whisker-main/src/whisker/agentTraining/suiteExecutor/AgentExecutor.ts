@@ -39,11 +39,10 @@ export abstract class AgentExecutor {
 
     /**
      * Initializes components required for executing the suite on the specified program.
-     * @param modelTester Handles the execution of MBT.
      */
-    protected async _initialize(modelTester: ModelTester): Promise<void> {
+    protected async _initialize(): Promise<void> {
         this.setScratchSeed(this._properties.seed.toString());
-        await this.initialiseCommonVariables(modelTester);
+        await this.initialiseCommonVariables();
         this.initialiseCoverageMaps(this._vm);
     }
 
@@ -69,11 +68,10 @@ export abstract class AgentExecutor {
 
     /**
      * Executes the given suite on the specified program or performs mutation analysis.
-     * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network.
      * @returns Triple of the csv results, execution traces and the mutated programs if mutation analysis was performed.
      */
-    public async execute(modelTester: ModelTester): Promise<[string, SpriteTrace[], Project[]]> {
-        await this._initialize(modelTester);
+    public async execute(): Promise<[string, SpriteTrace[], Project[]]> {
+        await this._initialize();
         const agents = await this._loadAgents();
 
         if (this._properties.mutators !== undefined && this._properties.mutators[0] !== 'NONE') {
@@ -91,11 +89,10 @@ export abstract class AgentExecutor {
     /**
      * Initialises the Scratch VM, Container variables used across Whisker and the StatisticsCollector responsible
      * for creating a csv file with the results of the suite execution.
-     * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network
      */
-    protected async initialiseCommonVariables(modelTester: ModelTester): Promise<void> {
+    protected async initialiseCommonVariables(): Promise<void> {
         // Set up Scratch VM.
-        const util = new WhiskerUtil(this._vm, this._project, modelTester);
+        const util = new WhiskerUtil(this._vm, this._project);
         const vmWrapper = util.getVMWrapper();
         await util.prepare(this._properties['acceleration'] as number || 1);
         // create TestDriver for Model before vmWrapper starts

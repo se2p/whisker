@@ -101,7 +101,7 @@ class TestRunner extends EventEmitter {
 
         // Load the project and establish an initial save state
         vm.setInterrogativeDebuggerSupported(false);
-        this.util = await this._loadProject(vm, project, props, modelTester);
+        this.util = await this._loadProject(vm, project, props);
         this.vmWrapper.useSaveStates = props.useSaveStates;
         this.saveState = this.vmWrapper._recordInitialState();
 
@@ -145,7 +145,7 @@ class TestRunner extends EventEmitter {
                 }
                 const projectMutation = `${projectName}-${mutant.mutantName}`;
                 logger.info(`Analysing mutant ${i}: ${projectMutation}`);
-                this.util = await this._loadProject(vm, mutant, props, modelTester);
+                this.util = await this._loadProject(vm, mutant, props);
                 this.saveState = this.vmWrapper._recordInitialState();
                 this._initialiseFitnessTargets(vm);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
@@ -280,7 +280,7 @@ class TestRunner extends EventEmitter {
             modelTester.clearRepetitionCoverage();
             for (const uM of modelTester.userModelIndices()) {
                 modifiedProps.seed = startSeed + modelTester.runIndex;
-                this.util = await this._loadProject(vm, project, modifiedProps, modelTester);
+                this.util = await this._loadProject(vm, project, modifiedProps);
                 this.vmWrapper.nextUserModelIndex = uM;
                 const startTime = Date.now();
                 const result = await this._executeTest(vm, null, modifiedProps, 0);
@@ -435,11 +435,10 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
-     * @param {ModelTester} modelTester
      * @return {Promise<WhiskerUtil>}.
      */
-    async _loadProject(vm, project, props, modelTester) {
-        const util = new WhiskerUtil(vm, project, modelTester);
+    async _loadProject(vm, project, props) {
+        const util = new WhiskerUtil(vm, project);
         await util.prepare(props.accelerationFactor || 1);
         this.vmWrapper = util.getVMWrapper();
         await this.vmWrapper.vm.runtime.translateText2Speech();
