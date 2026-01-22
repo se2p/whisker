@@ -95,6 +95,10 @@ export class ModelTester extends EventEmitter {
         this._duration = value;
     }
 
+    get runIndex(): number {
+        return this._executionCount;
+    }
+
     get summary(): Record<string, TestResult[]> {
         return this._modelSummary;
     }
