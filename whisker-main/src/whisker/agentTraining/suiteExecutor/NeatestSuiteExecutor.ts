@@ -58,9 +58,10 @@ export class NeatestSuiteExecutor extends AgentExecutor {
 
     /**
      * Initializes components required for executing the suite on the specified program.
+     * @param modelTester Handles the execution of MBT.
      */
-    protected override async _initialize(): Promise<void> {
-        await super._initialize();
+    protected override async _initialize(modelTester: ModelTester): Promise<void> {
+        await super._initialize(modelTester);
         this.initialiseExecutionParameter();
     }
 

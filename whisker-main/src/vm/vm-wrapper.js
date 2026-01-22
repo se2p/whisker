@@ -5,8 +5,7 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
-require('setimmediate');
-const {ModelTester} = require("../whisker/model/ModelTester"); // attaches setImmediate to the global scope as side effect
+require('setimmediate'); // attaches setImmediate to the global scope as side effect
 
 const STEP_TIME = 1000 / 30;
 
@@ -22,7 +21,7 @@ function pause(millis) {
  */
 class VMWrapper {
 
-    constructor(vm, project) {
+    constructor(vm, project, modelTester = null) {
 
         /**
          * @type {VirtualMachine} The used virtual machine.
@@ -30,9 +29,9 @@ class VMWrapper {
         this.vm = vm;
 
         /**
-         * @type {ModelTester} Executes Models with the provided inputs
+         * @type {ModelTester | null} Executes Models with the provided inputs
          */
-        this._modelTester = ModelTester.getInstance();
+        this._modelTester = modelTester;
 
         /**
          * @type {number}
