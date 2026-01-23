@@ -2073,32 +2073,6 @@
                             "x",
                             "!="
                         ]
-                    },
-                    {
-                        "name": "AttrComp",
-                        "negated": false,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "x",
-                            ">=",
-                            -220
-                        ]
-                    },
-                    {
-                        "name": "AttrComp",
-                        "negated": false,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "x",
-                            "<=",
-                            220
-                        ]
                     }
                 ],
                 "effects": [
@@ -2839,13 +2813,30 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [],
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "negated": true,
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "="
+                        ]
+                    },
+                    {
+                        "name": "TouchingVerticalEdge",
+                        "negated": true,
+                        "args": [
+                            "Bowl"
+                        ]
+                    }
+                ],
                 "effects": [
                     {
                         "name": "Expr",
                         "negated": false,
                         "args": [
-                            "[-10,0,10].includes($('Bowl', 'old.x')-$('Bowl', 'x'))"
+                            "Math.abs($('Bowl', 'old.x')-$('Bowl', 'x'))==10"
                         ]
                     }
                 ]
