@@ -1,6 +1,5 @@
 const VMWrapper = require('../vm/vm-wrapper');
 const TestDriver = require('./test-driver');
-const {Container} = require("../whisker/utils/Container");
 
 /**
  * Utility functionality for whisker to access the {@link TestDriver} and {@link VMWrapper}.
