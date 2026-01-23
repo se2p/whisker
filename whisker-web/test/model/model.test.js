@@ -55,9 +55,17 @@ async function readModelErrors() {
                 logArray[i] = "";
             }
 
+            if (!log.includes("modelErrors")) {
+                console.error(log);
+                throw new Error("Expected modelErrors to be contained in the log");
+            }
             const errors = logArray.find(x => x.includes("modelErrors")).split("(")[1].split(")")[0];
             const fails = logArray.find(x => x.includes("modelFails")).split("(")[1].split(")")[0];
             const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
+            if (coverageIndex === -1) {
+                console.log(log);
+            }
+            expect(coverageIndex).not.toBe(-1);
             const coverage = logArray[coverageIndex + 1].split(": ")[1].split(" ")[0];
             return {
                 errorsInModel: parseInt(errors),
