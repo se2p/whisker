@@ -3,9 +3,6 @@
         "usage": "program",
         "id": "g0",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n1"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -57,9 +54,6 @@
         "usage": "program",
         "id": "id_undefined0",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n1"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
