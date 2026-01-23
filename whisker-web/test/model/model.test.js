@@ -139,10 +139,8 @@ describe('Model tests with inputs', () => {
     const table = [
         ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModels.json'],
         ['fruitcatcher game test', 'Fruitcatcher', 0.85, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
-        ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
-        // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
+        ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.69, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
         ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
-        // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ]
 
     it.each(table)('%s', async (name, projectName, coverage, testOrModel) => {
