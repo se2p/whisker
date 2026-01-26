@@ -13,6 +13,7 @@ import {Container} from "../utils/Container";
 import {NeatParameter} from "../agentTraining/neuroevolution/hyperparameter/NeatParameter";
 import {AssertionGenerator} from "./AssertionGenerator";
 import logger from "../../util/logger";
+import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -20,6 +21,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * Searches for tests for the given project by using a Neuroevolution Algorithm
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._vmWrapper.vm.registerCoverageTracer();
         const searchAlgorithm = this.buildOptimizationAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinctByComparator([...archive.values()],
@@ -52,7 +54,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * @param initializeFitnessFunction flag determining if search algorithm fitness functions should be initialised.
      */
     protected override buildOptimizationAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
-        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
+        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm() as SearchAlgorithmType)
             .addProperties(this._config.neuroevolutionProperties as unknown as SearchAlgorithmProperties<any>);
 
         if (initializeFitnessFunction) {

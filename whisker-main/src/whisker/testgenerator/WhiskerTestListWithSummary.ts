@@ -3,7 +3,6 @@ import {WhiskerTest} from "./WhiskerTest";
 export class WhiskerTestListWithSummary {
     private readonly _testList: WhiskerTest[];
     private _summary: string;
-    private _networkPopulation: string;
 
     constructor(testList: WhiskerTest[], summary: string){
         // logger.debug('constructing a WhiskerTestListWithSummary, testList: ', testList);

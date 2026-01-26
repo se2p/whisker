@@ -1,6 +1,7 @@
 import {Chromosome} from "../search/Chromosome";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {BasicNeuroevolutionParameter} from "../agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
+import {RLHyperparameter} from "../agentTraining/reinforcementLearning/hyperparameter/RLHyperparameter";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Solution} from "./Solution";
 
@@ -39,5 +40,6 @@ export interface OptimizationAlgorithm<S extends Solution> {
 
 export type Hyperparameter =
     | SearchAlgorithmProperties<Chromosome>
+    | RLHyperparameter
     | BasicNeuroevolutionParameter
     ;

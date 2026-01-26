@@ -78,7 +78,7 @@ export class Neatest extends NEAT {
                 const remainingTargets = this._getUncoveredObjectives()
                     .filter(target => target.getNodeId() !== currentTarget.getNodeId());
                 if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount
-                    && remainingTargets.length > 1) {
+                    && remainingTargets.length > 0) {
                     this._switchedObjectives.add(currentTarget);
                     logger.debug("Switching Target " + currentTarget.getNodeId() + " due to missing improvement.");
                     break;
@@ -218,7 +218,7 @@ export class Neatest extends NEAT {
      *
      * Minimising the archive size helps to deal with memory issues that might occur when the archive grows too large,
      * e.g., if there are a lot of objectives to cover.
-     * @param addedNetwork
+     * @param addedNetwork A network that was recently added to the archive.
      */
     protected async minimizeArchive(addedNetwork: NeatChromosome): Promise<void> {
         const sizeBefore = this.getCurrentSolution().length;

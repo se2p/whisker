@@ -1,11 +1,13 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {NeatestSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/NeatestSuiteExecutor';
+import {QSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/QSuiteExecutor';
 import {StateActionRecorder} from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
 import {FileSaver} from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
 import {Container} from 'whisker-main/src/whisker/utils/Container';
+import JSZip from 'jszip';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -334,6 +336,7 @@ const runSearch = async function () {
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${searchResult.summary}\n`);
     Whisker.outputLog.print(searchResult.csvOutput);
+    Whisker.testEditor.setProjectName(projectName);
     accSlider.slider('enable');
 
     if (generateBBTs) {
@@ -585,6 +588,14 @@ const _isNeatestSuite = function () {
     return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))
 };
 
+const _isRLSuite = function () {
+    return `${Whisker.tests.name}`.split('.').pop() === 'zip';
+};
+
+const _isAgentSuite = function () {
+    return _isNeatestSuite() || _isRLSuite();
+};
+
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
@@ -610,7 +621,7 @@ const runAllTests = async function () {
     Whisker.outputLog.clear();
 
     // Agent Suite
-    if (Whisker.tests && _isNeatestSuite()) {
+    if (Whisker.tests && _isAgentSuite()) {
         let coverage;
         let summary;
         try {
@@ -636,8 +647,15 @@ const runAllTests = async function () {
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
             properties.winningStates = document.querySelector('#container').winningStates;
 
-            const suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project,
-                Whisker.scratch.vm, properties, Whisker.tests);
+            let suiteExecutor;
+            if (_isNeatestSuite()) {
+                suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties,
+                    Whisker.tests);
+            } else {
+                const zip = await JSZip.loadAsync(Whisker.tests);
+                suiteExecutor = new QSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties, zip);
+            }
+
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
             summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
@@ -901,6 +919,8 @@ const handleOnLoadTestFile = async function (fileSelect) {
         injectTestsFromTestStore();
         setBBTTests(Whisker.scratch.getBBTTestsOfCurrentProject());
 
+    } else if (fileExtension === 'zip') {
+        Whisker.tests = fileSelect.files[0];
     } else {
         // clear BBT tests, regular Whisker tests are replaced during loadTestsFromString(..)
         Whisker.bbtTests = null;
@@ -1136,7 +1156,11 @@ const initEvents = function () {
                 const tests = runSearch();
                 tests.then(
                     result => {
-                        loadTestsFromString(result.javaScriptText).then();
+                        if ('agentTests' in result){
+                            Whisker.testEditor.setAgentTests(result.agentTests);
+                        } else {
+                            loadTestsFromString(result.javaScriptText).then();
+                        }
                         _jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();

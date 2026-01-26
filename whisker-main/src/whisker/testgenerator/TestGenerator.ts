@@ -33,10 +33,13 @@ import {Container} from "../utils/Container";
 import {AssertionGenerator} from './AssertionGenerator';
 import logger from '../../util/logger';
 import {OptimizationAlgorithm} from "../core/OptimizationAlgorithm";
+import {RLTestSuite} from "../agentTraining/reinforcementLearning/misc/RLTestSuite";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
+import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
+import VMWrapper from "../../vm/vm-wrapper";
 
 export abstract class TestGenerator {
 
@@ -50,14 +53,14 @@ export abstract class TestGenerator {
      */
     protected _fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>;
 
-    constructor(configuration: WhiskerSearchConfiguration) {
+    constructor(configuration: WhiskerSearchConfiguration, protected readonly _vmWrapper: VMWrapper) {
         this._config = configuration;
     }
 
-    public abstract generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>;
+    public abstract generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary | RLTestSuite>;
 
     protected buildOptimizationAlgorithm(initializeFitnessFunction: boolean): OptimizationAlgorithm<any> {
-        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
+        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm() as SearchAlgorithmType)
             .addSelectionOperator(this._config.getSelectionOperator())
             .addLocalSearchOperators(this._config.getLocalSearchOperators())
             .addProperties(this._config.searchAlgorithmProperties);
@@ -91,7 +94,7 @@ export abstract class TestGenerator {
     }
 
     protected extractCoverageObjectives(): Map<number, FitnessFunction<any>> {
-        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
+        return new SearchAlgorithmBuilder(this._config.getAlgorithm() as SearchAlgorithmType)
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access
                 this._config.getFitnessFunctionTargets()).fitnessFunctions;

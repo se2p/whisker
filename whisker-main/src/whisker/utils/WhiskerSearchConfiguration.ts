@@ -73,8 +73,12 @@ import {NewsdNeatestParameter} from "../agentTraining/neuroevolution/hyperparame
 import {NoveltyFitness} from "../agentTraining/neuroevolution/networkFitness/Novelty/NoveltyFitness";
 import {ReliableCoverageFitness} from "../agentTraining/neuroevolution/networkFitness/ReliableCoverageFitness";
 import {ManyObjectiveReliableCoverageFitness} from "../agentTraining/neuroevolution/networkFitness/ManyObjectiveReliableCoverageFitness";
+import {RLTestGenerator} from "../agentTraining/reinforcementLearning/misc/RLTestGenerator";
+import {RLHyperparameter} from "../agentTraining/reinforcementLearning/hyperparameter/RLHyperparameter";
+import {DeepQLearningHyperparameter} from "../agentTraining/reinforcementLearning/hyperparameter/DeepQLearningHyperparameter";
 import {FeatureExtraction} from "../agentTraining/featureExtraction/FeatureExtraction";
-import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
+import {RLEventExtractor} from "../agentTraining/reinforcementLearning/misc/RLEventExtractor";
+import {OptimizationAlgorithmType} from "../core/OptimizationAlgorithmType";
 
 
 class ConfigException implements Error {
@@ -85,8 +89,8 @@ class ConfigException implements Error {
 
 export class WhiskerSearchConfiguration {
 
-    private readonly _config: Record<string, any>;
-    private readonly _properties: (SearchAlgorithmProperties<any> | NeatParameter | BasicNeuroevolutionParameter);
+    protected readonly _config: Record<string, any>;
+    protected readonly _properties: (SearchAlgorithmProperties<any> | NeatParameter | BasicNeuroevolutionParameter | RLHyperparameter);
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
@@ -102,6 +106,9 @@ export class WhiskerSearchConfiguration {
         ) {
             this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true;
+        } else if (this.getAlgorithm() === 'dql') {
+            this._properties = this._setRLHyperparameter();
+            Container.isNeuroevolution = false;
         } else {
             this._properties = this._buildSearchAlgorithmProperties();
             Container.isNeuroevolution = false;
@@ -363,6 +370,105 @@ export class WhiskerSearchConfiguration {
             return this._properties;
         }
         return undefined;
+    }
+
+    private _setRLHyperparameter(): RLHyperparameter {
+        const hyperparameter = this._getRLHyperparameterClass();
+        this._setRewardParameter(hyperparameter);
+        this._setNetworkParameter(hyperparameter);
+        this._setTrainingParameter(hyperparameter);
+        this._setEnvironmentParameter(hyperparameter);
+        this._setCoverageObjective(hyperparameter);
+
+        hyperparameter.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
+        hyperparameter.logInterval = this._config['logInterval'] ?? Number.MAX_SAFE_INTEGER;
+        return hyperparameter;
+    }
+
+    public getRLHyperparameter(): RLHyperparameter {
+        if (this._properties instanceof RLHyperparameter) {
+            return this._properties;
+        }
+        throw new ConfigException('RL Hyperparameter not set');
+    }
+
+    private _getRLHyperparameterClass(): RLHyperparameter {
+        switch (this.getAlgorithm()) {
+            case "dql":
+                return this._setDQLHyperparameter();
+            default:
+                throw new ConfigException(`No matching Hyperparameter class for ${this.getAlgorithm()}`);
+        }
+    }
+
+    private _setDQLHyperparameter(): DeepQLearningHyperparameter {
+        const hyperparameter = new DeepQLearningHyperparameter();
+        this._setEpsilonGreedyParameter(hyperparameter);
+        this._setReplayMemoryParameter(hyperparameter);
+
+        hyperparameter.targetUpdateFrequency = this._config['targetUpdateFrequency'] ?? 1000;
+        hyperparameter.evaluationFrequency = this._config['evaluationFrequency'] ?? 100;
+        return hyperparameter;
+    }
+
+    private _setEpsilonGreedyParameter(hyperparameter: RLHyperparameter): void {
+        hyperparameter.epsilonGreedyParameter = {
+            epsilonStart: this._config['epsilonGreedy']['epsilonStart'] ?? 0,
+            epsilonEnd: this._config['epsilonGreedy']['epsilonEnd'] ?? 0,
+            epsilonMaxFrames: this._config['epsilonGreedy']['epsilonMaxFrames'] ?? 0,
+        };
+    }
+
+    private _setReplayMemoryParameter(hyperparameter: RLHyperparameter): void {
+        hyperparameter.replayMemoryParameter = {
+            size: this._config['replayMemory']['size'] ?? 0,
+            warmUpSteps: this._config['replayMemory']['warmUpSteps'] ?? 0,
+        };
+    }
+
+    private _setRewardParameter(hyperparameter: RLHyperparameter): void {
+        hyperparameter.rewardParameter = {
+            type: this._config['reward']['type'],
+            gamma: this._config['reward']['gamma'] ?? 1
+        };
+    }
+
+    private _setNetworkParameter(hyperparameter: RLHyperparameter): void {
+        const actionExtractor = new RLEventExtractor(Container.vm);
+        hyperparameter.networkArchitecture = {
+            inputShape: FeatureExtraction.getFeatureDimension(Container.vm),
+            hiddenLayers: this._config['network']['hiddenLayers'],
+            hiddenActivationFunction: this._config['network']['hiddenActivationFunction'],
+            outputShape: actionExtractor.extractStaticEvents(Container.vm).length,
+        };
+    }
+
+    private _setTrainingParameter(hyperparameter: RLHyperparameter): void {
+        hyperparameter.trainingParameter = {
+            optimizer: this._config['training']['optimizer'],
+            frequency: this._config['training']['frequency'] ?? 5,
+            batchSize: this._config['training']['batchSize'] ?? 32,
+            learningRate: this._config['training']['learningRate'] ?? 0.0001,
+            epochs: this._config['training']['epochs'] ?? 1
+        };
+    }
+
+    private _setEnvironmentParameter(hyperparameter: RLHyperparameter): void {
+        hyperparameter.environmentParameter = {
+            skipFrames: this._config['environment']['skipFrames'] ?? 5,
+            maxSteps: this._config['environment']['maxSteps'] ?? Number.MAX_SAFE_INTEGER,
+            maxTime: this._config['environment']['maxTime'] ?? Number.MAX_SAFE_INTEGER,
+            mouseMoveLength: this._config['environment']['mouseMoveLength'] ?? 5,
+        };
+    }
+
+    private _setCoverageObjective(hyperparameter: RLHyperparameter): void {
+        hyperparameter.coverageObjectives = {
+            type: this._config['coverageObjective']['type'] ?? "statement",
+            targets: this._config['coverageObjective']['targets'] ?? [],
+            stableCount: this._config['coverageObjective']['stableCount'] ?? 1,
+            switchTargetThreshold: this._config['coverageObjective']['switchTargetThreshold'] ?? Number.MAX_SAFE_INTEGER
+        };
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
@@ -698,19 +804,21 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getAlgorithm(): SearchAlgorithmType {
+    public getAlgorithm(): OptimizationAlgorithmType {
         return this._config['algorithm'];
     }
 
     public getTestGenerator(): TestGenerator {
         if (this._config["testGenerator"] == "random") {
-            return new RandomTestGenerator(this, this._config['minEventSize'], this._config['maxEventSize']);
+            return new RandomTestGenerator(this, this._config['minEventSize'], this._config['maxEventSize'], Container.vmWrapper);
         } else if (this._config['testGenerator'] == 'iterative') {
-            return new IterativeSearchBasedTestGenerator(this);
+            return new IterativeSearchBasedTestGenerator(this, Container.vmWrapper);
         } else if (this._config['testGenerator'] == 'manyObjective') {
-            return new ManyObjectiveTestGenerator(this);
+            return new ManyObjectiveTestGenerator(this, Container.vmWrapper);
         } else if (this._config['testGenerator'] == 'neuroevolution') {
-            return new NeuroevolutionTestGenerator(this);
+            return new NeuroevolutionTestGenerator(this, Container.vmWrapper);
+        } else if (this._config['testGenerator'] == 'reinforcementLearning') {
+            return new RLTestGenerator(this, Container.vmWrapper);
         }
 
         throw new ConfigException("Unknown TestGenerator " + this._config["testGenerator"]);
@@ -845,6 +953,9 @@ export class WhiskerSearchConfiguration {
     public getCoverageStableCount(): number {
         if ('networkFitness' in this._config && this._config['networkFitness']['stableCount']) {
             return this._config['networkFitness']['stableCount'];
+        }
+        if ('coverageObjective' in this._config && this._config['coverageObjective']['stableCount']) {
+            return this._config['coverageObjective']['stableCount'];
         }
         return 1;
     }

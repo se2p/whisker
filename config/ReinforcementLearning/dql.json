@@ -1,0 +1,49 @@
+{
+    "testGenerator": "reinforcementLearning",
+    "algorithm": "dql",
+    "logInterval": 100,
+    "targetUpdateFrequency": 5000,
+    "evaluationFrequency": 100,
+    "epsilonGreedy": {
+        "epsilonStart": 1,
+        "epsilonEnd": 0.05,
+        "epsilonMaxFrames": 10000
+    },
+    "replayMemory": {
+        "size": 1000000,
+        "warmUpSteps": 100
+    },
+    "reward": {
+        "type": "coverage",
+        "gamma": 0.99
+    },
+    "network": {
+        "hiddenLayers": [
+            64,
+            32
+        ],
+        "hiddenActivationFunction": "relu"
+    },
+    "training": {
+        "optimizer": "adam",
+        "frequency": 4,
+        "batchSize": 16,
+        "learningRate": 0.001,
+        "epochs": 1
+    },
+    "environment": {
+        "skipFrames": 7,
+        "maxTime": 10000,
+        "mouseMoveLength": 10
+    },
+    "stoppingCondition": {
+        "type": "fixedTime",
+        "duration": 18000000
+    },
+    "coverageObjective": {
+        "type": "statement",
+        "targets": [],
+        "stableCount": 10,
+        "switchTargetThreshold": 100
+    }
+}
