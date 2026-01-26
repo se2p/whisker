@@ -102,7 +102,7 @@ export abstract class AgentExecutor {
         await util.start();
 
         // Activate CoverageTracing
-        this._vm.registerCoverageTracer();
+        this._vm.registerCoverageTracer(true);
 
         // Set up Container variables.
         Container.vm = this._vm;

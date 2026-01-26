@@ -43,6 +43,7 @@ import {ScratchProject} from "./scratch/ScratchProject";
 import logger from "../util/logger";
 import {SearchResult} from "../types/SearchResult";
 import {BasicNeuroevolutionParameter} from "./agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
+import {RLTestSuite} from "./agentTraining/reinforcementLearning/misc/RLTestSuite";
 
 export class Search {
 
@@ -52,7 +53,7 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+    private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary | RLTestSuite> {
         logger.info("test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
@@ -106,7 +107,8 @@ export class Search {
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
         let stoppingCondition: StoppingCondition<Chromosome>;
-        if (config.searchAlgorithmProperties instanceof BasicNeuroevolutionParameter) {
+        if (config.searchAlgorithmProperties instanceof BasicNeuroevolutionParameter ||
+            config.getAlgorithm() === 'dql') {
             let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
             if (stoppingCondition instanceof FixedTimeStoppingCondition) {
@@ -162,16 +164,16 @@ export class Search {
 
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
-        const configJson = JSON.parse(configRaw);
-        const config = new WhiskerSearchConfiguration(configJson);
-
-        Container.config = config;
         Container.vm = vm;
-        vm.setInterrogativeDebuggerSupported(false);
-        vm.registerCoverageTracer();
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
+
+        const configJson = JSON.parse(configRaw);
+        const config = new WhiskerSearchConfiguration(configJson);
+        Container.config = config;
+
+        vm.setInterrogativeDebuggerSupported(false);
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return {
                 javaScriptText: this.handleEmptyProject(),
@@ -216,6 +218,16 @@ seed ${configSeed} defined within the config files.`);
         const testListWithSummary = await this.execute(project, config);
 
         const csvOutput = this.outputCSV(config);
+        if (testListWithSummary instanceof RLTestSuite) {
+            return {
+                javaScriptText: "",
+                summary: "uncovered",   // Keyword for the servant to start test download and close page.
+                csvOutput: csvOutput,
+                blockBasedTests: [],
+                agentTests: testListWithSummary.testCases
+            };
+        }
+
         const tests = testListWithSummary.testList;
         const javaScriptText = this.testsToString(tests);
 

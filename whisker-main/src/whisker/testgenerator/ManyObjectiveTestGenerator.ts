@@ -29,6 +29,7 @@ import Arrays from "../utils/Arrays";
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
     async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._vmWrapper.vm.registerCoverageTracer();
 
         // TODO: Ensure this is a many-objective algorithm taking all objectives
         const searchAlgorithm = this.buildOptimizationAlgorithm(true);
