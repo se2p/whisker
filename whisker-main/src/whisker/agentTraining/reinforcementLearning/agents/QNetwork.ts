@@ -1,6 +1,6 @@
-import {LayersModel} from "@tensorflow/tfjs-node";
 import * as tf from "@tensorflow/tfjs";
 import {TfAgentWrapper} from "./TfAgentWrapper";
+import {LayersModel} from "@tensorflow/tfjs";
 
 export class QNetwork extends TfAgentWrapper {
 

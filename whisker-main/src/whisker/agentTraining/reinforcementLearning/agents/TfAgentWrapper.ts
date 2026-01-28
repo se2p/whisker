@@ -1,4 +1,3 @@
-import {LayersModel} from "@tensorflow/tfjs-node";
 import * as tf from "@tensorflow/tfjs";
 import {FitnessFunction} from "../../../search/FitnessFunction";
 import {RLHyperparameter, TrainingParameter} from "../hyperparameter/RLHyperparameter";
@@ -7,6 +6,7 @@ import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitne
 import logger from "../../../../util/logger";
 import {TestCase} from "../../../core/TestCase";
 import {NonExhaustiveCaseDistinction} from "../../../core/exceptions/NonExhaustiveCaseDistinction";
+import {LayersModel} from "@tensorflow/tfjs";
 
 // Wrapper class for TensorFlow model.
 export abstract class TfAgentWrapper implements TestCase {
@@ -56,7 +56,7 @@ export abstract class TfAgentWrapper implements TestCase {
      */
     public forwardPass(inputs: number[]): number[] {
         return tf.tidy(() => {
-            const inputTensor = tf.tensor2d(inputs, [1, inputs.length]);
+            const inputTensor = tf.tensor([inputs]); // shape: [1, inputs.length]
             const outputTensor = this._model.predict(inputTensor) as tf.Tensor;
             return Array.from(outputTensor.dataSync());
         });
