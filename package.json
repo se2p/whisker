@@ -27,8 +27,7 @@
         "clean:cache": "rm -rf **/.webpack-cache*"
     },
     "dependencies": {
-        "@tensorflow/tfjs-node": "^4.22.0",
-        "@tensorflow/tfjs-layers": "^4.22.0",
+        "@tensorflow/tfjs": "^4.22.0",
         "assert": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
         "js-yaml": "^4.1.0",
