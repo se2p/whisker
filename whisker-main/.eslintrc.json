@@ -12,5 +12,14 @@
         "@typescript-eslint/no-use-before-define": "off",
         "no-use-before-define": "off",
         "semi": "error"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["*.js"],
+            "rules": {
+                "@typescript-eslint/no-require-imports": false
+            }
+
+        }
+    ]
 }
