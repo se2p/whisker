@@ -17,7 +17,7 @@
         {
             "files": ["*.js"],
             "rules": {
-                "@typescript-eslint/no-require-imports": false
+                "@typescript-eslint/no-var-requires": "off"
             }
 
         }
