@@ -3,7 +3,23 @@
         "eslint:recommended",
         "plugin:node/recommended"
     ],
+    "plugins": [
+        "jest"
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "env": {
+        "jest": true
+    },
     "rules": {
-        "no-unpublished-require": "off"
+        "no-unpublished-require": "off",
+        "no-unused-vars": [
+            "error",
+            {
+                "varsIgnorePattern": "^_",
+                "argsIgnorePattern": "^_"
+            }
+        ]
     }
 }
