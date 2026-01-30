@@ -22,7 +22,7 @@ module.exports = [
         },
 
         output: {
-            path: path.resolve(__dirname, 'dist'),
+            path: path.resolve(__dirname, 'dist')
         },
         module: {
             rules: [
@@ -41,10 +41,10 @@ module.exports = [
                             loader: 'image-webpack-loader',
                             options: {
                                 bypassOnDebug: true, // webpack@1.x
-                                disable: true, // webpack@2.x and newer
-                            },
-                        },
-                    ],
+                                disable: true // webpack@2.x and newer
+                            }
+                        }
+                    ]
                 }
             ]
         },
@@ -55,7 +55,7 @@ module.exports = [
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: 'src/index.html',
+                        from: 'src/index.html'
                     },
                     {
                         from: 'src/html',
@@ -85,7 +85,7 @@ module.exports = [
                 new OptimizeCssAssetsPlugin()
             ]
         },
-        stats: 'errors-warnings',
+        stats: 'errors-warnings'
     },
 
     /* JS */
@@ -109,7 +109,7 @@ module.exports = [
 
         output: {
             path: path.resolve(__dirname, 'dist'),
-            filename: '[name].js',
+            filename: '[name].js'
         },
         devServer: {
             static: path.resolve(__dirname, 'dist'),
@@ -135,7 +135,7 @@ module.exports = [
                     use: {
                         loader: 'ts-loader',
                         options: {
-                            experimentalWatchApi: true, // Faster builds through caching
+                            experimentalWatchApi: true // Faster builds through caching
                         }
                     }
                     // TODO: Include only 'src' once whisker-main isn't included through '../../whisker-main' anymore.
@@ -149,21 +149,21 @@ module.exports = [
             // Polyfills for Node.JS core modules
             // https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-nodejs-polyfills-removed
             fallback: {
-                url: require.resolve("url/"),
-                stream: require.resolve("stream-browserify"),
+                url: require.resolve('url/'),
+                stream: require.resolve('stream-browserify')
             }
         },
         plugins: [
             // Required because 'process' and 'Buffer' are no longer poly-filled automatically.
             // See https://stackoverflow.com/a/65018686 and https://stackoverflow.com/a/68723223
             new webpack.ProvidePlugin({
-                process: 'process/browser',
+                process: 'process/browser'
             }),
             new webpack.ProvidePlugin({
-                Buffer: ['buffer', 'Buffer'],
-            }),
+                Buffer: ['buffer', 'Buffer']
+            })
         ],
         devtool: 'source-map',
-        stats: 'errors-warnings',
+        stats: 'errors-warnings'
     }
 ];
