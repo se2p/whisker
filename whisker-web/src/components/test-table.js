@@ -407,9 +407,9 @@ class TestTable {
 
     updateAfterAbort () {
         const tests = this.dataTable.data();
-        for (const index of Object.keys(tests)) {
-            if (tests[index].isRunning) {
-                tests[index].isRunning = false;
+        for (const i of Object.keys(tests)) {
+            if (tests[i].isRunning) {
+                tests[i].isRunning = false;
             }
         }
         this.setTests(tests);
@@ -524,9 +524,9 @@ class TestTable {
      * @return {Test[]} .
      */
     static prepareTests (tests) {
-        let index = 1;
+        let idx = 1;
         return tests.map(test => {
-            test.index = index++;
+            test.index = idx++;
             return test;
         });
     }
