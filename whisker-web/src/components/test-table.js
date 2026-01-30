@@ -546,7 +546,7 @@ class TestTable {
         const excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
         const translatedProperties = [msg, name, expected, operator, actual];
 
-        function addRowIfPropertyPresent (prop) {
+        const addRowIfPropertyPresent = prop => {
             if (Object.prototype.hasOwnProperty.call(test.error, prop)) {
                 if (translatedProperties.includes(prop)) {
                     const translatedProp = index.i18n.t(`error-${prop}`);
@@ -556,7 +556,7 @@ class TestTable {
                     result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
                 }
             }
-        }
+        };
 
         if (test.type === 'BBT' &&
             'testResultSign' in test && test.testResultSign !== null) {
