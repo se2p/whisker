@@ -7,13 +7,13 @@ const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-const uploadFile = async (selector, path) => {
-    const exists = fs.existsSync(path);
+const uploadFile = async (selector, filePath) => {
+    const exists = fs.existsSync(filePath);
     if (!exists) {
-        console.log(`The file ${path} does not exist!`);
+        console.log(`The file ${filePath} does not exist!`);
         expect(exists).toBe(true);
     }
-    await (await page.$(selector)).uploadFile(path);
+    await (await page.$(selector)).uploadFile(filePath);
 };
 
 const loadProject = async (scratchPath, modelPath, userModelOrTest) => {
@@ -91,8 +91,8 @@ beforeEach(async () => {
 
 const testProgram = async (errors, fails, coverage) => {
     const seed = Date.now();
-    await page.evaluate(seed => {
-        document.querySelector('#seed').value = seed;
+    await page.evaluate(s => {
+        document.querySelector('#seed').value = s;
     }, seed);
     await (await page.$('#run-all-tests')).click();
 
