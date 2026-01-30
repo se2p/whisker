@@ -506,7 +506,7 @@ class TestTable {
             language: {
                 search: '&#x1F50E;',
                 emptyTable: '-'
-            },
+            }
 
         });
     }
