@@ -38,7 +38,6 @@ const readFitnessLog = async () => {
 
 /**
  * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
- * @returns {Promise<void>}
  */
 const checkFitnessValuesForExecutionHaltingBlocks = async () => {
     const runSearch = await page.$('#run-search');
