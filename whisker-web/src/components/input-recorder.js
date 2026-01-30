@@ -209,8 +209,12 @@ class InputRecorder extends EventEmitter {
      */
     showInputs () {
         if (this.events !== null && this.events.length !== 0) {
+            // `Whisker` has been attached to the global `window` object and is thus available implicitly.
+            // eslint-disable-next-line no-undef
             Whisker.testEditor.setValue(`${this.testBegin}\n${this.events.join('\n')}\n}${this.export}`);
         } else {
+            // `Whisker` has been attached to the global `window` object and is thus available implicitly.
+            // eslint-disable-next-line no-undef
             Whisker.testEditor.setValue(this.testBegin + this.testEnd + this.export);
         }
         // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
