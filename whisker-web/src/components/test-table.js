@@ -464,9 +464,9 @@ class TestTable {
                             return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
                         } else if (data.isRunning) {
                             return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
-                        } else {
-                            return '-';
                         }
+                            return '-';
+                        
                     },
                     defaultContent: '-',
                     width: "30%"
