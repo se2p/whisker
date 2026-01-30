@@ -40,7 +40,7 @@ const movingRed = async function (t) {
         t.assert.ok(cloneChecked, 'sprite not cloned');
         t.assert.ok(parseInt(lives.value, 10) === 3 || parseInt(points.value, 10) === 0, "values changed before 1. clone was made");
         let clone = red.getClones()[0];
-        //await t.runUntil(() => red.getClones().length >= 2 || parseInt(lives.value, 10) < 3 || parseInt(points.value, 10) > 0, 8000);
+        // await t.runUntil(() => red.getClones().length >= 2 || parseInt(lives.value, 10) < 3 || parseInt(points.value, 10) > 0, 8000);
         await t.runForTime(3300);
         t.assert.ok(red.getClones().length >= 1, 'no clones there');
         t.assert.ok(red.getClones().length >= 2 || (clone !== null && red.getClones()[0] !== null && clone !== red.getClones()[0]), 'sprite not cloned 2 times');
