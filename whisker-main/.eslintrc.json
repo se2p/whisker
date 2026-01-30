@@ -1,7 +1,8 @@
 {
     "parser": "@typescript-eslint/parser",
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "jest"
     ],
     "extends": [
         "eslint:recommended",
@@ -13,13 +14,28 @@
         "no-use-before-define": "off",
         "semi": "error"
     },
+    "env": {
+        "jest": true
+    },
     "overrides": [
         {
-            "files": ["*.js"],
+            "files": [
+                "*.js"
+            ],
             "rules": {
                 "@typescript-eslint/no-var-requires": "off"
             }
-
+        },
+        {
+            "files": [
+                "test/**/*.{js,ts}"
+            ],
+            "plugins": [
+                "jest"
+            ],
+            "env": {
+                "jest": true
+            }
         }
     ]
 }

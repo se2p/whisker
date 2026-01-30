@@ -2,3 +2,5 @@ dist/*
 node_modules/*
 playground/*
 whisker-web/src/includes/*
+whisker-main/dist/*
+whisker-main/node_modules/*
