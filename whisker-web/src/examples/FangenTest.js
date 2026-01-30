@@ -61,7 +61,7 @@ const movingRed = async function (t) {
                 touched = true;
             }
         });
-        await t.runUntil(() => touched  === true, 4000);
+        await t.runUntil(() => touched === true, 4000);
         let newClonesNumber = red.getClones().length;
         await t.runUntil(() => red.getClones().length !== newClonesNumber, 3300);
         t.assert.ok(dist >= 230, 'Did not reset to bigger 250 ' + dist + " da " + red.getClones().length);
@@ -83,7 +83,7 @@ const movingRed = async function (t) {
                 touched = true;
             }
         });
-        await t.runUntil(() => touched  === true, 4000);
+        await t.runUntil(() => touched === true, 4000);
         await t.wait(2);
         t.assert.ok(Math.sqrt((contX - red.x) * (contX - red.x) + (contY - red.y) * (contY - red.y)) >= 250, 'Did not reset to bigger 250');
         t.assert.ok(parseInt(lives.value, 10) < 2 || parseInt(points.value, 10) > 1 || (parseInt(lives.value, 10) < 3 && parseInt(points.value, 10) > 0), "must change values");

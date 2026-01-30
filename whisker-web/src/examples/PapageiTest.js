@@ -22,7 +22,7 @@ const parrotStoppingAtMilk = async function (t) {
             touched = true;
         }
     });
-    await t.runUntil(() => touched  === true, 10000);
+    await t.runUntil(() => touched === true, 10000);
     let origX = parrot.x;
     let origY = parrot.y;
     t.assert.ok(touched, "parrot must have touched milk");
