@@ -27,8 +27,8 @@ const parrotStoppingAtMilk = async function (t) {
     let origY = parrot.y;
     t.assert.ok(touched, "parrot must have touched milk");
     await t.wait(5);
-    t.assert.ok(origX === parrot.x,'Parrot must not move');
-    t.assert.ok(origY === parrot.y,'Parrot must not move')
+    t.assert.ok(origX === parrot.x, 'Parrot must not move');
+    t.assert.ok(origY === parrot.y, 'Parrot must not move')
     t.assert.ok(parrot.sayText.includes("Lecker"), "parrot did not say lecker");
     await t.runForTime(3000);
     t.assert.ok(!t.isProjectRunning(), "project must not run");
