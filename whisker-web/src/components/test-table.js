@@ -149,22 +149,22 @@ class TestTable {
             test.error = result.error;
             test.log = result.log;
             switch (status) {
-                case Test.FAIL:
-                    test.testResultSign = FAIL_SIGN;
-                    break;
-                case Test.SKIP:
-                    test.testResultSign = SKIP_SIGN;
-                    break;
-                case Test.PASS:
-                    test.testResultSign = PASS_SIGN;
-                    break;
-                case Test.ERROR:
-                    test.testResultSign = ERROR_SIGN;
+            case Test.FAIL:
+                test.testResultSign = FAIL_SIGN;
+                break;
+            case Test.SKIP:
+                test.testResultSign = SKIP_SIGN;
+                break;
+            case Test.PASS:
+                test.testResultSign = PASS_SIGN;
+                break;
+            case Test.ERROR:
+                test.testResultSign = ERROR_SIGN;
             }
             this.updateTest(test);
         }
         if (result.modelResult) {
-           // todo adapt for model
+            // todo adapt for model
         }
     }
 
@@ -465,7 +465,7 @@ class TestTable {
                         } else if (data.isRunning) {
                             return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
                         }
-                            return '-';
+                        return '-';
                         
                     },
                     defaultContent: '-',
