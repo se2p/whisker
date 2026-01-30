@@ -60,8 +60,8 @@ async function readModelErrors () {
             const coverageIndex = logArray.findIndex(x => x.includes('modelCoverage'));
             const coverage = logArray[coverageIndex + 1].split(': ')[1].split(' ')[0];
             return {
-                errorsInModel: parseInt(errors),
-                failsInModel: parseInt(fails),
+                errorsInModel: parseInt(errors, 10),
+                failsInModel: parseInt(fails, 10),
                 modelCoverage: parseFloat(coverage),
                 loggedOutput: logArray.filter(s => s !== '').join('\n')
             };
