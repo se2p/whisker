@@ -68,7 +68,7 @@ class FileSelect {
 
     async loadAsString (index = 0) {
         let arrayBuffer;
-        if (this.files[0] == null) {
+        if (this.files[0] === null) {
             arrayBuffer = await this.loadDefault();
         } else {
             arrayBuffer = await this.loadAsArrayBuffer(index);
