@@ -22,11 +22,12 @@
         "build-ts": "tsc --incremental",
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
-        "lint": "eslint . && format-message lint src/**/*.{ts,js}",
+        "lint": "eslint . --ignore-path ../.eslintignore && format-message lint src/**/*.{ts,js}",
         "lint:fix": "eslint . --fix"
     },
     "devDependencies": {
         "@fast-check/jest": "^2.0.3",
+        "eslint-plugin-jest": "27",
         "tsc-watch": "^6.0.0"
     }
 }
