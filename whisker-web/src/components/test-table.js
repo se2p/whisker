@@ -599,6 +599,9 @@ class TestTable {
 
     hideTestDetails () {
         if (this.dataTable) {
+            // The "array-callback-return" eslint rule creates a false positive: We are not using Array.prototype.every,
+            // but rather DataTables.CellMethods.prototype.every.
+            /* eslint-disable-next-line array-callback-return */
             this.dataTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
                 if (this.child.isShown()) {
                     this.child.hide();
