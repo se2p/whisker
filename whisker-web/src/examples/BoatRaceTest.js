@@ -172,7 +172,7 @@ const boatCrashCostume = async function (t) {
     await crash(t);
     await t.runForTime(10);
     let boat = t.getSprite('Boot');
-    t.assert.ok(boat.currentCostume === 1, 'Boat did not change costume after touching wall ' + boat.currentCostume);
+    t.assert.ok(boat.currentCostume === 1, `Boat did not change costume after touching wall ${boat.currentCostume}`);
     t.end();
 };
 
@@ -239,7 +239,7 @@ const boatIsWinningText = async function (t) {
     await winning(t);
     await t.runForTime(30);
     let boat = t.getSprite('Boot');
-    t.assert.ok(boat.sayText.startsWith('Yeah'), 'Boat did not win the game after touching island ' + boat.sayText);
+    t.assert.ok(boat.sayText.startsWith('Yeah'), `Boat did not win the game after touching island ${boat.sayText}`);
     t.end();
 }
 
@@ -331,7 +331,7 @@ const boatCrashGateCostume = async function (t) {
     await gateCrash(t);
     await t.runForTime(10);
     let boat = t.getSprite('Boot');
-    t.assert.ok(boat.currentCostume === 1, 'Boat did not change costume after touching gate ' + boat.currentCostume);
+    t.assert.ok(boat.currentCostume === 1, `Boat did not change costume after touching gate ${boat.currentCostume}`);
     t.end();
 };
 
@@ -435,7 +435,7 @@ const boatTouchingCrabMove = async function (t) {
     await t.runUntil(() => touched === true, 10000);
     t.assert.ok(touched, 'Boat did not touch crab');
     await t.runForTime(5);
-    console.log('oldX ' + oldX + ' oldY ' + oldY + ' x ' + crab.x + ' y ' + crab.y);
+    console.log(`oldX ${oldX} oldY ${oldY} x ${crab.x} y ${crab.y}`);
     t.assert.ok(oldX !== crab.x || oldY !== crab.y, 'crab did not change position');
     t.end();
 }

@@ -71,8 +71,8 @@ const starIncreasePointAndChangeLocationInitialization = async function (t) {
         });
         await t.runUntil(() => touched === true, 4000);
         await t.runForTime(300);
-        t.assert.ok(parseInt(points.value, 10) > valueOrig, 'points did not increase' + i);
-        t.assert.ok(star.x !== xOrig || star.y !== yOrig, 'star did not move' + i);
+        t.assert.ok(parseInt(points.value, 10) > valueOrig, `points did not increase${i}`);
+        t.assert.ok(star.x !== xOrig || star.y !== yOrig, `star did not move${i}`);
     }
     t.end();
 };

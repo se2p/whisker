@@ -26,7 +26,7 @@ const teraConstantMove = async function (t) {
     });
     for (let i = 0; i < 50; i++) {
         await t.runForTime(10);
-        t.assert.ok(teraMoved, "tera did not move " + i);
+        t.assert.ok(teraMoved, `tera did not move ${i}`);
         teraX = tera.x;
         teraY = tera.y;
         teraMoved = false;

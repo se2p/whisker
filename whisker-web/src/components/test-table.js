@@ -461,7 +461,7 @@ class TestTable {
                     data: data => data,
                     render: function (data, type, full) {
                         if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
-                            return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
+                            return `<div class="tooltip-sign">${data.testResultSign}<span class="tooltip-sign-text">${data.translatedTestResult}</span></div>`;
                         } else if (data.isRunning) {
                             return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
                         }
@@ -549,7 +549,7 @@ class TestTable {
         function addRowIfPropertyPresent(prop) {
             if (test.error.hasOwnProperty(prop)) {
                 if (translatedProperties.includes(prop)) {
-                    let translatedProp = index.i18n.t("error-" + prop);
+                    let translatedProp = index.i18n.t(`error-${prop}`);
                     result += `<td>${translatedProp}</td><td>${test.error[prop]}</td>\n</tr>`;
 
                 } else {
