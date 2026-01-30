@@ -7,7 +7,7 @@ const URL = "dist/index.html";
 
 const timeout = 30000;
 
-async function getOutputLogWhenBBTTestsAreDone(clearLogAfterFinished = false) {
+async function getOutputLogWhenBBTTestsAreDone (clearLogAfterFinished = false) {
     const output = await page.$('#output-log .output-content');
 
     while (true) {
