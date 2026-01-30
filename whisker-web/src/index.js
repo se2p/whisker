@@ -674,7 +674,11 @@ const runAllTests = async function () {
                 await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings, false);
             }
 
+            // I suppressed the eslint error for this line because we have been using this for years now, I don't think
+            // we ever noticed a problem -> Likely a false positive.
+            // eslint-disable-next-line require-atomic-updates
             testsRunning = false;
+
             _showRunIcon();
             _enableVMRelatedButtons();
             $('#green-flag').prop('disabled', false);
