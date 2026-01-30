@@ -22,7 +22,7 @@ const happyNewYearUnicorn = async function (t) {
         }
     });
     await t.runForTime(50);
-    t.assert.ok(!failed, 'wished happy new year before countdown ends')
+    t.assert.ok(!failed, 'wished happy new year before countdown ends');
     let changedYear = false;
     t.addCallback(() => {
         if (parseInt(currentYear.value, 10) !== 2020) {

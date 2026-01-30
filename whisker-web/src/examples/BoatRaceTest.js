@@ -1,26 +1,26 @@
 const boatVisible = async function (t) {
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(3);
     t.assert.ok(boat.visible, 'Boot must be visible');
     t.end();
-}
+};
 
 const boatCostume = async function (t) {
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(3);
     t.assert.ok(boat.currentCostume === 0, 'boat must have the right costume');
     t.end();
-}
+};
 
 const backdropInit = async function (t) {
     const stage = t.getStage();
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(3);
     t.assert.ok(stage.currentCostume === 0, 'stage must have game backdrop');
     t.end();
-}
+};
 
 const boatAtPosition = async function (t) {
     const boat = t.getSprite('Boot');
@@ -35,12 +35,12 @@ const boatAtPosition = async function (t) {
     const isAroundY = boat.y <= -148 && boat.y >= -151;
     t.assert.ok(isAroundX && isAroundY, 'boat must be at point (-190, -150)');
     t.end();
-}
+};
 
 const boatMoveUp = async function (t) {
     await t.runForTime(2);
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(4);
     const boatY = boat.y;
     t.mouseMove(boat.x, 100, 60);
@@ -57,7 +57,7 @@ const boatMoveUp = async function (t) {
 
 const boatStopAfterMove = async function (t) {
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(2);
     const boatY = boat.y;
     t.mouseMove(boat.x, 100, 0);
@@ -159,7 +159,7 @@ const crash = async function (t) {
     });
     await t.runUntil(() => touchedWall === true, 20000);
     t.assert.ok(touchedWall === true, 'Boat did not touch wall');
-}
+};
 
 const boatCrashStop = async function (t) {
     await crash(t);
@@ -226,14 +226,14 @@ const winning = async function (t) {
         }
     });
     await t.runUntil(() => touchedIsland === true, 5000);
-}
+};
 
 const boatIsWinningStop = async function (t) {
     await winning(t);
     await t.runForTime(60);
     t.assert.ok(!t.isProjectRunning(), 'project must not run');
     t.end();
-}
+};
 
 const boatIsWinningText = async function (t) {
     await winning(t);
@@ -241,7 +241,7 @@ const boatIsWinningText = async function (t) {
     const boat = t.getSprite('Boot');
     t.assert.ok(boat.sayText.startsWith('Yeah'), `Boat did not win the game after touching island ${boat.sayText}`);
     t.end();
-}
+};
 
 const boatIsWinningBackdrop = async function (t) {
     await winning(t);
@@ -249,7 +249,7 @@ const boatIsWinningBackdrop = async function (t) {
     const stage = t.getStage();
     t.assert.ok(stage.currentCostume === 1, 'stage must have win backdrop');
     t.end();
-}
+};
 
 const boatIsWinningReset = async function (t) {
     await winning(t);
@@ -259,7 +259,7 @@ const boatIsWinningReset = async function (t) {
     const isAroundY = boat.y <= -148 && boat.y >= -151;
     t.assert.ok(isAroundX && isAroundY, 'boat is not reset to (-190, -150)');
     t.end();
-}
+};
 
 const boatIsWinningOtherInvisible = async function (t) {
     await winning(t);
@@ -277,7 +277,7 @@ const gateVisible = async function (t) {
     await t.runForTime(3);
     t.assert.ok(gate.visible, 'Gate must be visible');
     t.end();
-}
+};
 
 const crabVisible = async function (t) {
     const crab = t.getSprite('Krebs');
@@ -285,7 +285,7 @@ const crabVisible = async function (t) {
     await t.runForTime(3);
     t.assert.ok(crab.visible, 'Crab must be visible');
     t.end();
-}
+};
 
 const gateSpinning = async function (t) {
     const gate = t.getSprite('Holzdrehtor');
@@ -300,7 +300,7 @@ const gateSpinning = async function (t) {
     await t.runUntil(() => directionChanged === true, 2000);
     t.assert.ok(directionChanged, 'gate has to spin.');
     t.end();
-}
+};
 
 const gateCrash = async function (t) {
     await t.runForTime(2);
@@ -318,7 +318,7 @@ const gateCrash = async function (t) {
     });
     await t.runUntil(() => touchedGate === true, 20000);
     t.assert.ok(touchedGate === true, 'Boat did not touch gate');
-}
+};
 
 const boatCrashGateStop = async function (t) {
     await gateCrash(t);
@@ -373,7 +373,7 @@ const boatCrashGateOtherInvisible = async function (t) {
 
 const boatTouchingArrow = async function (t) {
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(10);
     let touched = false;
     t.onSpriteMoved(() => {
@@ -396,7 +396,7 @@ const boatTouchingArrow = async function (t) {
 
 const boatTouchingSlime = async function (t) {
     const boat = t.getSprite('Boot');
-    t.greenFlag()
+    t.greenFlag();
     let touched = false;
     t.onSpriteMoved(() => {
         if (!touched && boat.isTouchingColor([92, 229, 129])) {
@@ -419,7 +419,7 @@ const boatTouchingSlime = async function (t) {
 
 const boatTouchingCrabMove = async function (t) {
     const crab = t.getSprite('Krebs');
-    t.greenFlag()
+    t.greenFlag();
     await t.runForTime(3);
     const boat = t.getSprite('Boot');
     t.dragSprite('Krebs', boat.x - 10, 0);
@@ -438,7 +438,7 @@ const boatTouchingCrabMove = async function (t) {
     console.log(`oldX ${oldX} oldY ${oldY} x ${crab.x} y ${crab.y}`);
     t.assert.ok(oldX !== crab.x || oldY !== crab.y, 'crab did not change position');
     t.end();
-}
+};
 
 module.exports = [
     {

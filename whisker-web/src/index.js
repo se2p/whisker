@@ -585,7 +585,7 @@ window.Whisker.runTestsForRepair = async function () {
 };
 
 const _isNeatestSuite = function () {
-    return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))
+    return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'));
 };
 
 const _isRLSuite = function () {

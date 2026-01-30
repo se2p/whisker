@@ -51,7 +51,7 @@ const stellaStopping = async function (t) {
     t.assert.ok(stella.direction === dirStella, 'stella must have direction from start');
     t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), 'stella must have returned');
     await t.runForTime(10);
-    stellaFinished = false
+    stellaFinished = false;
     stellaMove = false;
     stellaStopped = false;
     changedDir = false;

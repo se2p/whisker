@@ -78,7 +78,7 @@ const girlShowShort = async function (t) {
 };
 
 const girlShowLong = async function (t) {
-    t.seedScratch('#seed')
+    t.seedScratch('#seed');
     await t.wait(2);
     const pirate = t.getSprite('Pirat');
     const girl = t.getSprite('Mädchen');

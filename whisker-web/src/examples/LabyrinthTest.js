@@ -69,7 +69,7 @@ const superAfterMoney = async function (t) {
     await t.runForTime(3000);
     t.assert.ok(done, 'text must have changed a final time');
     t.end();
-}
+};
 
 const noSuperTillMoney = async function (t) {
     await t.wait(2);
@@ -97,7 +97,7 @@ const noSuperTillMoney = async function (t) {
     t.assert.ok(!fail, 'text must not change until touching money');
     t.assert.ok(touched, 'player did not touch money');
     t.end();
-}
+};
 
 const rightStart = async function (t) {
     await t.wait(2);
@@ -112,7 +112,7 @@ const rightStart = async function (t) {
     await t.wait(10);
     t.assert.ok(friend.sayText.includes('Auf geht'), 'text show at beginning');
     t.end();
-}
+};
 
 const noStartAfterMoney = async function (t) {
     await t.wait(2);
@@ -143,7 +143,7 @@ const noStartAfterMoney = async function (t) {
     await t.wait(10);
     t.assert.ok(!fail, 'beginning text after money touch');
     t.end();
-}
+};
 
 module.exports = [
     {
