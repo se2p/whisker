@@ -7,6 +7,6 @@ module.exports = [
         test: test0,
         name: 'Generated Test',
         description: '',
-        categories: [],
+        categories: []
     }
 ];

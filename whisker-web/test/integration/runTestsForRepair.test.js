@@ -294,7 +294,7 @@ const expected = {
                 coveredCumulative: ['greenFlag'],
                 status: 'fail',
                 passCount: 0
-            },
+            }
         ],
         assumptions: [],
         covered: ['greenFlag'],
@@ -443,7 +443,7 @@ const expected = {
             'greenFlag'
         ],
         level: 'block'
-    },
+    }
 };
 
 describe.each(Object.entries(expected))('Test execution traces', (name, trace) => {

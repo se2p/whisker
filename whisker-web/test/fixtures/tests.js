@@ -56,7 +56,7 @@ const all = async t => {
         },
         () => {
             t.assert.line = 58; t.assert.equal(1, 1);
-        },
+        }
     );
 
     t.assert.line = 62; t.assert.all(
@@ -68,7 +68,7 @@ const all = async t => {
         },
         () => {
             t.assert.line = 70; t.assert.equal(1, 2);
-        },
+        }
     );
 };
 
@@ -82,7 +82,7 @@ const any = async t => {
         },
         () => {
             t.assert.line = 84; t.assert.equal(1, 1);
-        },
+        }
     );
 
     t.assert.line = 88; t.assert.any(
@@ -94,7 +94,7 @@ const any = async t => {
         },
         () => {
             t.assert.line = 96; t.assert.equal(1, 2);
-        },
+        }
     );
 };
 
@@ -111,16 +111,16 @@ const anyAll = async t => {
                 },
                 () => {
                     t.assert.line = 113; t.assert.equal(1, 1);
-                },
+                }
             );
         },
         () => {
             t.assert.line = 118; t.assert.any(
                 () => {
                     t.assert.line = 120; t.assert.ok(false);
-                },
+                }
             );
-        },
+        }
     );
 
     t.assert.line = 126; t.assert.all(
@@ -131,16 +131,16 @@ const anyAll = async t => {
                 },
                 () => {
                     t.assert.line = 133; t.assert.equal(1, 1);
-                },
+                }
             );
         },
         () => {
             t.assert.line = 138; t.assert.any(
                 () => {
                     t.assert.line = 140; t.assert.ok(false);
-                },
+                }
             );
-        },
+        }
     );
 };
 
@@ -186,7 +186,7 @@ module.exports = [
         name: 'skip',
         description: 'this skipped test must not appear in the traces',
         categories: [],
-        skip: true,
+        skip: true
     },
     {
         test: all,
