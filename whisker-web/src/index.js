@@ -152,13 +152,13 @@ const loadTestsFromString = async function (string) {
          * dummy object called "module", letting the test set the "module.exports" property, and return that as
          * result of evaluating the test.
          */
-        /* eslint-disable-next-line no-eval */
         // IMPORTANT!!!
         // DO NOT CHANGE THE FORMATTING OF THE NEXT LINE OR CODE WILL BREAK!                                    (lol)
         // For some parts of Whisker (e.g., program repair) it is important not to change the stack traces of Whisker
         // tests, which would be the case if, e.g., line breaks were added in the code below to put every statement
         // on one line.
         // @formatter:off
+        /* eslint-disable-next-line no-eval */
         tests = eval(`(function () { const module = Object.create(null); ${string}; return module.exports; })();`);
         // @formatter:on
     } catch (err) {
