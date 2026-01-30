@@ -135,7 +135,7 @@ class TestTable {
     /**
      * @param {TestResult} result .
      */
-    onTestDone(result) {
+    onTestDone (result) {
         if (this.testRunner.headless) {
             return;
         }
@@ -368,7 +368,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    showNewRun(test) {
+    showNewRun (test) {
         this.resetRunData(test);
         test.isRunning = true;
         this.updateTest(test);
@@ -378,7 +378,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    resetRunData(test) {
+    resetRunData (test) {
         test.isRunning = false;
         test.testResultClass = null;
         test.translatedTestResult = null;
@@ -390,7 +390,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    resetRunDataAndShow(test) {
+    resetRunDataAndShow (test) {
         this.resetRunData(test);
         this.updateTest(test);
     }
@@ -405,7 +405,7 @@ class TestTable {
         this.setTests(tests);
     }
 
-    updateAfterAbort() {
+    updateAfterAbort () {
         const tests = this.dataTable.data();
         for (const index of Object.keys(tests)) {
             if (tests[index].isRunning) {
@@ -535,7 +535,7 @@ class TestTable {
      * @param {Test} test .
      * @return {string} .
      */
-    static prepareDescription(test) {
+    static prepareDescription (test) {
         const description = index.i18n.t('description');
         let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
         const name = 'name';
@@ -546,7 +546,7 @@ class TestTable {
         const excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
         const translatedProperties = [msg, name, expected, operator, actual];
 
-        function addRowIfPropertyPresent(prop) {
+        function addRowIfPropertyPresent (prop) {
             if (test.error.hasOwnProperty(prop)) {
                 if (translatedProperties.includes(prop)) {
                     const translatedProp = index.i18n.t(`error-${prop}`);
@@ -597,7 +597,7 @@ class TestTable {
         return result;
     }
 
-    hideTestDetails() {
+    hideTestDetails () {
         if (this.dataTable) {
             this.dataTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
                 if (this.child.isShown()) {

@@ -44,7 +44,7 @@ class FileSelect {
         return this.files[index].name;
     }
 
-    async loadDefault() {
+    async loadDefault () {
         return await new Promise((resolve, reject) => {
             const json = JSON.stringify(standardConfig);
             const blob = new Blob([json], {type: 'application/json'});

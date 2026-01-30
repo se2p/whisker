@@ -1315,14 +1315,14 @@ i18next
         _updateLang();
     }).then();
 
-function _showRunIcon() {
+function _showRunIcon () {
     $('#run-tests-icon').show();
     $('#stop-tests-icon').hide();
     $('#run-all-tests').off('click');
     $('#run-all-tests').on('click', runAllTests);
 }
 
-function _showStopIcon() {
+function _showStopIcon () {
     $('#run-tests-icon').hide();
     $('#stop-tests-icon').show();
     $('#run-all-tests').off('click');
@@ -1337,12 +1337,12 @@ const _disableVMRelatedButtons = function (exception) {
     $(`.vm-related:not(${exception})`).prop('disabled', true);
 };
 
-function _showAndJumpTo(elem) {
+function _showAndJumpTo (elem) {
     $(elem).show();
     _jumpTo(elem);
 }
 
-function _jumpTo(elem) {
+function _jumpTo (elem) {
     location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
     location.href = elem;
     window.scrollBy(0, -100); // respect header size
@@ -1416,7 +1416,7 @@ const _initLangSelect = function () {
     document.querySelector('#form-lang').appendChild(newLabel);
 };
 
-function _translateTestTableTooltips(oldLanguage, newLanguage) {
+function _translateTestTableTooltips (oldLanguage, newLanguage) {
     const oldLangData = i18next.getDataByLanguage(oldLanguage);
     const oldIndexData = oldLangData.index;
     const newLangData = i18next.getDataByLanguage(newLanguage);
@@ -1426,16 +1426,16 @@ function _translateTestTableTooltips(oldLanguage, newLanguage) {
     });
 }
 
-function _translateTooltip(tooltipElement, oldData, newData) {
+function _translateTooltip (tooltipElement, oldData, newData) {
     const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
     tooltipElement.innerHTML = newData[key];
 }
 
-function _getKeyByValue(langData, value) {
+function _getKeyByValue (langData, value) {
     return Object.keys(langData).find(key => langData[key] === value);
 }
 
-function _updateLang() {
+function _updateLang () {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
     if (Whisker.testTable) {
@@ -1463,7 +1463,7 @@ $('.nav-link').on('click', event => {
     _updateFilenameLabels();
 });
 
-function _updateFilenameLabels() {
+function _updateFilenameLabels () {
     if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
         $('#project-label').html(Whisker.projectFileSelect.getName());
     }
