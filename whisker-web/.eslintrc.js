@@ -21,6 +21,14 @@ module.exports = {
                 page: 'writable',
                 browser: 'readonly',
                 jestPuppeteer: 'readonly'
+            },
+            rules: {
+                'no-constant-condition': [
+                    'error', {
+                        // We use busy waiting in our integration tests to detect when a test has finished.
+                        checkLoops: false
+                    }
+                ]
             }
         }
     ],
