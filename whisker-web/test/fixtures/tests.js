@@ -1,3 +1,7 @@
+// eslint detects race conditions in lines where `t.assert.line` is assigned a value. This is a false positive.
+/* eslint-disable require-atomic-updates */
+/* eslint-disable no-self-compare */
+
 const testa = async t => {
     t.keyPress('a', 10);
     await t.runForTime(250);
