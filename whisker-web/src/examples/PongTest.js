@@ -1,43 +1,43 @@
 const ballInitialization = async function (t) {
     await t.runForTime(5);
-    let ball = t.getSprite('Ball');
+    const ball = t.getSprite('Ball');
     t.assert.ok(ball.visible, 'ball must be visible');
     t.end();
 };
 
 const paddleInitialization = async function (t) {
     await t.runForTime(5);
-    let paddle = t.getSprite('Spieler');
+    const paddle = t.getSprite('Spieler');
     t.assert.ok(paddle.visible, 'player must be visible');
     t.end();
 };
 
 const computerInitialization = async function (t) {
     await t.runForTime(5);
-    let paddle = t.getSprite('Computer');
+    const paddle = t.getSprite('Computer');
     t.assert.ok(paddle.visible, 'computer must be visible');
     t.end();
 };
 
 const outInitialization = async function (t) {
     await t.runForTime(5);
-    let out = t.getSprite('Aus-Linie Spieler');
+    const out = t.getSprite('Aus-Linie Spieler');
     t.assert.ok(out.visible, 'out player must be visible');
     t.end();
 };
 
 const outComputerInitialization = async function (t) {
     await t.runForTime(5);
-    let out = t.getSprite('Aus-Linie Computer');
+    const out = t.getSprite('Aus-Linie Computer');
     t.assert.ok(out.visible, 'out computer must be visible');
     t.end();
 };
 
 const ballOut = async function (t) {
     await t.runForTime(5);
-    let stage = t.getStage();
-    let score = stage.getVariable('Meine Punkte');
-    let state = stage.getVariable('Status');
+    const stage = t.getStage();
+    const score = stage.getVariable('Meine Punkte');
+    const state = stage.getVariable('Status');
     if (parseInt(score.value, 10) <= 1){
         t.assert.ok(state.value.startsWith('Anf'), 'score <= 1 but not Anf');
     }
@@ -50,8 +50,8 @@ const ballOut = async function (t) {
     }
 
     t.assert.ok(state.value.startsWith('Anf'), 'score <=1 but not Anf');
-    let ball = t.getSprite('Ball');
-    let paddle = t.getSprite('Spieler');
+    const ball = t.getSprite('Ball');
+    const paddle = t.getSprite('Spieler');
     t.clickSprite('Reset', 5);
     await t.runForTime(10);
 

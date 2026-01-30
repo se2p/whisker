@@ -141,8 +141,8 @@ class TestTable {
         }
 
         if (result.test) {
-            let test = result.test;
-            let status = result.status;
+            const test = result.test;
+            const status = result.status;
             test.isRunning = false;
             test.testResultClass = status;
             test.translatedTestResult = index.i18n.t(status);
@@ -400,13 +400,13 @@ class TestTable {
      * @param {Test} test .
      */
     updateTest (test) {
-        let tests = this.dataTable.data();
+        const tests = this.dataTable.data();
         tests[test.index - 1] = test;
         this.setTests(tests);
     }
 
     updateAfterAbort() {
-        let tests = this.dataTable.data();
+        const tests = this.dataTable.data();
         for (const index of Object.keys(tests)) {
             if (tests[index].isRunning) {
                 tests[index].isRunning = false;
@@ -536,20 +536,20 @@ class TestTable {
      * @return {string} .
      */
     static prepareDescription(test) {
-        let description = index.i18n.t('description');
+        const description = index.i18n.t('description');
         let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
-        let name = 'name';
-        let msg = 'message';
-        let expected = 'expected';
-        let operator = 'operator';
-        let actual = 'actual';
-        let excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
-        let translatedProperties = [msg, name, expected, operator, actual];
+        const name = 'name';
+        const msg = 'message';
+        const expected = 'expected';
+        const operator = 'operator';
+        const actual = 'actual';
+        const excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
+        const translatedProperties = [msg, name, expected, operator, actual];
 
         function addRowIfPropertyPresent(prop) {
             if (test.error.hasOwnProperty(prop)) {
                 if (translatedProperties.includes(prop)) {
-                    let translatedProp = index.i18n.t(`error-${prop}`);
+                    const translatedProp = index.i18n.t(`error-${prop}`);
                     result += `<td>${translatedProp}</td><td>${test.error[prop]}</td>\n</tr>`;
 
                 } else {
@@ -581,7 +581,7 @@ class TestTable {
             addRowIfPropertyPresent(operator);
             addRowIfPropertyPresent(actual);
 
-            for (let prop in test.error) {
+            for (const prop in test.error) {
                 if (!(excludedProperties.includes(prop))) {
                     result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
                 }
@@ -589,7 +589,7 @@ class TestTable {
         }
 
         if (test.hasOwnProperty('log') && test.log.length) {
-            let log = index.i18n.t('log');
+            const log = index.i18n.t('log');
             result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
         }
 

@@ -1,13 +1,13 @@
 const schorschInitialization = async function (t) {
     await t.runForTime(5);
-    let schorsch = t.getSprite('Schorsch');
+    const schorsch = t.getSprite('Schorsch');
     t.assert.ok(schorsch.visible, 'Schorsch must be visible');
     t.end();
 };
 
 const stellaInitialization = async function (t) {
     await t.runForTime(5);
-    let stella = t.getSprite('Stella');
+    const stella = t.getSprite('Stella');
     t.assert.ok(stella.visible, 'Stella must be visible');
     t.end();
 };
@@ -15,10 +15,10 @@ const stellaInitialization = async function (t) {
 
 const stellaStopping = async function (t) {
     await t.runForTime(3);
-    let stella = t.getSprite('Stella');
-    let xOrigStella = stella.x;
-    let yOrigStella = stella.y;
-    let dirStella = stella.direction;
+    const stella = t.getSprite('Stella');
+    const xOrigStella = stella.x;
+    const yOrigStella = stella.y;
+    const dirStella = stella.direction;
     let stellaMove = false;
     let stellaStopped = false;
     let changedDir = false;
@@ -63,13 +63,13 @@ const stellaStopping = async function (t) {
 
 const schorschDrawing = async function (t) {
     await t.runForTime(3);
-    let schorsch = t.getSprite('Schorsch');
-    let stella = t.getSprite('Stella');
-    let xOrigSchorsch = schorsch.x;
-    let yOrigSchorsch = schorsch.y;
-    let xOrigStella = stella.x;
-    let yOrigStella = stella.y;
-    let dirStella = stella.direction;
+    const schorsch = t.getSprite('Schorsch');
+    const stella = t.getSprite('Stella');
+    const xOrigSchorsch = schorsch.x;
+    const yOrigSchorsch = schorsch.y;
+    const xOrigStella = stella.x;
+    const yOrigStella = stella.y;
+    const dirStella = stella.direction;
     let stellaMove = false;
     let stellaStopped = false;
     let changedDir = false;

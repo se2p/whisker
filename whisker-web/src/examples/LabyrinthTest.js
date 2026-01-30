@@ -1,57 +1,57 @@
 const playerInitialization = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let player = t.getSprite('Spieler');
+    const player = t.getSprite('Spieler');
     t.assert.ok(player.visible, 'Player must be visible');
     t.end();
 };
 
 const moneyInitialization = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let money = t.getSprite('Münzen');
+    const money = t.getSprite('Münzen');
     t.assert.ok(money.visible, 'Money must be visible');
     t.end();
 };
 
 const friendInitialization = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let friend = t.getSprite('Freundin');
+    const friend = t.getSprite('Freundin');
     t.assert.ok(friend.visible, 'Friend must be visible');
     t.end();
 };
 
 const superAfterMoney = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let player = t.getSprite('Spieler');
-    let money = t.getSprite('Münzen');
-    let friend = t.getSprite('Freundin');
+    const player = t.getSprite('Spieler');
+    const money = t.getSprite('Münzen');
+    const friend = t.getSprite('Freundin');
     let done = false;
     let touched = false;
     t.onSpriteMoved(() => {
@@ -73,16 +73,16 @@ const superAfterMoney = async function (t) {
 
 const noSuperTillMoney = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let player = t.getSprite('Spieler');
-    let money = t.getSprite('Münzen');
-    let friend = t.getSprite('Freundin');
+    const player = t.getSprite('Spieler');
+    const money = t.getSprite('Münzen');
+    const friend = t.getSprite('Freundin');
     let fail = false;
     let touched = false;
     t.onSpriteMoved(() => {
@@ -101,14 +101,14 @@ const noSuperTillMoney = async function (t) {
 
 const rightStart = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let friend = t.getSprite('Freundin');
+    const friend = t.getSprite('Freundin');
     await t.wait(10);
     t.assert.ok(friend.sayText.includes('Auf geht'), 'text show at beginning');
     t.end();
@@ -116,16 +116,16 @@ const rightStart = async function (t) {
 
 const noStartAfterMoney = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
+    const stage = t.getStage();
     while (stage.currentCostume !== 3) {
         t.end();
         t.seedScratch('~zzzzz');
         t.greenFlag();
         await t.wait(2);
     }
-    let player = t.getSprite('Spieler');
-    let money = t.getSprite('Münzen');
-    let friend = t.getSprite('Freundin');
+    const player = t.getSprite('Spieler');
+    const money = t.getSprite('Münzen');
+    const friend = t.getSprite('Freundin');
     let fail = false;
     let touched = false;
     t.onSpriteMoved(() => {

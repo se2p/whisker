@@ -1,20 +1,20 @@
 const unicornInitialization = async function (t) {
-    let unicorn = t.getSprite('Einhorn');
+    const unicorn = t.getSprite('Einhorn');
     t.assert.ok(unicorn.visible === true, 'Unicorn must be visible');
     t.end();
 };
 
 
 const balloonInitialization = async function (t) {
-    let balloon = t.getSprite('Luftballon');
+    const balloon = t.getSprite('Luftballon');
     t.assert.ok(!balloon.visible, 'balloon must not be visible');
     t.end();
 };
 
 const happyNewYearUnicorn = async function (t) {
-    let unicorn = t.getSprite('Einhorn');
-    let stage = t.getStage();
-    let currentYear = stage.getVariable('aktuelles Jahr');
+    const unicorn = t.getSprite('Einhorn');
+    const stage = t.getStage();
+    const currentYear = stage.getVariable('aktuelles Jahr');
     let failed = false;
     t.addCallback(() => {
         if (unicorn.sayText === 'Frohes neues Jahr!') {
@@ -33,7 +33,7 @@ const happyNewYearUnicorn = async function (t) {
 
     t.assert.ok(parseInt(currentYear.value, 10) === 2021, 'it is not 2021');
     await t.runForTime(20);
-    let text = unicorn.sayText;
+    const text = unicorn.sayText;
     t.assert.ok(text.includes('Frohes neues Jahr') === true, 'text must have changed a final time');
     t.end();
 };

@@ -1,21 +1,21 @@
 const parrotInitialization = async function (t) {
     await t.wait(5);
-    let parrot = t.getSprite('Papagei');
+    const parrot = t.getSprite('Papagei');
     t.assert.ok(parrot.visible, 'Parrot must be visible');
     t.end();
 };
 
 const milkInitialization = async function (t) {
     await t.wait(5);
-    let milk = t.getSprite('Milch');
+    const milk = t.getSprite('Milch');
     t.assert.ok(milk.visible, 'Milk must be visible');
     t.end();
 };
 
 const parrotStoppingAtMilk = async function (t) {
     await t.wait(5);
-    let milk = t.getSprite('Milch');
-    let parrot = t.getSprite('Papagei');
+    const milk = t.getSprite('Milch');
+    const parrot = t.getSprite('Papagei');
     let touched = false;
     t.onSpriteMoved(() => {
         if (!touched && parrot.isTouchingSprite(milk.name)) {
@@ -23,8 +23,8 @@ const parrotStoppingAtMilk = async function (t) {
         }
     });
     await t.runUntil(() => touched === true, 10000);
-    let origX = parrot.x;
-    let origY = parrot.y;
+    const origX = parrot.x;
+    const origY = parrot.y;
     t.assert.ok(touched, 'parrot must have touched milk');
     await t.wait(5);
     t.assert.ok(origX === parrot.x, 'Parrot must not move');

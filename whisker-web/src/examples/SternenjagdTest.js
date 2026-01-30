@@ -1,27 +1,27 @@
 const fishInitialization = async function (t) {
     await t.wait(5);
-    let fish = t.getSprite('Fisch');
+    const fish = t.getSprite('Fisch');
     t.assert.ok(fish.visible, 'fisch must be visible');
     t.end();
 };
 
 const starInitialization = async function (t) {
     await t.wait(5);
-    let star = t.getSprite('Stern');
+    const star = t.getSprite('Stern');
     t.assert.ok(star.visible, 'star must be visible');
     t.end();
 };
 
 const pufferfishInitialization = async function (t) {
     await t.wait(5);
-    let pufferfish = t.getSprite('Kugelfisch');
+    const pufferfish = t.getSprite('Kugelfisch');
     t.assert.ok(pufferfish.visible, 'pufferfish must be visible');
     t.end();
 };
 
 const jellyfishInitialization = async function (t) {
     await t.wait(5);
-    let jellyfish = t.getSprite('Qualle');
+    const jellyfish = t.getSprite('Qualle');
     t.assert.ok(jellyfish.visible, 'jellyfish must be visible');
     t.end();
 };
@@ -34,25 +34,25 @@ const starIncreasePointAndChangeLocationInitialization = async function (t) {
     };
     t.mouseMove(-200, -170, 40);
     await t.wait(3);
-    let star = t.getSprite('Stern');
-    let fish = t.getSprite('Fisch');
-    let jellyfish = t.getSprite('Qualle');
-    let pufferfish = t.getSprite('Kugelfisch');
-    let stage = t.getStage();
-    let points = stage.getVariable('Punkte');
+    const star = t.getSprite('Stern');
+    const fish = t.getSprite('Fisch');
+    const jellyfish = t.getSprite('Qualle');
+    const pufferfish = t.getSprite('Kugelfisch');
+    const stage = t.getStage();
+    const points = stage.getVariable('Punkte');
 
     let distOk = false;
     for (let i = 0; i < 2; i++) {
-        let valueOrig = points.value;
-        let xOrig = star.x;
-        let yOrig = star.y;
+        const valueOrig = points.value;
+        const xOrig = star.x;
+        const yOrig = star.y;
         distOk = false;
         t.onSpriteMoved(() => {
             if (dist(jellyfish, fish) < 100 ||
                 dist(pufferfish, fish) < 100) {
                 const {width, height} = t.getStageSize();
-                let newX = fish.x <= 0 ? width / 2 : -1 * width / 2;
-                let newY = fish.y <= 0 ? height / 2 : -1 * height / 2;
+                const newX = fish.x <= 0 ? width / 2 : -1 * width / 2;
+                const newY = fish.y <= 0 ? height / 2 : -1 * height / 2;
                 t.mouseMove(newX, newY);
             }
             if (!distOk &&
