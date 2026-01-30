@@ -431,7 +431,7 @@ class TestTable {
         }
 
         this.dataTable = this.table.DataTable({
-            createdRow: function (row, data, dataIndex) {
+            createdRow: function (row, data, _dataIndex) {
                 $(row).addClass(data.testResultClass);
             },
             data: TestTable.prepareTests(tests),
@@ -459,7 +459,7 @@ class TestTable {
                 },
                 {
                     data: data => data,
-                    render: function (data, type, full) {
+                    render: function (data, _type, _full) {
                         if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
                             return `<div class="tooltip-sign">${data.testResultSign}<span class="tooltip-sign-text">${data.translatedTestResult}</span></div>`;
                         } else if (data.isRunning) {
@@ -602,7 +602,7 @@ class TestTable {
             // The "array-callback-return" eslint rule creates a false positive: We are not using Array.prototype.every,
             // but rather DataTables.CellMethods.prototype.every.
             /* eslint-disable-next-line array-callback-return */
-            this.dataTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
+            this.dataTable.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                 if (this.child.isShown()) {
                     this.child.hide();
                 }

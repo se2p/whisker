@@ -146,15 +146,11 @@ const crash = async function (t) {
     const boat = t.getSprite('Boot');
     t.greenFlag();
     await t.runForTime(4);
-    let boatX = boat.x;
-    let boatY = boat.y;
     let touchedWall = false;
     t.mouseMove(250, boat.y, 60);
     t.onSpriteMoved(() => {
         if (!touchedWall && boat.isTouchingColor([102, 59, 0])) {
             touchedWall = true;
-            boatX = boat.x;
-            boatY = boat.y;
         }
     });
     await t.runUntil(() => touchedWall === true, 20000);
