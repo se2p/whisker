@@ -466,7 +466,7 @@ class TestTable {
                             return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
                         }
                         return '-';
-                        
+
                     },
                     defaultContent: '-',
                     width: '30%'
@@ -547,7 +547,7 @@ class TestTable {
         const translatedProperties = [msg, name, expected, operator, actual];
 
         function addRowIfPropertyPresent (prop) {
-            if (test.error.hasOwnProperty(prop)) {
+            if (Object.prototype.hasOwnProperty.call(test.error, prop)) {
                 if (translatedProperties.includes(prop)) {
                     const translatedProp = index.i18n.t(`error-${prop}`);
                     result += `<td>${translatedProp}</td><td>${test.error[prop]}</td>\n</tr>`;
@@ -588,7 +588,7 @@ class TestTable {
             }
         }
 
-        if (test.hasOwnProperty('log') && test.log.length) {
+        if (Object.prototype.hasOwnProperty.call(test, 'log') && test.log.length) {
             const log = index.i18n.t('log');
             result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
         }
