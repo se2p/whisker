@@ -87,7 +87,7 @@ beforeEach(async () => {
 
 async function testProgram (errors, fails, coverage) {
     const seed = Date.now();
-    await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
+    await page.evaluate(seed => document.querySelector('#seed').value = seed, seed);
     await (await page.$('#run-all-tests')).click();
 
     const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
