@@ -1,6 +1,6 @@
 const test0 = async function (t) {
     await t.runForSteps(10);
-}
+};
 
 module.exports = [
     {
@@ -9,4 +9,4 @@ module.exports = [
         description: '',
         categories: [],
     }
-]
+];

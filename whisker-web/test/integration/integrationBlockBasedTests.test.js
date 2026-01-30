@@ -32,7 +32,7 @@ beforeEach(async () => {
     // we simply remove the file when calling the servant.
     const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -52,7 +52,7 @@ beforeEach(async () => {
     await page.evaluate(() => {
         const tooltipLink = document.getElementById('project-contains-bbts-tooltip-link');
         const dummyLink = document.createElement('a');
-        dummyLink.setAttribute('id', 'project-contains-bbts-tooltip-link')
+        dummyLink.setAttribute('id', 'project-contains-bbts-tooltip-link');
         tooltipLink.replaceWith(dummyLink);
     });
 });

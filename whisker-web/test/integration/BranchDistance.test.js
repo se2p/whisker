@@ -60,7 +60,7 @@ beforeEach(async () => {
     // we simply remove the file when calling the servant.
     const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -72,7 +72,7 @@ beforeEach(async () => {
 
 describe('Fitness tests', () => {
     test('Test touching color branch distance', async () => {
-        await loadProject('test/integration/branchDistance/TouchingColorDistance.sb3')
+        await loadProject('test/integration/branchDistance/TouchingColorDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -94,7 +94,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test color touching color branch distance', async () => {
-        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3')
+        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const {uncoveredBlocks} = await readFitnessLog();
@@ -128,7 +128,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test edge touching branch distance', async () => {
-        await loadProject('test/integration/branchDistance/TouchingEdgeDistance.sb3')
+        await loadProject('test/integration/branchDistance/TouchingEdgeDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -143,7 +143,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test if then distance', async () => {
-        await loadProject('test/integration/branchDistance/IfThenDistance.sb3')
+        await loadProject('test/integration/branchDistance/IfThenDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -154,7 +154,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test if else distance', async () => {
-        await loadProject('test/integration/branchDistance/IfElseDistance.sb3')
+        await loadProject('test/integration/branchDistance/IfElseDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -165,7 +165,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test if then else distance', async () => {
-        await loadProject('test/integration/branchDistance/IfThenElseDistance.sb3')
+        await loadProject('test/integration/branchDistance/IfThenElseDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -176,7 +176,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test wait until distance', async () => {
-        await loadProject('test/integration/branchDistance/WaitUntilDistance.sb3')
+        await loadProject('test/integration/branchDistance/WaitUntilDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -187,7 +187,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test list contains distance', async () => {
-        await loadProject('test/integration/branchDistance/ListContainsFalse.sb3')
+        await loadProject('test/integration/branchDistance/ListContainsFalse.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -198,7 +198,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test repeat until distance', async () => {
-        await loadProject('test/integration/branchDistance/RepeatUntilDistance.sb3')
+        await loadProject('test/integration/branchDistance/RepeatUntilDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -209,7 +209,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test repeat until true distance', async () => {
-        await loadProject('test/integration/branchDistance/RepeatUntilTrueDistance.sb3')
+        await loadProject('test/integration/branchDistance/RepeatUntilTrueDistance.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -220,7 +220,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test repeat until distance with multiple loop iterations', async () => {
-        await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations.sb3')
+        await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -231,7 +231,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test repeat until distance with multiple loop iterations, with increasing distances', async () => {
-        await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations_Increasing.sb3')
+        await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations_Increasing.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -242,7 +242,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test repeat until distance for approach level', async () => {
-        await loadProject('test/integration/branchDistance/RepeatUntilApproachLevel1.sb3')
+        await loadProject('test/integration/branchDistance/RepeatUntilApproachLevel1.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -259,7 +259,7 @@ describe('Fitness tests', () => {
 
 
     test('Test nested if approach level', async () => {
-        await loadProject('test/integration/branchDistance/NestedIf.sb3')
+        await loadProject('test/integration/branchDistance/NestedIf.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -270,7 +270,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test impossible repeat', async () => {
-        await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes.sb3')
+        await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -281,7 +281,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test impossible to leave repeat', async () => {
-        await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes_False.sb3')
+        await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes_False.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -292,7 +292,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test CFG distance when branch distance !== 0', async () => {
-        await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
+        await loadProject('test/integration/cfgDistance/NestedConditions.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -306,7 +306,7 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test CFG distance when branch distance == 0', async () => {
-        await loadProject('test/integration/cfgDistance/CFGDistanceWithDefineHack.sb3')
+        await loadProject('test/integration/cfgDistance/CFGDistanceWithDefineHack.sb3');
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
@@ -319,37 +319,37 @@ describe('Fitness tests', () => {
     }, timeout);
 
     test('Test branchDistance for execution halting wait', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-Wait.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Wait.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution halting say for seconds blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-SayForSeconds.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-SayForSeconds.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution halting think for seconds blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-ThinkForSeconds.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-ThinkForSeconds.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution halting glide to (x,y) blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution halting glide to blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution play sound until done blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
     test('Test branchDistance for execution halting text2speech blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-Text2Speech.sb3')
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Text2Speech.sb3');
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 });

@@ -43,7 +43,7 @@ beforeEach(async () => {
     // we simply remove the file when calling the servant.
     const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -62,7 +62,7 @@ describe('Scratch Mutations', () => {
     test('Key-Replacement-Mutation sensing block', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressKeyTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
-        await loadProject('test/integration/mutation/KRM-Sensing.sb3')
+        await loadProject('test/integration/mutation/KRM-Sensing.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -72,7 +72,7 @@ describe('Scratch Mutations', () => {
     test('Key-Replacement-Mutation hat block', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressKeyTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
-        await loadProject('test/integration/mutation/KRM-Hat.sb3')
+        await loadProject('test/integration/mutation/KRM-Hat.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -82,7 +82,7 @@ describe('Scratch Mutations', () => {
     test('Single-Block-Deletion-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["SBD"]);
-        await loadProject('test/integration/mutation/SBD.sb3')
+        await loadProject('test/integration/mutation/SBD.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalTotal, mutantTotal} = await getCSVResults();
         expect(Number(originalTotal)).toBe(4);
@@ -92,7 +92,7 @@ describe('Scratch Mutations', () => {
     test('Script-Deletion-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["SDM"]);
-        await loadProject('test/integration/mutation/SDM.sb3')
+        await loadProject('test/integration/mutation/SDM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalTotal, mutantTotal} = await getCSVResults();
         expect(Number(originalTotal)).toBe(6);
@@ -102,7 +102,7 @@ describe('Scratch Mutations', () => {
     test('Arithmetic-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["AOR"]);
-        await loadProject('test/integration/mutation/AOR.sb3')
+        await loadProject('test/integration/mutation/AOR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -112,7 +112,7 @@ describe('Scratch Mutations', () => {
     test('Relational-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["ROR"]);
-        await loadProject('test/integration/mutation/ROR.sb3')
+        await loadProject('test/integration/mutation/ROR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -122,7 +122,7 @@ describe('Scratch Mutations', () => {
     test('Logical-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["LOR"]);
-        await loadProject('test/integration/mutation/LOR.sb3')
+        await loadProject('test/integration/mutation/LOR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -132,7 +132,7 @@ describe('Scratch Mutations', () => {
     test('Variable-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["VRM"]);
-        await loadProject('test/integration/mutation/VRM.sb3')
+        await loadProject('test/integration/mutation/VRM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);
@@ -142,7 +142,7 @@ describe('Scratch Mutations', () => {
     test('Negate-Condition-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["NCM"]);
-        await loadProject('test/integration/mutation/NCM.sb3')
+        await loadProject('test/integration/mutation/NCM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
         expect(Number(originalCoverage)).toBe(1);

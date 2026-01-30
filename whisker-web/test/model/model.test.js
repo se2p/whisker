@@ -77,7 +77,7 @@ beforeEach(async () => {
     // we simply remove the file when calling the servant.
     const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -114,7 +114,7 @@ describe('Model tests without inputs', () => {
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange'],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents'],
         ['stop models', 'StopOtherScripts', 'StopOtherScripts'],
-    ]
+    ];
 
     it.each(table)('%s', async (name, projectFileName, modelFileName) => {
         const programPath = `test/model/scratch-programs/${projectFileName}.sb3`;
@@ -135,7 +135,7 @@ describe('Model tests with inputs', () => {
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
         ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
         // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
-    ]
+    ];
 
     it.each(table)('%s', async (name, projectName, coverage, testOrModel) => {
         const programPath = `test/model/scratch-programs/${projectName}.sb3`;

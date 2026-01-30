@@ -38,7 +38,7 @@ beforeEach(async () => {
     // we simply remove the file when calling the servant.
     const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -50,7 +50,7 @@ beforeEach(async () => {
             return Promise.reject(err);
         });
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+    await loadProject('test/integration/networkSuites/FruitCatching.sb3');
 });
 
 
