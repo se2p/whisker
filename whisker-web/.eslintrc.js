@@ -15,6 +15,12 @@ module.exports = {
             ],
             env: {
                 jest: true
+            },
+            globals: {
+                // Global variables provided by jest-puppeteer -> Do not flag these as "undefined" when linting
+                page: 'writable',
+                browser: 'readonly',
+                jestPuppeteer: 'readonly'
             }
         }
     ],
