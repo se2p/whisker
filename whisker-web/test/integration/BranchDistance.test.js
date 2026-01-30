@@ -44,7 +44,7 @@ const checkFitnessValuesForExecutionHaltingBlocks = async () => {
     const runSearch = await page.$('#run-search');
     await runSearch.evaluate(t => t.click());
     let log = await readFitnessLog();
-    while (log.uncoveredBlocks[0] === undefined) {
+    while (typeof log.uncoveredBlocks[0] === 'undefined') {
         log = await readFitnessLog();
     }
     const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
