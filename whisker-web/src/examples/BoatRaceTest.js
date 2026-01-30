@@ -164,7 +164,7 @@ const crash = async function (t) {
 const boatCrashStop = async function (t) {
     await crash(t);
     await t.runForTime(60);
-    t.assert.ok(!t.isProjectRunning(), "project must not run");
+    t.assert.ok(!t.isProjectRunning(), 'project must not run');
     t.end();
 };
 
@@ -231,7 +231,7 @@ const winning = async function (t) {
 const boatIsWinningStop = async function (t) {
     await winning(t);
     await t.runForTime(60);
-    t.assert.ok(!t.isProjectRunning(), "project must not run");
+    t.assert.ok(!t.isProjectRunning(), 'project must not run');
     t.end();
 }
 
@@ -323,7 +323,7 @@ const gateCrash = async function (t) {
 const boatCrashGateStop = async function (t) {
     await gateCrash(t);
     await t.runForTime(60);
-    t.assert.ok(!t.isProjectRunning(), "project must not run");
+    t.assert.ok(!t.isProjectRunning(), 'project must not run');
     t.end();
 };
 

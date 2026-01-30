@@ -2,7 +2,7 @@ const {$} = require('../web-libs');
 const index = require('../index');
 const Test = require('whisker-main/src/test-runner/test.js');
 const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
-const logger = require("../logger");
+const logger = require('../logger');
 
 const FAIL_SIGN = '\u2717';
 const SKIP_SIGN = '\u26A0';
@@ -469,7 +469,7 @@ class TestTable {
                         
                     },
                     defaultContent: '-',
-                    width: "30%"
+                    width: '30%'
                 },
                 {
                     orderable: false,
@@ -536,14 +536,14 @@ class TestTable {
      * @return {string} .
      */
     static prepareDescription(test) {
-        let description = index.i18n.t("description");
+        let description = index.i18n.t('description');
         let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
-        let name = "name";
-        let msg = "message";
-        let expected = "expected";
-        let operator = "operator";
-        let actual = "actual";
-        let excludedProperties = ["generatedMessage", "stack", msg, name, expected, operator, actual];
+        let name = 'name';
+        let msg = 'message';
+        let expected = 'expected';
+        let operator = 'operator';
+        let actual = 'actual';
+        let excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
         let translatedProperties = [msg, name, expected, operator, actual];
 
         function addRowIfPropertyPresent(prop) {
@@ -588,8 +588,8 @@ class TestTable {
             }
         }
 
-        if (test.hasOwnProperty("log") && test.log.length) {
-            let log = index.i18n.t("log");
+        if (test.hasOwnProperty('log') && test.log.length) {
+            let log = index.i18n.t('log');
             result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
         }
 

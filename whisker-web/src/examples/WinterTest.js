@@ -47,17 +47,17 @@ const stellaStopping = async function (t) {
         }
     });
     await t.runUntil(() => stellaFinished, 20000);
-    t.assert.ok(stellaFinished, "stella must have finsihed");
-    t.assert.ok(stella.direction === dirStella, "stella must have direction from start");
-    t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), "stella must have returned");
+    t.assert.ok(stellaFinished, 'stella must have finsihed');
+    t.assert.ok(stella.direction === dirStella, 'stella must have direction from start');
+    t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), 'stella must have returned');
     await t.runForTime(10);
     stellaFinished = false
     stellaMove = false;
     stellaStopped = false;
     changedDir = false;
     finishedDir = false;
-    t.assert.ok(stella.direction === dirStella, "stella changed direction after finish");
-    t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), "stella moved after finish");
+    t.assert.ok(stella.direction === dirStella, 'stella changed direction after finish');
+    t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), 'stella moved after finish');
     t.end();
 };
 
@@ -102,7 +102,7 @@ const schorschDrawing = async function (t) {
         }
     });
     await t.runUntil(() => stellaFinished, 1600);
-    t.assert.ok(!schorschMoved, "schorsch moved too soon");
+    t.assert.ok(!schorschMoved, 'schorsch moved too soon');
     schorschMoved = false;
     t.onSpriteMoved(() => {
         if (xOrigSchorsch !== schorsch.x || yOrigSchorsch !== schorsch.y) {
@@ -111,8 +111,8 @@ const schorschDrawing = async function (t) {
     });
     await t.runForTime(6500);
     t.assert.ok(schorschMoved, "schorsch didn't move");
-    t.assert.ok(schorsch.x <= (xOrigSchorsch + 1) && schorsch.x >= (xOrigSchorsch - 1) && schorsch.y <= (yOrigSchorsch + 1) && schorsch.y >= (yOrigSchorsch - 1), "schorsch must return");
-    t.assert.ok(!t.isProjectRunning(), "project must not run");
+    t.assert.ok(schorsch.x <= (xOrigSchorsch + 1) && schorsch.x >= (xOrigSchorsch - 1) && schorsch.y <= (yOrigSchorsch + 1) && schorsch.y >= (yOrigSchorsch - 1), 'schorsch must return');
+    t.assert.ok(!t.isProjectRunning(), 'project must not run');
     t.end();
 };
 

@@ -19,7 +19,7 @@ const teraConstantMove = async function (t) {
     let teraY = tera.y;
     let teraMoved = false;
     t.addCallback(() => {
-        t.assert.ok(!tera.visible, "tera went visible");
+        t.assert.ok(!tera.visible, 'tera went visible');
         if (teraX !== tera.x || teraY !== tera.y) {
             teraMoved = true;
         }

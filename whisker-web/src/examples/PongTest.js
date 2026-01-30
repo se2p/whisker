@@ -45,18 +45,18 @@ const ballOut = async function (t) {
         t.assert.ok(state.value === 'Experte', 'score >1 but not Experte at beginning');
         t.clickSprite('Reset', 20);
         await t.runForTime(50);
-        t.assert.ok(score.value === '0', "score must be 0 after reset");
-        t.assert.ok(state.value.startsWith('Anf'), "score ==0 but not Anf");
+        t.assert.ok(score.value === '0', 'score must be 0 after reset');
+        t.assert.ok(state.value.startsWith('Anf'), 'score ==0 but not Anf');
     }
 
-    t.assert.ok(state.value.startsWith('Anf'), "score <=1 but not Anf");
+    t.assert.ok(state.value.startsWith('Anf'), 'score <=1 but not Anf');
     let ball = t.getSprite('Ball');
     let paddle = t.getSprite('Spieler');
     t.clickSprite('Reset', 5);
     await t.runForTime(10);
 
-    t.assert.ok(score.value === '0', "score must be 0 after reset");
-    t.assert.ok(state.value.startsWith('Anf'), "score ==0 but not Anf");
+    t.assert.ok(score.value === '0', 'score must be 0 after reset');
+    t.assert.ok(state.value.startsWith('Anf'), 'score ==0 but not Anf');
 
     t.addCallback(() => {
         if (Math.abs(paddle.y - ball.y) <= 10) {
@@ -80,15 +80,15 @@ const ballOut = async function (t) {
         if (!t.isProjectRunning()) {
             t.greenFlag();
             await t.runForTime(10);
-            t.assert.ok(t.isProjectRunning(), "project must run");
-            t.assert.ok(state.value.startsWith('Anf'), "score <= 1 but not Anf");
+            t.assert.ok(t.isProjectRunning(), 'project must run');
+            t.assert.ok(state.value.startsWith('Anf'), 'score <= 1 but not Anf');
         }
         await t.runUntil(() => !t.isProjectRunning(), 60000);
-        t.assert.ok(!t.isProjectRunning(), "project must not run");
+        t.assert.ok(!t.isProjectRunning(), 'project must not run');
     }
 
-    t.assert.ok(parseInt(score.value, 10) > 1, "score must be bigger than 1");
-    t.assert.ok(state.value === 'Experte', "score >1 but not Experte");
+    t.assert.ok(parseInt(score.value, 10) > 1, 'score must be bigger than 1');
+    t.assert.ok(state.value === 'Experte', 'score >1 but not Experte');
 
 
     t.end();

@@ -1,7 +1,7 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
 const Recorder = require('whisker-main/src/vm/recorder');
-const logger = require("../logger");
+const logger = require('../logger');
 
 /**
  * Enables to record user input for test recordings.

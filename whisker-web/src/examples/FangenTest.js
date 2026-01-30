@@ -38,7 +38,7 @@ const movingRed = async function (t) {
     await t.runUntil(() => cloneChecked === true, 3300);
     if (cloneChecked) {
         t.assert.ok(cloneChecked, 'sprite not cloned');
-        t.assert.ok(parseInt(lives.value, 10) === 3 || parseInt(points.value, 10) === 0, "values changed before 1. clone was made");
+        t.assert.ok(parseInt(lives.value, 10) === 3 || parseInt(points.value, 10) === 0, 'values changed before 1. clone was made');
         let clone = red.getClones()[0];
         // await t.runUntil(() => red.getClones().length >= 2 || parseInt(lives.value, 10) < 3 || parseInt(points.value, 10) > 0, 8000);
         await t.runForTime(3300);
@@ -65,7 +65,7 @@ const movingRed = async function (t) {
         let newClonesNumber = red.getClones().length;
         await t.runUntil(() => red.getClones().length !== newClonesNumber, 3300);
         t.assert.ok(dist >= 230, `Did not reset to bigger 250 ${dist} da ${red.getClones().length}`);
-        t.assert.ok(parseInt(lives.value, 10) < 2 || parseInt(points.value, 10) > 1 || (parseInt(lives.value, 10) < 3 && parseInt(points.value, 10) > 0), "must change values");
+        t.assert.ok(parseInt(lives.value, 10) < 2 || parseInt(points.value, 10) > 1 || (parseInt(lives.value, 10) < 3 && parseInt(points.value, 10) > 0), 'must change values');
     } else {
         await t.runUntil(() => parseInt(lives.value, 10) < 3 || parseInt(points.value, 10) > 0, 8000);
         const startX = red.x;
@@ -86,7 +86,7 @@ const movingRed = async function (t) {
         await t.runUntil(() => touched === true, 4000);
         await t.wait(2);
         t.assert.ok(Math.sqrt((contX - red.x) * (contX - red.x) + (contY - red.y) * (contY - red.y)) >= 250, 'Did not reset to bigger 250');
-        t.assert.ok(parseInt(lives.value, 10) < 2 || parseInt(points.value, 10) > 1 || (parseInt(lives.value, 10) < 3 && parseInt(points.value, 10) > 0), "must change values");
+        t.assert.ok(parseInt(lives.value, 10) < 2 || parseInt(points.value, 10) > 1 || (parseInt(lives.value, 10) < 3 && parseInt(points.value, 10) > 0), 'must change values');
 
     }
     t.end();

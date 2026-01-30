@@ -31,14 +31,14 @@ const rocketMoving = async function (t) {
     let rocket = t.getSprite('Raumschiff');
     let rocketY = rocket.y;
     await t.wait(20);
-    t.assert.ok(rocketY < rocket.y, "rocket must move");
+    t.assert.ok(rocketY < rocket.y, 'rocket must move');
     let rocketDir = rocket.direction;
     t.keyPress('right arrow', 10);
     await t.wait(10);
-    t.assert.ok(rocketDir < rocket.direction, "rocket must turn right");
+    t.assert.ok(rocketDir < rocket.direction, 'rocket must turn right');
     rocketDir = rocket.direction;
     await t.wait(20);
-    t.assert.ok(rocketDir === rocket.direction, "rocket must not turn right");
+    t.assert.ok(rocketDir === rocket.direction, 'rocket must not turn right');
     t.end();
 };
 

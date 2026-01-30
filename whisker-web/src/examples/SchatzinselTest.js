@@ -51,8 +51,8 @@ const girlShowShort = async function (t) {
     });
     await t.runUntil(() => minSizeReached, 20000);
 
-    t.assert.ok(!failed, "girl became visible before reaching treasure");
-    t.assert.ok(treasure.visible, "treasure not visible");
+    t.assert.ok(!failed, 'girl became visible before reaching treasure');
+    t.assert.ok(treasure.visible, 'treasure not visible');
     let sizeBoy = pirate.size;
     let sizeGirl = girl.size;
     let spokeText = false;
@@ -62,18 +62,18 @@ const girlShowShort = async function (t) {
         }
     });
     await t.runUntil(() => spokeText, 10000);
-    t.assert.ok(spokeText, "pirate must have said his monologue");
+    t.assert.ok(spokeText, 'pirate must have said his monologue');
     let finished = false;
     t.addCallback(() => {
-        if (pirate.sayText === "") {
+        if (pirate.sayText === '') {
             finished = true;
         }
     });
     await t.runUntil(() => finished, 2500);
     t.wait(5);
-    t.assert.ok(girl.visible, "girl must be visible");
-    t.assert.ok(girl.size > sizeGirl, "girl must increase in size");
-    t.assert.ok(pirate.size > sizeBoy, "pirate must increase in size");
+    t.assert.ok(girl.visible, 'girl must be visible');
+    t.assert.ok(girl.size > sizeGirl, 'girl must increase in size');
+    t.assert.ok(pirate.size > sizeBoy, 'pirate must increase in size');
     t.end();
 };
 
@@ -95,8 +95,8 @@ const girlShowLong = async function (t) {
     });
     await t.runUntil(() => minSizeReached, 20000);
 
-    t.assert.ok(!failed, "girl became visible before reaching treasure");
-    t.assert.ok(treasure.visible, "treasure not visible");
+    t.assert.ok(!failed, 'girl became visible before reaching treasure');
+    t.assert.ok(treasure.visible, 'treasure not visible');
     let sizeBoy = pirate.size;
     let sizeGirl = girl.size;
     let spokeText = false;
@@ -106,18 +106,18 @@ const girlShowLong = async function (t) {
         }
     });
     await t.runUntil(() => spokeText, 10000);
-    t.assert.ok(spokeText, "pirate must have said his monologue");
+    t.assert.ok(spokeText, 'pirate must have said his monologue');
     let finished = false;
     t.addCallback(() => {
-        if (pirate.sayText === "") {
+        if (pirate.sayText === '') {
             finished = true;
         }
     });
     await t.runUntil(() => finished, 2500);
     t.wait(5);
-    t.assert.ok(girl.visible, "girl must be visible");
-    t.assert.ok(girl.size > sizeGirl, "girl must increase in size");
-    t.assert.ok(pirate.size > sizeBoy, "pirate must increase in size");
+    t.assert.ok(girl.visible, 'girl must be visible');
+    t.assert.ok(girl.size > sizeGirl, 'girl must increase in size');
+    t.assert.ok(pirate.size > sizeBoy, 'pirate must increase in size');
     t.end();
 };
 

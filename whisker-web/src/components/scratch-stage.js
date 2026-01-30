@@ -5,7 +5,7 @@ const ScratchRender = require('scratch-render');
 const ScratchSVGRenderer = require('scratch-svg-renderer');
 const AudioEngine = require('scratch-audio');
 const VirtualMachine = require('scratch-vm');
-const logger = require("../logger");
+const logger = require('../logger');
 
 const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
 const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';

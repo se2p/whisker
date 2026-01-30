@@ -107,7 +107,7 @@ const cactusMove = async function (t) {
         }
     });
     await t.runUntil(() => touchingCactus2 || touchingCactus1, 6000);
-    t.assert.ok(touchingCactus2 || touchingCactus1, "gardener must have touched cactus");
+    t.assert.ok(touchingCactus2 || touchingCactus1, 'gardener must have touched cactus');
     let flowerDir = flower.direction;
     let numberClones = cactus.getClones().length;
     let firstDistOrig = Math.sqrt((firstX - gardener.x) * (firstX - gardener.x) + (firstY - gardener.y) * (firstY - gardener.y));
@@ -127,8 +127,8 @@ const cactusMove = async function (t) {
         }
     });
     await t.runForTime(10000);
-    t.assert.ok(sayAutsch, "gardner must say Autsch");
-    t.assert.ok(sayOhje, "flower must say Ohje");
+    t.assert.ok(sayAutsch, 'gardner must say Autsch');
+    t.assert.ok(sayOhje, 'flower must say Ohje');
     t.assert.ok(!flowerChanged, 'flower changed after gardener touched actus');
     t.assert.ok(firstDistOrig > dist(firstCactus, gardener), 'cactus did not get nearer to gardener');
     t.assert.ok(secondDistOrig > dist(secondCactus, gardener), 'cactus did not get nearer to gardener');

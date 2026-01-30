@@ -17,14 +17,14 @@ const catMoving = async function (t) {
     let cat = t.getSprite('Skikatze');
     let catX = cat.x;
     await t.wait(20);
-    t.assert.ok(catX < cat.x, "cat must move right");
+    t.assert.ok(catX < cat.x, 'cat must move right');
     catX = cat.x;
     t.keyPress('left arrow', 30);
     await t.wait(30);
-    t.assert.ok(catX > cat.x, "cat must move left");
+    t.assert.ok(catX > cat.x, 'cat must move left');
     catX = cat.x;
     await t.wait(20);
-    t.assert.ok(catX < cat.x, "cat must move right again");
+    t.assert.ok(catX < cat.x, 'cat must move right again');
     t.end();
 };
 
