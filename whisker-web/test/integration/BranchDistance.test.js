@@ -1,9 +1,9 @@
 const fileUrl = require('file-url');
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = "dist/index.html";
+const URL = 'dist/index.html';
 
 const timeout = 30000;
 const ACCELERATION = Infinity;
@@ -58,7 +58,7 @@ beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
     // Since this is a purely visual feature and does not harm the test execution in any way,
     // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
+    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
     if (fs.existsSync(prettifyPath)) {
         fs.unlinkSync(prettifyPath);
     }
@@ -66,7 +66,7 @@ beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/fitnessTests.json");
+    await (await page.$('#fileselect-config')).uploadFile('test/integration/testConfigs/fitnessTests.json');
 });
 
 
@@ -248,7 +248,7 @@ describe('Fitness tests', () => {
         const log = await readFitnessLog();
         await expect(log.uncoveredBlocks.length).toBe(2);
         let blockNum = 1;
-        if (log.uncoveredBlocks[0].block.startsWith("{o`8=`86ZNH.D7Lu(*GS")) {
+        if (log.uncoveredBlocks[0].block.startsWith('{o`8=`86ZNH.D7Lu(*GS')) {
             blockNum = 0;
         }
         const approachLevel = log.uncoveredBlocks[blockNum].ApproachLevel;
@@ -296,9 +296,9 @@ describe('Fitness tests', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
-        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
-        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
-        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
+        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith('control_wait'));
+        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith('control_stop'))[0];
+        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith('control_if'))[0];
         await expect(controlWaitBlock1.CFGDistance).toBe(Number.MAX_VALUE);
         await expect(controlWaitBlock2.CFGDistance).toBe(Number.MAX_VALUE);
         await expect(controlStopBlock.CFGDistance).toBe(Number.MAX_VALUE);
@@ -310,11 +310,11 @@ describe('Fitness tests', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
-        const moveStepsBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_movesteps"))[0];
+        const moveStepsBlock = log.uncoveredBlocks.filter(b => b.block.endsWith('motion_movesteps'))[0];
         expect(moveStepsBlock.CFGDistance).toBe(1);
-        const looksSayBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("looks_say"))[0];
+        const looksSayBlock = log.uncoveredBlocks.filter(b => b.block.endsWith('looks_say'))[0];
         expect(looksSayBlock.CFGDistance).toBe(2);
-        const motionTurnLeftBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_turnleft"))[0];
+        const motionTurnLeftBlock = log.uncoveredBlocks.filter(b => b.block.endsWith('motion_turnleft'))[0];
         expect(motionTurnLeftBlock.CFGDistance).toBe(3);
     }, timeout);
 

@@ -1,9 +1,9 @@
 const fileUrl = require('file-url');
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = "dist/index.html";
+const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
@@ -44,26 +44,26 @@ async function readModelErrors () {
     while (true) {
         const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         if (log.includes('summary')) {
-            const logArray = log.split("\n");
+            const logArray = log.split('\n');
 
             // Delete all lines from the log up until the summary
             for (let i = 0; i < logArray.length; i++) {
-                if (logArray[i].includes("summary")) {
+                if (logArray[i].includes('summary')) {
                     break;
                 }
 
-                logArray[i] = "";
+                logArray[i] = '';
             }
 
-            const errors = logArray.find(x => x.includes("modelErrors")).split("(")[1].split(")")[0];
-            const fails = logArray.find(x => x.includes("modelFails")).split("(")[1].split(")")[0];
-            const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
-            const coverage = logArray[coverageIndex + 1].split(": ")[1].split(" ")[0];
+            const errors = logArray.find(x => x.includes('modelErrors')).split('(')[1].split(')')[0];
+            const fails = logArray.find(x => x.includes('modelFails')).split('(')[1].split(')')[0];
+            const coverageIndex = logArray.findIndex(x => x.includes('modelCoverage'));
+            const coverage = logArray[coverageIndex + 1].split(': ')[1].split(' ')[0];
             return {
                 errorsInModel: parseInt(errors),
                 failsInModel: parseInt(fails),
                 modelCoverage: parseFloat(coverage),
-                loggedOutput: logArray.filter(s => s !== "").join("\n")
+                loggedOutput: logArray.filter(s => s !== '').join('\n')
             };
         } else if (log.includes('"ZodError"') || log.indexOf(errorWhenUploadingModelStart) !== -1) {
             throw new Error(`Could not parse the model. Message:\n${log}`);
@@ -75,7 +75,7 @@ beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
     // Since this is a purely visual feature and does not harm the test execution in any way,
     // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
+    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
     if (fs.existsSync(prettifyPath)) {
         fs.unlinkSync(prettifyPath);
     }
@@ -92,7 +92,7 @@ async function testProgram (errors, fails, coverage) {
 
     const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
     if (errorsInModel + failsInModel > errors + fails || modelCoverage < coverage) {
-        console.log("Used seed:", seed);
+        console.log('Used seed:', seed);
         console.log(loggedOutput);
     }
     expect(errorsInModel).toBeLessThanOrEqual(errors);
@@ -131,9 +131,9 @@ describe('Model tests with inputs', () => {
     const table = [
         ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModels.json'],
         ['fruitcatcher game test', 'Fruitcatcher', 0.85, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
-        ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
+        ['fruitcatcher with dynamic inputs', 'Fruitcatcher', 0.7, 'test/integration/networkSuites/FruitCatchingMultiLabel.json'],
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
-        ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
+        ['fruitcatcher with static inputs', 'Fruitcatcher', 0.97, 'test/model/FruitCatching-manual_small.js'],
         // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ];
 

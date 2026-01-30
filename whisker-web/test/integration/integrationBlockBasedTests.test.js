@@ -1,9 +1,9 @@
 const fileUrl = require('file-url');
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = "dist/index.html";
+const URL = 'dist/index.html';
 
 const timeout = 30000;
 
@@ -30,7 +30,7 @@ beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
     // Since this is a purely visual feature and does not harm the test execution in any way,
     // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
+    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
     if (fs.existsSync(prettifyPath)) {
         fs.unlinkSync(prettifyPath);
     }
@@ -70,17 +70,17 @@ describe('Block-Based Tests Integration', () => {
         const outputLog = await getOutputLogWhenBBTTestsAreDone();
 
         const expectedLog =
-            "# project: bbt-tests.sb3\n" +
-            "4 Block-Based Tests found in project!\n" +
-            "Block-Based Test \"timeout-1-sec\": Test Result: Timeout!\n" +
-            "Block-Based Test \"timeout-default\": Test Result: Timeout!\n" +
-            "Block-Based Test \"3-fail-1-pass\": Error: ASSERTION_MISSING_CONDITION\n" +
-            "Block-Based Test \"3-fail-1-pass\": Error: ASSERTION_NOT_EQUAL\n" +
-            "Block-Based Test \"3-fail-1-pass\": Error: ASSERTION_VALUE_LESS_OR_EQUAL\n" +
-            "Block-Based Test \"3-fail-1-pass\": Test Result: fail\n" +
-            "Block-Based Test \"3-pass\": Test Result: pass\n" +
-            "Block-Based Tests have finished!\n" +
-            "\n";
+            '# project: bbt-tests.sb3\n' +
+            '4 Block-Based Tests found in project!\n' +
+            'Block-Based Test "timeout-1-sec": Test Result: Timeout!\n' +
+            'Block-Based Test "timeout-default": Test Result: Timeout!\n' +
+            'Block-Based Test "3-fail-1-pass": Error: ASSERTION_MISSING_CONDITION\n' +
+            'Block-Based Test "3-fail-1-pass": Error: ASSERTION_NOT_EQUAL\n' +
+            'Block-Based Test "3-fail-1-pass": Error: ASSERTION_VALUE_LESS_OR_EQUAL\n' +
+            'Block-Based Test "3-fail-1-pass": Test Result: fail\n' +
+            'Block-Based Test "3-pass": Test Result: pass\n' +
+            'Block-Based Tests have finished!\n' +
+            '\n';
 
         expect(outputLog).toEqual(expectedLog);
     }, timeout);
@@ -108,25 +108,25 @@ describe('Block-Based Tests Integration', () => {
 
         const expectedLog =
             [
-                "# project: bbt-batcheval-correct-submission.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"move 50 steps on green flag click\": Test Result: pass\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n",
+                '# project: bbt-batcheval-correct-submission.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "move 50 steps on green flag click": Test Result: pass\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n',
 
-                "# project: bbt-batcheval-wrong-submission.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"move 50 steps on green flag click\": Error: CONDITION_IS_FALSE\n" +
-                "Block-Based Test \"move 50 steps on green flag click\": Test Result: fail\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n",
+                '# project: bbt-batcheval-wrong-submission.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "move 50 steps on green flag click": Error: CONDITION_IS_FALSE\n' +
+                'Block-Based Test "move 50 steps on green flag click": Test Result: fail\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n',
 
-                "# project: bbt-batcheval-cheating-submission.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"move 50 steps on green flag click\": Error: CONDITION_IS_FALSE\n" +
-                "Block-Based Test \"move 50 steps on green flag click\": Test Result: fail\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n"
+                '# project: bbt-batcheval-cheating-submission.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "move 50 steps on green flag click": Error: CONDITION_IS_FALSE\n' +
+                'Block-Based Test "move 50 steps on green flag click": Test Result: fail\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n'
             ];
 
         expect(logs).toEqual(expectedLog);
@@ -163,27 +163,27 @@ describe('Block-Based Tests Integration', () => {
         const expectedLog =
             [
                 // no seed
-                "# project: bbt-test-seed-98765.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"Check if random number equals hardcoded value\": Error: ASSERTION_NOT_EQUAL\n" +
-                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: fail\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n",
+                '# project: bbt-test-seed-98765.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "Check if random number equals hardcoded value": Error: ASSERTION_NOT_EQUAL\n' +
+                'Block-Based Test "Check if random number equals hardcoded value": Test Result: fail\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n',
 
                 // wrong seed (333)
-                "# project: bbt-test-seed-98765.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"Check if random number equals hardcoded value\": Error: ASSERTION_NOT_EQUAL\n" +
-                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: fail\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n",
+                '# project: bbt-test-seed-98765.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "Check if random number equals hardcoded value": Error: ASSERTION_NOT_EQUAL\n' +
+                'Block-Based Test "Check if random number equals hardcoded value": Test Result: fail\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n',
 
                 // correct seed (98765)
-                "# project: bbt-test-seed-98765.sb3\n" +
-                "1 Block-Based Tests found in project!\n" +
-                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: pass\n" +
-                "Block-Based Tests have finished!\n" +
-                "\n"
+                '# project: bbt-test-seed-98765.sb3\n' +
+                '1 Block-Based Tests found in project!\n' +
+                'Block-Based Test "Check if random number equals hardcoded value": Test Result: pass\n' +
+                'Block-Based Tests have finished!\n' +
+                '\n'
             ];
 
         expect(logs).toEqual(expectedLog);

@@ -19,7 +19,7 @@ const testb = async t => {
 const testc = async t => {
     t.keyPress('c', 10);
     await t.runForTime(250);
-    throw new Error("something unexpected happened");
+    throw new Error('something unexpected happened');
 };
 
 const testabc = async t => {
@@ -177,8 +177,8 @@ module.exports = [
     },
     {
         test: testConsecutiveAssertions,
-        name: "consecutive assertions",
-        description: "coverage must not be cleared between consecutive assertions",
+        name: 'consecutive assertions',
+        description: 'coverage must not be cleared between consecutive assertions',
         categories: []
     },
     {
@@ -202,20 +202,20 @@ module.exports = [
     },
     {
         test: anyEmpty,
-        name: "anyEmpty",
+        name: 'anyEmpty',
         description: 'empty "any" assertion fails',
         categories: []
     },
     {
         test: anyAll,
-        name: "anyAll",
+        name: 'anyAll',
         description: 'tests deeply nested "all" and "any" assertions',
         categories: []
     },
     {
         test: each,
-        name: "each",
-        description: "test with assert.each",
+        name: 'each',
+        description: 'test with assert.each',
         categories: []
     }
 ];
