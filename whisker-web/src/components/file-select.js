@@ -47,7 +47,7 @@ class FileSelect {
     async loadDefault() {
         return await new Promise((resolve, reject) => {
             let json = JSON.stringify(standardConfig);
-            const blob = new Blob([json], {type:"application/json"});
+            const blob = new Blob([json], {type: "application/json"});
 
             const reader = new FileReader();
             reader.onload = event => resolve(event.target.result);
