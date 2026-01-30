@@ -604,7 +604,7 @@ class TestTable {
                     this.child.hide();
                 }
             });
-            [...document.querySelectorAll('.toggle-details-icon')].forEach(function(icon) {
+            [...document.querySelectorAll('.toggle-details-icon')].forEach(icon => {
                 icon.classList.remove('fa-minus');
                 icon.classList.add('fa-plus');
             });
