@@ -320,4 +320,3 @@ describe('Multiple event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });
-

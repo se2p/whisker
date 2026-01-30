@@ -150,4 +150,3 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
 });
-

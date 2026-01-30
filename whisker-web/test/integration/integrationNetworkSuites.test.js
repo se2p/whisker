@@ -72,4 +72,3 @@ describe('Test Dynamic Network Suites', () => {
         expect(Number(branchCov)).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 });
-
