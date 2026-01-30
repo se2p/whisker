@@ -603,10 +603,17 @@ class TestTable {
             // but rather DataTables.CellMethods.prototype.every.
             /* eslint-disable-next-line array-callback-return */
             this.dataTable.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
+                // The every() function binds `this` to the current row, which makes the use of `this` inside this
+                // function valid -> Disable "no-invalid-this" rule temporarily.
+                /* eslint-disable no-invalid-this */
+
                 if (this.child.isShown()) {
                     this.child.hide();
                 }
+
+                /* eslint-enable no-invalid-this */
             });
+
             [...document.querySelectorAll('.toggle-details-icon')].forEach(icon => {
                 icon.classList.remove('fa-minus');
                 icon.classList.add('fa-plus');

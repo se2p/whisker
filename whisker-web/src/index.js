@@ -1321,6 +1321,8 @@ const _translateTestTableTooltips = function (oldLanguage, newLanguage) {
     const newLangData = i18next.getDataByLanguage(newLanguage);
     const newIndexData = newLangData.index;
     $('.tooltip-sign-text').html(function () {
+        // Inside this function, jQuery binds `this` to the current element in the set of matched elements.
+        // eslint-disable-next-line no-invalid-this
         _translateTooltip(this, oldIndexData, newIndexData);
     });
 };
