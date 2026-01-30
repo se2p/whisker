@@ -5,6 +5,8 @@ module.exports = {
         browser: true
     },
     rules: {
-        'no-console': 'off'
+        'no-console': 'off',
+        'require-jsdoc': 'off',
+        'no-mixed-operators': 'off'
     }
 };
