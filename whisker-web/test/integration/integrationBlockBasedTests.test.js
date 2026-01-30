@@ -16,7 +16,9 @@ async function getOutputLogWhenBBTTestsAreDone (clearLogAfterFinished = false) {
         if (log.includes('Block-Based Tests have finished!')) {
 
             if (clearLogAfterFinished) {
-                await page.$eval('#output-log .output-content', logElement => logElement.innerHTML = '');
+                await page.$eval('#output-log .output-content', logElement => {
+                    logElement.innerHTML = '';
+                });
             }
 
             return log;
@@ -150,12 +152,16 @@ describe('Block-Based Tests Integration', () => {
         logs.push(await getOutputLogWhenBBTTestsAreDone(true));
 
         // wrong seed (333)
-        await page.$eval('#seed', seedInput => seedInput.value = '333');
+        await page.$eval('#seed', seedInput => {
+            seedInput.value = '333';
+        });
         await (await page.$('#run-all-tests')).click();
         logs.push(await getOutputLogWhenBBTTestsAreDone(true));
 
         // correct seed (98765)
-        await page.$eval('#seed', seedInput => seedInput.value = '98765');
+        await page.$eval('#seed', seedInput => {
+            seedInput.value = '98765';
+        });
         await (await page.$('#run-all-tests')).click();
         logs.push(await getOutputLogWhenBBTTestsAreDone(true));
 

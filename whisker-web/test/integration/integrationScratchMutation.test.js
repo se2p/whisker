@@ -8,14 +8,16 @@ const URL = 'dist/index.html';
 const timeout = 20000;
 const ACCELERATION = Infinity;
 
-async function loadProject (scratchPath) {
+async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(factor => {
+        document.querySelector('#acceleration-value').innerText = factor;
+    }, ACCELERATION);
 }
 
-async function getCSVResults () {
+async function getCSVResults() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -61,7 +63,9 @@ beforeEach(async () => {
 describe('Scratch Mutations', () => {
     test('Key-Replacement-Mutation sensing block', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/PressKeyTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['KRM']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['KRM']);
         await loadProject('test/integration/mutation/KRM-Sensing.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -71,7 +75,9 @@ describe('Scratch Mutations', () => {
 
     test('Key-Replacement-Mutation hat block', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/PressKeyTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['KRM']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['KRM']);
         await loadProject('test/integration/mutation/KRM-Hat.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -81,7 +87,9 @@ describe('Scratch Mutations', () => {
 
     test('Single-Block-Deletion-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['SBD']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['SBD']);
         await loadProject('test/integration/mutation/SBD.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalTotal, mutantTotal} = await getCSVResults();
@@ -91,7 +99,9 @@ describe('Scratch Mutations', () => {
 
     test('Script-Deletion-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['SDM']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['SDM']);
         await loadProject('test/integration/mutation/SDM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalTotal, mutantTotal} = await getCSVResults();
@@ -101,7 +111,9 @@ describe('Scratch Mutations', () => {
 
     test('Arithmetic-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['AOR']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['AOR']);
         await loadProject('test/integration/mutation/AOR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -111,7 +123,9 @@ describe('Scratch Mutations', () => {
 
     test('Relational-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['ROR']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['ROR']);
         await loadProject('test/integration/mutation/ROR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -121,7 +135,9 @@ describe('Scratch Mutations', () => {
 
     test('Logical-Operator-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['LOR']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['LOR']);
         await loadProject('test/integration/mutation/LOR.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -131,7 +147,9 @@ describe('Scratch Mutations', () => {
 
     test('Variable-Replacement-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['VRM']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['VRM']);
         await loadProject('test/integration/mutation/VRM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();
@@ -141,7 +159,9 @@ describe('Scratch Mutations', () => {
 
     test('Negate-Condition-Mutation', async () => {
         await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
-        await page.evaluate(m => document.querySelector('#container').mutators = m, ['NCM']);
+        await page.evaluate(m => {
+            document.querySelector('#container').mutators = m;
+        }, ['NCM']);
         await loadProject('test/integration/mutation/NCM.sb3');
         await (await page.$('#run-all-tests')).click();
         const {originalCoverage, mutantCoverage} = await getCSVResults();

@@ -22,13 +22,17 @@ async function loadProject (scratchPath, modelPath, userModelOrTest) {
         await uploadFile('#fileselect-models', modelPath);
     }
     if (userModelOrTest === null) {
-        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
+        await page.evaluate(factor => {
+            document.querySelector('#model-duration').value = factor;
+        }, 35);
     } else {
         await uploadFile('#fileselect-tests', userModelOrTest);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(factor => {
+        document.querySelector('#acceleration-value').innerText = factor;
+    }, ACCELERATION);
 }
 
 async function readModelErrors () {
@@ -87,7 +91,9 @@ beforeEach(async () => {
 
 async function testProgram (errors, fails, coverage) {
     const seed = Date.now();
-    await page.evaluate(seed => document.querySelector('#seed').value = seed, seed);
+    await page.evaluate(seed => {
+        document.querySelector('#seed').value = seed;
+    }, seed);
     await (await page.$('#run-all-tests')).click();
 
     const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();

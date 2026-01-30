@@ -16,7 +16,9 @@ async function loadProjectAndTests (scratchPath, testPath) {
     await projectTab.evaluate(t => t.click());
     const toggleExtendedView = await page.$('#extendedView');
     await toggleExtendedView.evaluate(t => t.click());
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(factor => {
+        document.querySelector('#acceleration-value').innerText = factor;
+    }, ACCELERATION);
 }
 
 const expected = {

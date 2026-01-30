@@ -12,7 +12,9 @@ async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(factor => {
+        document.querySelector('#acceleration-value').innerText = factor;
+    }, ACCELERATION);
 }
 
 async function getLogAfterSearch () {
