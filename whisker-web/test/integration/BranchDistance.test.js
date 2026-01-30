@@ -8,7 +8,7 @@ const URL = 'dist/index.html';
 const timeout = 30000;
 const ACCELERATION = Infinity;
 
-async function loadProject (scratchPath) {
+const loadProject = async scratchPath => {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
@@ -17,12 +17,12 @@ async function loadProject (scratchPath) {
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-}
+};
 
 /**
  * Reads the distances of fitness, approach level, and branch distance from #output-log
  */
-async function readFitnessLog () {
+const readFitnessLog = async () => {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const outputContent = await output.getProperty('innerHTML');
@@ -34,13 +34,13 @@ async function readFitnessLog () {
             return JSON.parse(uncoveredBlocksLog);
         }
     }
-}
+};
 
 /**
  * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
  * @returns {Promise<void>}
  */
-async function checkFitnessValuesForExecutionHaltingBlocks () {
+const checkFitnessValuesForExecutionHaltingBlocks = async () => {
     const runSearch = await page.$('#run-search');
     await runSearch.evaluate(t => t.click());
     let log = await readFitnessLog();
@@ -54,7 +54,7 @@ async function checkFitnessValuesForExecutionHaltingBlocks () {
     await expect(branchDistance).toBeGreaterThan(0);
     const CFGDistance = log.uncoveredBlocks[0].CFGDistance;
     await expect(CFGDistance).toBe(Number.MAX_VALUE);
-}
+};
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.

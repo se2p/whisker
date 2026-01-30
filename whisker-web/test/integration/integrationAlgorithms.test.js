@@ -8,7 +8,7 @@ const URL = 'dist/index.html';
 const timeout = 50000;
 const ACCELERATION = Infinity;
 
-async function loadProject (scratchPath) {
+const loadProject = async scratchPath => {
     const projectSelection = await page.$('#fileselect-project');
     await projectSelection.uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
@@ -18,9 +18,9 @@ async function loadProject (scratchPath) {
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-}
+};
 
-async function getUncoveredBlocks () {
+const getUncoveredBlocks = async () => {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -34,9 +34,9 @@ async function getUncoveredBlocks () {
             return 'empty project';
         }
     }
-}
+};
 
-async function getCoverage () {
+const getCoverage = async () => {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -51,7 +51,7 @@ async function getCoverage () {
             return 'empty project';
         }
     }
-}
+};
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.

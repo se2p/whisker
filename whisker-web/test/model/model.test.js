@@ -7,16 +7,16 @@ const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-async function uploadFile (selector, path) {
+const uploadFile = async (selector, path) => {
     const exists = fs.existsSync(path);
     if (!exists) {
         console.log(`The file ${path} does not exist!`);
         expect(exists).toBe(true);
     }
     await (await page.$(selector)).uploadFile(path);
-}
+};
 
-async function loadProject (scratchPath, modelPath, userModelOrTest) {
+const loadProject = async (scratchPath, modelPath, userModelOrTest) => {
     await uploadFile('#fileselect-project', scratchPath);
     if (modelPath) {
         await uploadFile('#fileselect-models', modelPath);
@@ -33,9 +33,9 @@ async function loadProject (scratchPath, modelPath, userModelOrTest) {
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-}
+};
 
-async function readModelErrors () {
+const readModelErrors = async () => {
     const errorWhenUploadingModelStart = `MODEL: [
       {
         "code": "invalid_type",
@@ -73,7 +73,7 @@ async function readModelErrors () {
             throw new Error(`Could not parse the model. Message:\n${log}`);
         }
     }
-}
+};
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
@@ -89,7 +89,7 @@ beforeEach(async () => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 });
 
-async function testProgram (errors, fails, coverage) {
+const testProgram = async (errors, fails, coverage) => {
     const seed = Date.now();
     await page.evaluate(seed => {
         document.querySelector('#seed').value = seed;
@@ -104,7 +104,7 @@ async function testProgram (errors, fails, coverage) {
     expect(errorsInModel).toBeLessThanOrEqual(errors);
     expect(failsInModel).toBeLessThanOrEqual(fails);
     expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
-}
+};
 
 // Tests for events during a step with a listener in check utility
 describe('Model tests without inputs', () => {

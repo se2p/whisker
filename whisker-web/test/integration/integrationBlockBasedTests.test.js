@@ -7,7 +7,7 @@ const URL = 'dist/index.html';
 
 const timeout = 30000;
 
-async function getOutputLogWhenBBTTestsAreDone (clearLogAfterFinished = false) {
+const getOutputLogWhenBBTTestsAreDone = async (clearLogAfterFinished = false) => {
     const output = await page.$('#output-log .output-content');
 
     while (true) {
@@ -26,7 +26,7 @@ async function getOutputLogWhenBBTTestsAreDone (clearLogAfterFinished = false) {
 
         await new Promise(_ => setTimeout(_, 250));
     }
-}
+};
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
