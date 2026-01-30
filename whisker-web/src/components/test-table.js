@@ -416,7 +416,7 @@ class TestTable {
     }
 
     /**
-     * @param {Object} tests    Either an array or an object with indexes as keys and tests as entries.
+     * @param {object} tests    Either an array or an object with indexes as keys and tests as entries.
      *                          In preprocessing steps the tests might get some more fields:
      *                          - index: Unique ID to locate the test in the data table // TODO is this always deterministic?
      *                          - isRunning: true if the test is currently running

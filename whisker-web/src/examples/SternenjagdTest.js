@@ -48,16 +48,16 @@ const starIncreasePointAndChangeLocationInitialization = async function (t) {
         let yOrig = star.y;
         distOk = false;
         t.onSpriteMoved(() => {
-            if (dist(jellyfish, fish) < 100
-                || dist(pufferfish, fish) < 100) {
+            if (dist(jellyfish, fish) < 100 ||
+                dist(pufferfish, fish) < 100) {
                 const {width, height} = t.getStageSize();
                 let newX = fish.x <= 0 ? width / 2 : -1 * width / 2;
                 let newY = fish.y <= 0 ? height / 2 : -1 * height / 2;
                 t.mouseMove(newX, newY);
             }
-            if (!distOk
-                && dist(jellyfish, star) >= 100
-                && dist(pufferfish, star) >= 80) {
+            if (!distOk &&
+                dist(jellyfish, star) >= 100 &&
+                dist(pufferfish, star) >= 80) {
                 distOk = true;
             }
         });
