@@ -4,6 +4,20 @@ module.exports = {
     env: {
         browser: true
     },
+    overrides: [
+        {
+            files: [
+                'test/**/*.{js,ts}'
+            ],
+            plugins: [
+                'jest'
+            ],
+            env: {
+                jest: true
+            }
+        }
+    ],
+
     // Custom overrides and additions.
     rules: {
         // Let's make this into a warning for now. Eventually, lines that are too long should be broken into shorter
