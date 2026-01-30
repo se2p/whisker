@@ -6,7 +6,6 @@ const {getLineNumber} = require('whisker-main/src/util/get-line-number');
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = 'dist/index.html';
 
-const timeout = 10000;
 const ACCELERATION = Infinity;
 
 const loadProjectAndTests = async (scratchPath, testPath) => {
@@ -491,8 +490,8 @@ describe.each(Object.entries(expected))('Test execution traces', (name, trace) =
 
         traces = {};
 
-        for (const trace of result.traces) {
-            traces[trace.name] = trace;
+        for (const t of result.traces) {
+            traces[t.name] = t;
         }
     });
 
