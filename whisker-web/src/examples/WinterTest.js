@@ -51,6 +51,9 @@ const stellaStopping = async function (t) {
     t.assert.ok(stella.direction === dirStella, 'stella must have direction from start');
     t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), 'stella must have returned');
     await t.runForTime(10);
+    // `stellaFinished` may be reassigned by the callback given to `t.onSpriteMoved()`. However, this only happens
+    // during a VM step, and the next line is executed between VM steps, hence there is no race condition.
+    // eslint-disable-next-line require-atomic-updates
     stellaFinished = false;
     stellaMove = false;
     stellaStopped = false;
