@@ -22,7 +22,7 @@
         "build-ts": "tsc --incremental",
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
-        "lint": "eslint . --ignore-path ../.eslintignore && format-message lint src/**/*.{ts,js}",
+        "lint": "eslint .",
         "lint:fix": "eslint . --fix"
     },
     "devDependencies": {
