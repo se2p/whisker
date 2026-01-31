@@ -27,7 +27,7 @@ const convertToCsv = function (str) {
                 testNames.set(test.id, test.name);
             } else if (testNames.get(test.id) !== test.name) {
                 logger.error('Error: Inconsistent test names or test order between projects.');
-                process.exit(1);
+                throw new Error('Inconsistent test names or test order between projects.');
             }
 
             if (test.diag) {

@@ -20,6 +20,13 @@
                 "varsIgnorePattern": "^_",
                 "argsIgnorePattern": "^_"
             }
+        ],
+        "no-constant-condition": [
+            "error",
+            {
+                // We use busy waiting to detect when a Whisker test has finished.
+                "checkLoops": false
+            }
         ]
     }
 }

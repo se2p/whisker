@@ -78,7 +78,6 @@ async function runTests(whisker, targetProject) {
      */
     async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName')) {
