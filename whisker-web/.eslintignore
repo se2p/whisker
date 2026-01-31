@@ -3,3 +3,4 @@ node_modules/*
 src/includes/*
 jest-puppeteer.config.js
 webpack.config.js
+test/fixtures/tests.js
