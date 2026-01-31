@@ -23,6 +23,7 @@
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
         "lint": "eslint .",
+        "ci:lint": "eslint --quiet .",
         "lint:fix": "eslint . --fix"
     },
     "devDependencies": {

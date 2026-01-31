@@ -19,7 +19,8 @@
         "test": "jest --runInBand",
         "unittest": "jest test/unit/*.test.js --runInBand",
         "integrationtest": "jest test/integration/*.test.js --runInBand",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "ci:lint": "eslint --quiet ."
     },
     "author": "",
     "license": "ISC",
