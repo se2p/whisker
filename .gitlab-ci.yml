@@ -48,4 +48,4 @@ integration-tests:
 lint:
     stage: lint
     script:
-        - yarn lint
+        - yarn ci:lint
