@@ -57,6 +57,9 @@ module.exports = {
         'require-await': 'off',
 
         // Adds the `argsIgnorePattern` to the rule inherited by scratch or scratch/es6.
-        'no-unused-vars': ['error', {args: 'after-used', varsIgnorePattern: '^_', argsIgnorePattern: '^_'}]
+        'no-unused-vars': ['error', {args: 'after-used', varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
+
+        // As discussed in MR !717, we prefer function declarations over expressions.
+        'func-style': 'off'
     }
 };
