@@ -3,7 +3,6 @@
         "usage": "program",
         "id": "Star",
         "startNodeId": "start",
-        "stopNodeIds": [],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -118,9 +117,6 @@
         "usage": "program",
         "id": "Star moves random",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -224,7 +220,6 @@
         "usage": "program",
         "id": "Big Black Hole",
         "startNodeId": "start",
-        "stopNodeIds": [],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -564,7 +559,6 @@
         "usage": "program",
         "id": "Init",
         "startNodeId": "start",
-        "stopNodeIds": [],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -682,9 +676,6 @@
         "usage": "program",
         "id": "Winning the game",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [
             "end"
         ],
@@ -786,9 +777,6 @@
         "usage": "program",
         "id": "Black Hole Collision",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "End"
-        ],
         "stopAllNodeIds": [
             "End"
         ],
@@ -878,9 +866,6 @@
         "usage": "program",
         "id": "Spaceship moves right",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "moves correctly"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -1123,9 +1108,6 @@
         "usage": "program",
         "id": "Spaceship moves left",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "moves correctly"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -1368,9 +1350,6 @@
         "usage": "program",
         "id": "Spaceship moves up",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "moves correctly"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -1613,9 +1592,6 @@
         "usage": "program",
         "id": "Spaceship moves down",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "moves correctly"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -1858,9 +1834,6 @@
         "usage": "user",
         "id": "Crashing into big black hole",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -1961,9 +1934,6 @@
         "usage": "user",
         "id": "Crashing into small black hole",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -2021,9 +1991,6 @@
         "usage": "user",
         "id": "Winning the Game",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -2239,9 +2206,6 @@
         "usage": "end",
         "id": "end",
         "startNodeId": "start",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {

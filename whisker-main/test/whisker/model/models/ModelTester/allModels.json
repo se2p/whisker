@@ -3,9 +3,6 @@
         "usage": "program",
         "id": "bowl",
         "startNodeId": "init",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -23,9 +20,6 @@
         "usage": "user",
         "id": "bowl2",
         "startNodeId": "init",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [
             "end"
         ],
@@ -53,9 +47,6 @@
         "usage": "end",
         "id": "bowl3",
         "startNodeId": "init",
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [
             "end"
         ],

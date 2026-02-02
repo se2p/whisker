@@ -8,14 +8,28 @@
             {
                 "id": "start",
                 "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
             }
         ],
         "edges": [
             {
+                "id": "init done",
+                "label": "init done",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": []
+            },
+            {
                 "id": "left",
                 "label": "left",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -39,8 +53,8 @@
             {
                 "id": "right",
                 "label": "right",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -67,19 +81,34 @@
         "usage": "user",
         "id": "follow banana",
         "startNodeId": "start",
+        "maxDuration": 9000,
         "stopAllNodeIds": [],
         "nodes": [
             {
                 "id": "start",
                 "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
             }
         ],
         "edges": [
             {
+                "id": "init done",
+                "label": "init done",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
+                "effects": []
+            },
+            {
                 "id": "left",
                 "label": "left",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -103,8 +132,8 @@
             {
                 "id": "right",
                 "label": "right",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -130,9 +159,14 @@
     {
         "usage": "user",
         "id": "move away",
-        "startNodeId": "move away",
+        "startNodeId": "start",
+        "maxDuration": 3600,
         "stopAllNodeIds": [],
         "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
             {
                 "id": "move away",
                 "label": "move away"
@@ -172,6 +206,16 @@
                         ]
                     }
                 ],
+                "effects": []
+            },
+            {
+                "id": "init done",
+                "label": "init done",
+                "from": "start",
+                "to": "move away",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [],
                 "effects": []
             },
             {
