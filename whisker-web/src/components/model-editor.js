@@ -154,6 +154,9 @@ class ModelEditor {
 
     onLoadEvent () {
         this.models = this.modelTester.getAllModels();
+        if (this.models.length === 0){
+            this.insertNewGraph();
+        }
         this.createAllTabs();
         this.changeToTab(0);
         this.showGeneralSettings(0);
