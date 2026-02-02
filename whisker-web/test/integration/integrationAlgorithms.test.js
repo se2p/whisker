@@ -194,6 +194,26 @@ describe('Algorithms', () => {
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
         expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
+
+    test('DQL Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/dqlStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.35);
+    }, timeout);
+
+    test('DQL Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/dqlBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.35);
+    }, timeout);
 });
 
 describe('LocalSearch', () => {

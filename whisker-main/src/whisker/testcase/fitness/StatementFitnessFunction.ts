@@ -33,6 +33,7 @@ import {
 import {BranchDistanceTrace} from "scratch-vm/@types/scratch-vm/tracing/branchCoverageTracer";
 import logger from '../../../util/logger';
 import {TestCase} from "../../core/TestCase";
+import {TfAgentWrapper} from "../../agentTraining/reinforcementLearning/agents/TfAgentWrapper";
 
 export class StatementFitnessFunction implements FitnessFunction<TestCase> {
 
@@ -108,6 +109,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestCase> {
         // When dealing with NetworkChromosomes, ignore the cfgDistance.
         if (solution instanceof NetworkChromosome) {
             return StatementFitnessFunction.normalize(approachLevel + StatementFitnessFunction.normalize(branchDistance));
+        }
+
+        // When dealing with TfAgentWrapper, ignore the cfgDistance and do not normalize the approach level.
+        if (solution instanceof TfAgentWrapper) {
+            return approachLevel + StatementFitnessFunction.normalize(branchDistance);
         }
 
         let cfgDistanceNormalized;

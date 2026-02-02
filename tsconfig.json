@@ -13,7 +13,8 @@
         "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
         "noImplicitOverride": true,            /* Error to override a method without specifying the `override` keyword */
         "esModuleInterop": true,
-        "allowJs": true
+        "allowJs": true,
+        "skipLibCheck": true                   /* Skip checking *.d.ts files from libraries. */
     },
     "types": ["node", "jest"],                           /* Type declaration files to be included in compilation. */
     "exclude": [

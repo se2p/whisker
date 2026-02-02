@@ -30,6 +30,7 @@ import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
+import VMWrapper from "../../vm/vm-wrapper";
 import logger from '../../util/logger';
 
 /**
@@ -73,8 +74,8 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      */
     private readonly maxSize: number
 
-    constructor(configuration: WhiskerSearchConfiguration, minSize: number, maxSize: number) {
-        super(configuration);
+    constructor(configuration: WhiskerSearchConfiguration, minSize: number, maxSize: number, _vmWrapper: VMWrapper) {
+        super(configuration, _vmWrapper);
         this.minSize = minSize;
         this.maxSize = maxSize;
     }
@@ -84,6 +85,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      * After each Iteration, the archive is updated with the trace of executed events.
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._vmWrapper.vm.registerCoverageTracer();
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;

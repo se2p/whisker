@@ -49,6 +49,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
      * @returns testSuite covering as many targets as possible within the stoppingCriterion limit
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._vmWrapper.vm.registerCoverageTracer();
         const startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageObjectives();
         StatisticsCollector.getInstance().iterationCount = 0;

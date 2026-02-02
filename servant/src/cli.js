@@ -399,7 +399,7 @@ const subCommands = [
         .requiredOption(
             '-t, --test-path <Path>',
             'path to dynamic test suite',
-            (testPath) => util.processFilePathExists(testPath, 'json'))
+            (testPath) => util.processFilePathExists(testPath, ['json', 'zip']))
         .optionActivationTraceRepetitions()
         .optionMutators()
         .optionMutantsDownloadPath()

@@ -241,7 +241,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
      * Therefore, we refrain from using {@link MouseMoveEvent}s and instead apply {@link MouseMoveDimensionEvent}s.
      * @param eventList to which the {@link MouseMoveDimensionEvent}s are added.
      */
-    private _addMouseMoveEvents(eventList: ScratchEvent[]): void {
+    protected _addMouseMoveEvents(eventList: ScratchEvent[]): void {
         eventList.push(new MouseMoveDimensionEvent("X"));
         eventList.push(new MouseMoveDimensionEvent("Y"));
     }

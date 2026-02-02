@@ -14,11 +14,6 @@ Following structure is needed in the JSON file:
     "usage": "program|end|user",
     "id": "IDNAME",
     "startNodeId": "NODE_NAME",
-    "stopNodeIds": [
-        "STOP_NODE_ID0",
-        "STOP_NODE_ID1",
-        "..."
-    ],
     "stopAllNodeIds": [
         "STOP_NODE_ID0",
         "STOP_NODE_ID1",
@@ -86,11 +81,6 @@ in.
     "usage": "program|end|user",
     "id": "IDNAME",
     "startNodeId": "NODE_NAME",
-    "stopNodeIds": [
-        "STOP_NODE_ID0",
-        "STOP_NODE_ID1",
-        "..."
-    ],
     "stopAllNodeIds": [
         "STOP_NODE_ID0",
         "STOP_NODE_ID1",
