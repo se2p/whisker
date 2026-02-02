@@ -3,7 +3,6 @@
         "usage": "program",
         "id": "Star",
         "startNodeId": "start",
-        "stopNodeIds": [],
         "stopAllNodeIds": [],
         "edges": [
             {

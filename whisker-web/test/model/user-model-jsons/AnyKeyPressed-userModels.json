@@ -1,11 +1,11 @@
 [
     {
-        "id": "input",
+        "id": "press a",
         "usage": "user",
-        "startNodeId": "0",
+        "startNodeId": "start",
         "nodes": [
             {
-                "id": "0",
+                "id": "start",
                 "label": "start"
             },
             {
@@ -16,21 +16,12 @@
         "stopAllNodeIds": [],
         "edges": [
             {
-                "id": "b088416f7dbd28",
                 "label": "press a",
-                "from": "0",
+                "from": "start",
                 "to": "end",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "args": [
-                            0.33
-                        ],
-                        "negated": false,
-                        "name": "Probability"
-                    }
-                ],
+                "conditions": [],
                 "effects": [
                     {
                         "args": [
@@ -40,53 +31,71 @@
                         "name": "InputKey"
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "id": "press b",
+        "usage": "user",
+        "startNodeId": "start",
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
             },
             {
-                "id": "bee9d29e0ce14",
-                "label": "press enter",
-                "from": "0",
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "stopAllNodeIds": [],
+        "edges": [
+            {
+                "label": "press b",
+                "from": "start",
                 "to": "end",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "args": [
-                            0.5
-                        ],
-                        "negated": false,
-                        "name": "Probability"
-                    }
-                ],
+                "conditions": [],
                 "effects": [
                     {
                         "args": [
-                            "enter"
+                            "b"
                         ],
                         "negated": false,
                         "name": "InputKey"
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "id": "press c",
+        "usage": "user",
+        "startNodeId": "start",
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
             },
             {
-                "id": "53363a1dca7e6",
-                "label": "press 2",
-                "from": "0",
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "stopAllNodeIds": [],
+        "edges": [
+            {
+                "label": "press c",
+                "from": "start",
                 "to": "end",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "true"
-                        ],
-                        "negated": false
-                    }
-                ],
+                "conditions": [],
                 "effects": [
                     {
                         "args": [
-                            "2"
+                            "c"
                         ],
                         "negated": false,
                         "name": "InputKey"
