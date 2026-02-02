@@ -735,6 +735,10 @@ const runAllTests = async function () {
     }
 };
 
+const minimizeProgramModels = function () {
+    Whisker.modelTester.minimizeProgramModels();
+};
+
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
 };
@@ -942,6 +946,7 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0], handleOnLoadTestFile);
     Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
         fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, false)));
+    $('#model-minimize-btn').on('click', minimizeProgramModels);
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,

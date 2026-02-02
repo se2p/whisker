@@ -219,6 +219,15 @@ export class ModelTester extends EventEmitter {
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
     }
 
+    minimizeProgramModels(): void {
+        const minimizedProgramModels = [
+            ...this._programModels.map((m) => m.toJSON(true)),
+            ...this._onTestEndModels.map((m) => m.toJSON(true))
+        ];
+        const modelsString = JSON.stringify(minimizedProgramModels);
+        this._load(modelsString, true, true, false);
+    }
+
     getDurationForUserModel(modelDuration: number): number {
         return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
             ? Math.min(modelDuration, this._runningUserModel.maxDuration)
