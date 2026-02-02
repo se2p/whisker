@@ -1044,7 +1044,7 @@ class ModelEditor {
         let firstIndex = -1;
         let secondIndex = -1;
 
-        for (const [i, edge] of this.this.currentModel.edges.entries()) {
+        for (const [i, edge] of this.currentModel.edges.entries()) {
             if (edge.id === oldEdgeId) {
                 firstIndex = i;
             } else if (edge.id === edgeID) {
