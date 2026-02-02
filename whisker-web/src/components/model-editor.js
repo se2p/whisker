@@ -105,6 +105,9 @@ class ModelEditor {
         this.insertNewGraph();
 
         this.options = {
+            nodes: {
+                physics: false
+            },
             edges: {
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
@@ -128,11 +131,12 @@ class ModelEditor {
             locale: $('#lang-select').val(),
             clickToUse: false,
             height: '420px',
-            autoResize: false
+            autoResize: true
         };
         this.data = {nodes: [{id: 'start', label: 'start', color: 'rgb(0,151,163)'}], edges: []};
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
+        this.network.on('resize', () => this.network.fit());
 
         // setup gui
         this.setUpGUI();
@@ -421,6 +425,37 @@ class ModelEditor {
             }
         }
 
+        const mapping = {};
+        for (const edge of edges){
+            const reversed = edge.from < edge.to;
+            const key = reversed ? [edge.from, edge.to] : [edge.to, edge.from];
+            const value = mapping[key];
+            if (value) {
+                (reversed ? value.reverse : value.normal).push(edge);
+                value.count += 1;
+            } else if (reversed) {
+                mapping[key] = {count: 1, normal: [], reverse: [edge]};
+            } else {
+                mapping[key] = {count: 1, normal: [edge], reverse: []};
+            }
+        }
+        for (const entry of Object.values(mapping).filter(e => e.count > 1)) {
+            const list = entry.normal.concat(entry.reverse);
+            const halfLength = Math.floor(list.length / 2);
+            const roundnessGap = Math.min(0.2, 1.0 / (halfLength + 1));
+            for (let i = 0; i < halfLength; i++) {
+                list[i].smooth = {
+                    type: i < entry.normal.length ? 'curvedCCW' : 'curvedCW',
+                    roundness: (i + 1) * roundnessGap
+                };
+            }
+            for (let i = halfLength; i < list.length; i++) {
+                list[i].smooth = {
+                    type: i < entry.normal.length ? 'curvedCW' : 'curvedCCW',
+                    roundness: (i - halfLength + 1) * roundnessGap
+                };
+            }
+        }
         return edges;
     }
 
