@@ -470,6 +470,25 @@ export function flipDirectionVertically(direction: number): number {
     return -direction;
 }
 
+type CheckLike = {
+    name: string,
+    negated?: boolean,
+    args: ArgType[]
+}
+
+export function checkToString(check: CheckLike, dictionary: (key: string) => string = null, maxLength = 40): string {
+    if (dictionary === null) {
+        dictionary = (key) => key;
+    }
+    const negated = check["negated"] ? "!" : "";
+    const argToString: (a: ArgType) => string | number | boolean | null =
+        a => typeof a === "object"
+            ? Object.values(a).some(v => v !== null) ? JSON.stringify(a) : null
+            : (typeof a === "string" && a.length > maxLength ? a.substring(0, maxLength - 3) + "..." : a);
+    const args = check.args.map(argToString).filter(a => a != null).map(dictionary).join(',');
+    return `${negated}${dictionary(check.name)}(${args})`;
+}
+
 function _isAnAttribute(attrName: string): boolean {
     return isAnAttribute(attrName) ||
         (attrName.startsWith('old.') && isAnAttribute(attrName.substring(4)));

@@ -1,7 +1,7 @@
 /* eslint-disable valid-jsdoc */
 
 const {ModelTester, attributeAndEffectNames, keys,
-    convertArgs, convertInputArgs} = require('whisker-main');
+    convertArgs, convertInputArgs, checkToString} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
@@ -1414,15 +1414,7 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement (check, index, isAnEffect = false, isAUserModel = false) {
         const key = `modelEditor:${check.name}`;
-        let name = `${check.negated ? '!' : ''}${i18n.t(key)} `;
-
-        if (check.name === 'Key') {
-            name += `(${i18n.t(`modelEditor:${check.args[0]}`)})`;
-        } else if (check.name === 'Expr') {
-            name += check.args[0].length < 40 ? `(${check.args})` : `(${check.args[0].substring(0, 35)})...)`;
-        } else {
-            name += `(${check.args})`;
-        }
+        const name = checkToString(check, s => i18n.t(`modelEditor:${s}`), 40);
 
         return $('<div/>', {class: 'row', style: 'margin:0;'})
             .append($('<div/>', {class: 'col model-check'}).append($('<label/>',

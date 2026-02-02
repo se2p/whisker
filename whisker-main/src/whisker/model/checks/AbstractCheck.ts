@@ -8,7 +8,7 @@ import {CheckResult, fail, Reason} from "./CheckResult";
 import Sprite from "../../../vm/sprite";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
-import {checkSpriteExistence, evaluateExpression} from "../util/ModelUtil";
+import {checkSpriteExistence, checkToString, evaluateExpression} from "../util/ModelUtil";
 import {AttrName} from "./CheckTypes";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
@@ -146,9 +146,7 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     }
 
     toString(): string {
-        const negated = this.negated ? "!" : "";
-        const args = this._args.join(',');
-        return `${negated}${this.name}(${args})`;
+        return checkToString(this._checkJSON);
     }
 
     toJSON(): J {
