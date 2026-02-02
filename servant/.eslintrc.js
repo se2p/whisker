@@ -1,17 +1,9 @@
-{
+module.exports = {
     "extends": [
         "eslint:recommended",
-        "plugin:node/recommended"
+        "plugin:node/recommended",
+        "../.eslintrc.js",
     ],
-    "plugins": [
-        "jest"
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest"
-    },
-    "env": {
-        "jest": true
-    },
     "rules": {
         "no-unpublished-require": "off",
         "no-unused-vars": [

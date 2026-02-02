@@ -1,21 +1,14 @@
 module.exports = {
-    root: true,
-    extends: ['scratch', 'scratch/es6'],
-    env: {
-        browser: true,
-        node: true
-    },
+    extends: [
+        '../.eslintrc.js',
+        'scratch',
+        'scratch/es6'
+    ],
     overrides: [
         {
             files: [
                 'test/**/*.{js,ts}'
             ],
-            plugins: [
-                'jest'
-            ],
-            env: {
-                jest: true
-            },
             globals: {
                 // Global variables provided by jest-puppeteer -> Do not flag these as "undefined" when linting
                 page: 'writable',

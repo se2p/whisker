@@ -1,21 +1,18 @@
-{
+module.exports = {
+    "extends": [
+        "../.eslintrc.js",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+    ],
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "jest"
-    ],
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
         "@typescript-eslint/no-use-before-define": "off",
         "no-use-before-define": "off",
         "semi": "error"
-    },
-    "env": {
-        "jest": true
     },
     "overrides": [
         {
@@ -26,16 +23,5 @@
                 "@typescript-eslint/no-var-requires": "off"
             }
         },
-        {
-            "files": [
-                "test/**/*.{js,ts}"
-            ],
-            "plugins": [
-                "jest"
-            ],
-            "env": {
-                "jest": true
-            }
-        }
     ]
-}
+};
