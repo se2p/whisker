@@ -38,8 +38,7 @@ describe('RandomSearch', () => {
     beforeEach(() => {
         const mock = new VMWrapperMock();
         mock.init();
-        // @ts-ignore
-        Container.vmWrapper = mock;
+        Container.vmWrapper = mock as any;
 
         logger.suggest.deny(/.*/, "debug");
     });

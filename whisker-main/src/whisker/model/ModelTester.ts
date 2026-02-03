@@ -27,6 +27,8 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly MODEL_LOG_MISSED_EDGES = "ModelLogMissedEdges";
     static readonly MODEL_ON_LOAD = "ModelOnLoad";
+    public repetitions = 0;
+    private _duration = 0;
     private _programModels: ProgramModel[] = [];
     private _cloneCreatedModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
@@ -42,8 +44,11 @@ export class ModelTester extends EventEmitter {
     private _nextTestDriver = null;
     private _nextUmIndex = ModelTester.NO_USER_MODEL;
     private _executionCount = 0;
+    private _modelSummary: Record<string, TestResult[]> = {};
+    private _modelTestResults: TestResult[] = [];
+    private static readonly instance: ModelTester = new ModelTester();
 
-    constructor() {
+    private constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
         //  and the constructor be invoked instead. Then, we can stop (ab)using the non-null assertion operator `!`
         //  entirely in this file. However, restructuring initComponents() in index.js of whisker-web is curretnly a
@@ -56,6 +61,10 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
+    }
+
+    static getInstance(): ModelTester {
+        return this.instance;
     }
 
     get nextTestDriver(): TestDriver {
@@ -80,6 +89,18 @@ export class ModelTester extends EventEmitter {
 
     get currentUserModelId(): string | null {
         return this._runningUserModel ? this._runningUserModel.id : null;
+    }
+
+    set duration(value: number) {
+        this._duration = value;
+    }
+
+    get runIndex(): number {
+        return this._executionCount;
+    }
+
+    get summary(): Record<string, TestResult[]> {
+        return this._modelSummary;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -177,22 +198,28 @@ export class ModelTester extends EventEmitter {
         this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
-    stopModels(result: TestResult, updateResultStatus = true): boolean {
+    stopModels(result: TestResult, updateResultStatus = true, addToModelResults = true): void {
         const res = this._stopAndGetModelResult();
+        if (!result) {
+            this._log("No TestResult Found. Creating new one.");
+            result = new TestResult(null);
+        }
         result.modelResult = res;
-        if (res === null) {
-            return false;
+        this._log("Adding Model results to result");
+        if (res) {
+            if (updateResultStatus) {
+                result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
+            }
+            if (addToModelResults) {
+                this._modelTestResults.push(result);
+            }
         }
-        if (res && updateResultStatus) {
-            result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
-        }
-        return true;
     }
 
     /**
      * Get the total coverage of the program models of all test runs.
      */
-    getTotalCoverage(): Record<string, CoverageResult> {
+    getTotalCoverage(log = false): Record<string, CoverageResult> {
         const coverage: Record<string, CoverageResult> = {};
         const programModels = [...this._programModels, ...this._onTestEndModels];
         const missedEdges: Record<string, string[]> = {};
@@ -200,11 +227,15 @@ export class ModelTester extends EventEmitter {
             const totalCov = model.getTotalCoverage();
             if (totalCov.missedEdges.length > 0) {
                 missedEdges[model.id] = totalCov.missedEdges;
-                logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
+                if (log) {
+                    logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
+                }
             }
             coverage[model.id] = {covered: totalCov.covered, total: totalCov.total};
         });
-        this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
+        if (log) {
+            this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
+        }
         return coverage;
     }
 
@@ -228,10 +259,30 @@ export class ModelTester extends EventEmitter {
         this._load(modelsString, true, true, false);
     }
 
+    clear(): void {
+        this.clearCoverage();
+        this._modelSummary = {};
+        this._modelTestResults = [];
+    }
+
     getDurationForUserModel(modelDuration: number): number {
         return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
-            ? Math.min(modelDuration, this._runningUserModel.maxDuration)
-            : modelDuration;
+            ? Math.min(this._duration, this._runningUserModel.maxDuration)
+            : this._duration;
+    }
+
+    updateSummaryForProject(projectName: string): TestResult[] {
+        if (!this._modelSummary[projectName]) {
+            this._modelSummary[projectName] = [...this._modelTestResults];
+        } else if (this._modelTestResults?.length > 0) {
+            this._modelSummary[projectName].push(...this._modelTestResults);
+        }
+        this._modelTestResults = [];
+        return this._modelSummary[projectName];
+    }
+
+    clearCurrentModelResults(): void {
+        this._modelTestResults = [];
     }
 
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
@@ -288,6 +339,7 @@ export class ModelTester extends EventEmitter {
         }
         this._onTestEndCallback?.disable();
         this._isRunning = true;
+        this._log("Done preparing models");
     }
 
     private _doOneStepOnOracleModel(model: OracleModel): boolean {
@@ -401,49 +453,52 @@ export class ModelTester extends EventEmitter {
         if (!this.someModelLoaded()) {
             return null;
         }
-        if (this._isRunning) {
-            this._isRunning = false;
-            this._checkUtility!.stop();
-            this._modelStepCallback!.disable();
-            this._onTestEndCallback!.disable();
-            this._testDriver.vm.runtime.removeListener('targetWasCreated', this._onTargetCreatedListener);
-            if (this._testDriver.getTotalStepsExecuted() < 1) {
-                // the test execution did not even start
-                return null;
-            }
-            const models = [...this._programModels, ...this._onTestEndModels];
-            models.forEach(model => {
-                if (model.stopped()) {
-                    this._log("---Model '" + model.id + "' stopped.");
-                }
-            });
-            const sprites = this._testDriver!.getSprites(() => true, false);
-            const log = [];
-            log.push("--- State of variables:");
-
-            sprites.forEach((sprite: Sprite) => {
-                sprite.getVariables().forEach(variable => {
-                    const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
-                    log.push("--- " + varOutput);
-                });
-            });
-            if (log.length > 1) {
-                this._log(log.join("\n"));
-            }
-
-            const coverages: { covered: number, total: number } = {covered: 0, total: 0};
-
-            const programModels = [...this._programModels, ...this._onTestEndModels];
-            programModels.forEach(model => {
-                const currentCov = model.getCoverageCurrentRun(true);
-                coverages.covered += currentCov.covered;
-                coverages.total += currentCov.total;
-                this._result!.coverage[model.id] = currentCov;
-            });
-
-            this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
-            ++this._executionCount;
+        if (!this._isRunning) {
+            return this._result;
         }
+
+        this._isRunning = false;
+        this._checkUtility!.stop();
+        this._modelStepCallback!.disable();
+        this._onTestEndCallback!.disable();
+        this._testDriver.vm.runtime.removeListener('targetWasCreated', this._onTargetCreatedListener);
+        if (this._testDriver.getTotalStepsExecuted() < 1) {
+            // the test execution did not even start
+            return null;
+        }
+        const models = [...this._programModels, ...this._onTestEndModels];
+        models.forEach(model => {
+            if (model.stopped()) {
+                this._log("---Model '" + model.id + "' stopped.");
+            }
+        });
+        const sprites = this._testDriver!.getSprites(() => true, false);
+        const log = [];
+        log.push("--- State of variables:");
+
+        sprites.forEach((sprite: Sprite) => {
+            sprite.getVariables().forEach(variable => {
+                const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
+                log.push("--- " + varOutput);
+            });
+        });
+        if (log.length > 1) {
+            this._log(log.join("\n"));
+        }
+
+        const coverages: { covered: number, total: number } = {covered: 0, total: 0};
+
+        const programModels = [...this._programModels, ...this._onTestEndModels];
+        programModels.forEach(model => {
+            const currentCov = model.getCoverageCurrentRun();
+            coverages.covered += currentCov.covered;
+            coverages.total += currentCov.total;
+            this._result!.coverage[model.id] = currentCov;
+        });
+
+        this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
+        ++this._executionCount;
+
         return this._result!;
     }
 

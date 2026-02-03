@@ -2,6 +2,7 @@ image: satantime/puppeteer-node:24.11.0-bullseye
 
 stages:
   - build
+  - lint
   - test
   - integrationtest
 
@@ -43,3 +44,8 @@ integration-tests:
     stage: integrationtest
     script:
         - yarn integrationtest
+
+lint:
+    stage: lint
+    script:
+        - yarn ci:lint

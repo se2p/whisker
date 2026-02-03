@@ -128,6 +128,7 @@ export class NeatestSuiteExecutor extends AgentExecutor {
             // Execute test suite on mutant
             const projectMutation = `${this.projectName}-${mutant.mutantName}`;
             logger.debug(`Analysing mutant ${i}: ${projectMutation}`);
+            ModelTester.getInstance().clearCoverage();
             const executedTests: NeatChromosome[] = [];
             this.initialiseCoverageMaps(this._vm);
             for (let i = 0; i < agents.length; i++) {
@@ -208,6 +209,8 @@ export class NeatestSuiteExecutor extends AgentExecutor {
             test.referenceUncertainty = new Map<number, number>(test.testUncertainty);
             test.testUncertainty = new Map<number, number>();
         }
+        ModelTester.getInstance().clearCurrentModelResults();
+        ModelTester.getInstance().clearCoverage();
         Randomness.setScratchSeed(originalSeed);
         StatisticsCollector.getInstance().evaluations = 0;
     }
@@ -276,5 +279,6 @@ export class NeatestSuiteExecutor extends AgentExecutor {
         const vmWrapper = util.getVMWrapper();
         this.initialiseCoverageMaps(vmWrapper.vm);
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', this.parameter.classificationType, false);
+        Container.testDriver = util.getTestDriver({});
     }
 }

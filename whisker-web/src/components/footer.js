@@ -94,6 +94,6 @@ const footer = `<div class="container-fluid">
 
 
 window.addEventListener('DOMContentLoaded', () => {
-    let footerContent = document.querySelector('div[role="contentinfo"]');
+    const footerContent = document.querySelector('div[role="contentinfo"]');
     footerContent.innerHTML = footer;
 });

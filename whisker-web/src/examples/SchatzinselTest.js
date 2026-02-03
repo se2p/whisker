@@ -1,34 +1,34 @@
 const pirateInitialization = async function (t) {
     await t.wait(2);
-    let pirate = t.getSprite('Pirat');
+    const pirate = t.getSprite('Pirat');
     t.assert.ok(pirate.visible, 'Pirat must be visible');
     t.end();
 };
 
 const girlInitialization = async function (t) {
     await t.wait(2);
-    let girl = t.getSprite('Mädchen');
+    const girl = t.getSprite('Mädchen');
     t.assert.ok(!girl.visible, 'girl must not be visible');
     t.end();
 };
 
 const treasureInitialization = async function (t) {
     await t.wait(2);
-    let treasure = t.getSprite('Schatztruhe');
+    const treasure = t.getSprite('Schatztruhe');
     t.assert.ok(!treasure.visible, 'treasure must not be visible');
     t.end();
 };
 
 const isleInitialization = async function (t) {
     await t.wait(2);
-    let isle = t.getSprite('Vulkaninsel');
+    const isle = t.getSprite('Vulkaninsel');
     t.assert.ok(!isle.visible, 'isle must not be visible');
     t.end();
 };
 
 const cardInitialization = async function (t) {
     await t.wait(2);
-    let card = t.getSprite('Schatzkarte');
+    const card = t.getSprite('Schatzkarte');
     t.assert.ok(card.visible, 'card must be visible');
     t.end();
 };
@@ -36,9 +36,9 @@ const cardInitialization = async function (t) {
 const girlShowShort = async function (t) {
     t.seedScratch('!#$%"§seed');
     await t.wait(2);
-    let pirate = t.getSprite('Pirat');
-    let girl = t.getSprite('Mädchen');
-    let treasure = t.getSprite('Schatztruhe');
+    const pirate = t.getSprite('Pirat');
+    const girl = t.getSprite('Mädchen');
+    const treasure = t.getSprite('Schatztruhe');
     let minSizeReached = false;
     let failed = false;
     t.addCallback(() => {
@@ -51,10 +51,10 @@ const girlShowShort = async function (t) {
     });
     await t.runUntil(() => minSizeReached, 20000);
 
-    t.assert.ok(!failed, "girl became visible before reaching treasure");
-    t.assert.ok(treasure.visible, "treasure not visible");
-    let sizeBoy = pirate.size;
-    let sizeGirl = girl.size;
+    t.assert.ok(!failed, 'girl became visible before reaching treasure');
+    t.assert.ok(treasure.visible, 'treasure not visible');
+    const sizeBoy = pirate.size;
+    const sizeGirl = girl.size;
     let spokeText = false;
     t.addCallback(() => {
         if (pirate.sayText.includes('Happy')) {
@@ -62,27 +62,27 @@ const girlShowShort = async function (t) {
         }
     });
     await t.runUntil(() => spokeText, 10000);
-    t.assert.ok(spokeText, "pirate must have said his monologue");
+    t.assert.ok(spokeText, 'pirate must have said his monologue');
     let finished = false;
     t.addCallback(() => {
-        if (pirate.sayText === "") {
+        if (pirate.sayText === '') {
             finished = true;
         }
     });
     await t.runUntil(() => finished, 2500);
     t.wait(5);
-    t.assert.ok(girl.visible, "girl must be visible");
-    t.assert.ok(girl.size > sizeGirl, "girl must increase in size");
-    t.assert.ok(pirate.size > sizeBoy, "pirate must increase in size");
+    t.assert.ok(girl.visible, 'girl must be visible');
+    t.assert.ok(girl.size > sizeGirl, 'girl must increase in size');
+    t.assert.ok(pirate.size > sizeBoy, 'pirate must increase in size');
     t.end();
 };
 
 const girlShowLong = async function (t) {
-    t.seedScratch('#seed')
+    t.seedScratch('#seed');
     await t.wait(2);
-    let pirate = t.getSprite('Pirat');
-    let girl = t.getSprite('Mädchen');
-    let treasure = t.getSprite('Schatztruhe');
+    const pirate = t.getSprite('Pirat');
+    const girl = t.getSprite('Mädchen');
+    const treasure = t.getSprite('Schatztruhe');
     let minSizeReached = false;
     let failed = false;
     t.addCallback(() => {
@@ -95,10 +95,10 @@ const girlShowLong = async function (t) {
     });
     await t.runUntil(() => minSizeReached, 20000);
 
-    t.assert.ok(!failed, "girl became visible before reaching treasure");
-    t.assert.ok(treasure.visible, "treasure not visible");
-    let sizeBoy = pirate.size;
-    let sizeGirl = girl.size;
+    t.assert.ok(!failed, 'girl became visible before reaching treasure');
+    t.assert.ok(treasure.visible, 'treasure not visible');
+    const sizeBoy = pirate.size;
+    const sizeGirl = girl.size;
     let spokeText = false;
     t.addCallback(() => {
         if (pirate.sayText.includes('Happy')) {
@@ -106,18 +106,18 @@ const girlShowLong = async function (t) {
         }
     });
     await t.runUntil(() => spokeText, 10000);
-    t.assert.ok(spokeText, "pirate must have said his monologue");
+    t.assert.ok(spokeText, 'pirate must have said his monologue');
     let finished = false;
     t.addCallback(() => {
-        if (pirate.sayText === "") {
+        if (pirate.sayText === '') {
             finished = true;
         }
     });
     await t.runUntil(() => finished, 2500);
     t.wait(5);
-    t.assert.ok(girl.visible, "girl must be visible");
-    t.assert.ok(girl.size > sizeGirl, "girl must increase in size");
-    t.assert.ok(pirate.size > sizeBoy, "pirate must increase in size");
+    t.assert.ok(girl.visible, 'girl must be visible');
+    t.assert.ok(girl.size > sizeGirl, 'girl must increase in size');
+    t.assert.ok(pirate.size > sizeBoy, 'pirate must increase in size');
     t.end();
 };
 

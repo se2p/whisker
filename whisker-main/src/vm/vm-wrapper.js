@@ -6,7 +6,6 @@ const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 require('setimmediate'); // attaches setImmediate to the global scope as side effect
-const TestResult = require("../test-runner/test-result");
 
 const STEP_TIME = 1000 / 30;
 
@@ -33,21 +32,6 @@ class VMWrapper {
          * @type {ModelTester | null} Executes Models with the provided inputs
          */
         this._modelTester = modelTester;
-
-        /**
-         * @type {Record<string, TestResult[]>} The results of the models
-         */
-        this._modelSummary = {};
-
-        /**
-         * @type {TestResult} Results of executed models.
-         */
-        this.currentModelTestResult = null;
-
-        /**
-         * @type {TestResult[]} Results of executed models.
-         */
-        this.modelTestResults = [];
 
         /**
          * @type {number}
@@ -614,7 +598,6 @@ class VMWrapper {
         await this.waitForProjectLoadFinished();
         await this.vm.loadProject(this._originalProjectJSON);
         this._totalStepsExecuted = 0;
-        this.prepareModelForNextRun();
     }
 
     /**
@@ -856,39 +839,33 @@ class VMWrapper {
         if (!this._modelTester) {
             return;
         }
-
         if (result !== null) {
-            this._modelTester.stopModels(result, updateResultStatus);
+            this._modelTester.stopModels(result, updateResultStatus, false);
         } else if (this.modelTester.canBeStopped) {
             // automatic stop
-            const res = this._modelTester.stopModels(this.currentModelTestResult, updateResultStatus);
-            if (res) {
-                this.modelTestResults.push(this.currentModelTestResult);
-                this.currentModelTestResult = null;
-            }
+            this._modelTester.stopModels(null, updateResultStatus, true);
         }
     }
 
     prepareModelForNextRun() {
         if (this._modelTester && this._modelTester.nextTestDriver) {
             this.stopModels();
-            this.currentModelTestResult = new TestResult(null);
             this._modelTester.prepareModelForNextRun();
         }
     }
 
     /**
-     * Generates a record where the key {@linkcode} is set to {@linkcode this.modelTestResults}
+     * Updates the summary with the current model results
      * @param projectName Name of the project
-     * @return {Record<string, TestResult[]>} results for this project
+     * @return {TestResult[]}
      */
-    getTestResultsForProjectName(projectName) {
+    updateProgramModelSummaryForProject(projectName) {
         this.stopModels();
-        if (!this._modelSummary[projectName]) {
-            this._modelSummary[projectName] = this.modelTestResults;
-        }
-        this.modelTestResults = [];
-        return this._modelSummary;
+        return this.modelTester.updateSummaryForProject(projectName);
+    }
+
+    getTestResultsSummary() {
+        return this.modelTester.summary;
     }
 
     /**

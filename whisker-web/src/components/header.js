@@ -11,6 +11,6 @@ const header = `<div id="scroll-background">
 
 
 window.addEventListener('DOMContentLoaded', () => {
-    let headerContent = document.querySelector('div[role="navigation"]');
+    const headerContent = document.querySelector('div[role="navigation"]');
     headerContent.innerHTML = header;
 });

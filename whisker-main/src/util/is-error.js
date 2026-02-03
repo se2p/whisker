@@ -6,7 +6,7 @@
 const isAssertionError = function (error) {
     return (error.name.toLowerCase().includes('assert') ||
         error.constructor.name.toLowerCase().includes('assert')) &&
-        (error.hasOwnProperty('actual') || error.hasOwnProperty('expected'));
+        (Object.prototype.hasOwnProperty.call(error, 'actual') || Object.prototype.hasOwnProperty.call(error, 'expected'));
 };
 
 /**
@@ -17,7 +17,7 @@ const isAssertionError = function (error) {
 const isAssumptionError = function (error) {
     return (error.name.toLowerCase().includes('assum') ||
         error.constructor.name.toLowerCase().includes('assum')) &&
-        (error.hasOwnProperty('actual') || error.hasOwnProperty('expected'));
+        (Object.prototype.hasOwnProperty.call(error, 'actual') || Object.prototype.hasOwnProperty.call(error, 'expected'));
 };
 
 module.exports = {

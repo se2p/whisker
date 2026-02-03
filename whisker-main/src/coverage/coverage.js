@@ -136,7 +136,7 @@ class CoverageGenerator {
         _blockDescriptions.clear();
 
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if (Object.prototype.hasOwnProperty.call(target, 'blocks')) {
                 const targetName = target.getName();
                 let blockIds = _blockIdsPerSprite.get(targetName);
                 if (typeof blockIds === 'undefined') {

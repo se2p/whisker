@@ -1,6 +1,6 @@
 const headInitialization = async function (t) {
     await t.runForTime(5);
-    let snake = t.getSprite('Kopf');
+    const snake = t.getSprite('Kopf');
     t.assert.ok(snake.visible, 'head must be visible');
     t.assert.ok(snake.direction === 90, 'head must face right');
     t.end();
@@ -8,14 +8,14 @@ const headInitialization = async function (t) {
 
 const bodyInitialization = async function (t) {
     await t.runForTime(5);
-    let body = t.getSprite('Körper');
+    const body = t.getSprite('Körper');
     t.assert.ok(body.visible, 'body must be visible');
     t.end();
 };
 
 const deleteClones = async function (t) {
     await t.runForTime(5);
-    let body = t.getSprite('Körper');
+    const body = t.getSprite('Körper');
     let cloneNotDeleted = false;
     let cloneCreated = false;
     t.addCallback(() => {

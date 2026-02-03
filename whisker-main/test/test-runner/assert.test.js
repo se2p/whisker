@@ -45,8 +45,7 @@ describe.each([
         let executed = false;
         assertAssume.onPassedAssertion = () => executed = true;
         assertAssume.onPassedAssumption = () => executed = true;
-        assertAssume[allAny](() => {
-        });
+        assertAssume[allAny](() => { /* do nothing */ });
         expect(executed).toBeFalsy();
     });
 
@@ -54,8 +53,7 @@ describe.each([
         let passed = false;
         assertAssume.onPassedAssertion = () => passed = true;
         assertAssume.onPassedAssumption = () => passed = true;
-        assertAssume[allAny](() => {
-        });
+        assertAssume[allAny](() => { /* do nothing */ });
         expect(passed).toBeFalsy();
     });
 

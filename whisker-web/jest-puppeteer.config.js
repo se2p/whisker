@@ -4,7 +4,7 @@ module.exports = {
         slowMo: process.env.SLOWMO ? process.env.SLOWMO : 0,
         devtools: false,
         args: [
-            '--no-sandbox',
-        ],
+            '--no-sandbox'
+        ]
     }
-}
+};
