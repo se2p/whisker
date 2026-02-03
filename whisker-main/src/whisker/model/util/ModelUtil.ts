@@ -18,6 +18,8 @@ import {approxEq, approxGt, approxLt, EPSILON, Interval} from "../checks/Compari
 import {CheckResult, fail, pass, Reason} from "../checks/CheckResult";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {OracleModel} from "../components/AbstractModel";
+import {ICheckJSON} from "../checks/AbstractCheck";
+import {Optional} from "../../utils/Optional";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -470,11 +472,7 @@ export function flipDirectionVertically(direction: number): number {
     return -direction;
 }
 
-type CheckLike = {
-    name: string,
-    negated?: boolean,
-    args: ArgType[]
-}
+type CheckLike = Optional<ICheckJSON, "negated">;
 
 export function checkToString(check: CheckLike, dictionary: (key: string) => string = null, maxLength = 40): string {
     if (dictionary === null) {
