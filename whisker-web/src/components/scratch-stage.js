@@ -5,7 +5,7 @@ const ScratchRender = require('scratch-render');
 const ScratchSVGRenderer = require('scratch-svg-renderer');
 const AudioEngine = require('scratch-audio');
 const VirtualMachine = require('scratch-vm');
-const logger = require("../logger");
+const logger = require('../logger');
 
 const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
 const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
@@ -17,7 +17,7 @@ class Scratch extends EventEmitter {
 
     static INPUT_LISTENER_KEY = 'input';
 
-    constructor (canvas) {
+    constructor(canvas) {
         super();
         this.canvas = canvas;
         this.vm = Scratch.prepareVM(this.canvas);
@@ -34,7 +34,7 @@ class Scratch extends EventEmitter {
         this._registerKeyPress = this.registerKeyPress.bind(this);
     }
 
-    async loadProject (project) {
+    async loadProject(project) {
         this.project = project;
         this.vm.clear();
 
@@ -57,7 +57,7 @@ class Scratch extends EventEmitter {
      *
      * @return {Map<string, Test>} A map that maps the hat block ID of a BBT to its data.
      */
-    getBBTTestsOfCurrentProject () {
+    getBBTTestsOfCurrentProject() {
         const bbtTests = new Map();
 
         for (const target of this.vm.runtime.targets) {
@@ -95,20 +95,20 @@ class Scratch extends EventEmitter {
         return bbtTests;
     }
 
-    async reset () {
+    async reset() {
         return await this.loadProject(this.project);
     }
 
-    start () {
+    start() {
         this.vm.start();
     }
 
-    greenFlag () {
+    greenFlag() {
         this.start();
         this.vm.greenFlag();
     }
 
-    stop () {
+    stop() {
         this.vm.stopAll();
         this.vm.runtime._step();
     }
@@ -116,11 +116,11 @@ class Scratch extends EventEmitter {
     /**
      * @returns {boolean} .
      */
-    isInputEnabled () {
+    isInputEnabled() {
         return this.inputEnabled;
     }
 
-    enableInput () {
+    enableInput() {
         this.canvas.addEventListener('mousemove', this._onMouseMove);
         this.canvas.addEventListener('mousedown', this._onMouseDown);
         this.canvas.addEventListener('mouseup', this._onMouseUp);
@@ -130,7 +130,7 @@ class Scratch extends EventEmitter {
         this.inputEnabled = true;
     }
 
-    disableInput () {
+    disableInput() {
         this.canvas.removeEventListener('mousemove', this._onMouseMove);
         this.canvas.removeEventListener('mousedown', this._onMouseDown);
         this.canvas.removeEventListener('mouseup', this._onMouseUp);
@@ -140,7 +140,7 @@ class Scratch extends EventEmitter {
         this.inputEnabled = false;
     }
 
-    static prepareVM (canvas) {
+    static prepareVM(canvas) {
         const storage = new ScratchStorage();
         const AssetType = storage.AssetType;
         storage.addWebStore([AssetType.Project], Scratch.getProjectUrl, Scratch.getProjectUrl,
@@ -163,7 +163,7 @@ class Scratch extends EventEmitter {
         return vm;
     }
 
-    static getProjectUrl (asset) {
+    static getProjectUrl(asset) {
         const assetIdParts = asset.assetId.split('.');
         const assetUrlParts = [PROJECT_SERVER, '/internalapi/project/', assetIdParts[0], '/get/'];
         if (assetIdParts[1]) {
@@ -172,7 +172,7 @@ class Scratch extends EventEmitter {
         return assetUrlParts.join('');
     }
 
-    static getAssetUrl (asset) {
+    static getAssetUrl(asset) {
         const assetUrlParts = [
             ASSET_SERVER,
             '/internalapi/asset/',
@@ -184,7 +184,7 @@ class Scratch extends EventEmitter {
         return assetUrlParts.join('');
     }
 
-    onMouseMove (e) {
+    onMouseMove(e) {
         e.preventDefault();
         this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
@@ -198,7 +198,7 @@ class Scratch extends EventEmitter {
         this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
-    onMouseDown (e) {
+    onMouseDown(e) {
         e.preventDefault();
         this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
@@ -213,7 +213,7 @@ class Scratch extends EventEmitter {
         this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
-    onMouseUp (e) {
+    onMouseUp(e) {
         e.preventDefault();
         this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
@@ -228,7 +228,7 @@ class Scratch extends EventEmitter {
         this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
-    onKeyDown (e) {
+    onKeyDown(e) {
         e.preventDefault();
         const data = {
             keyCode: e.keyCode,
@@ -239,7 +239,7 @@ class Scratch extends EventEmitter {
         this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
     }
 
-    onKeyUp (e) {
+    onKeyUp(e) {
         e.preventDefault();
         const data = {
             key: e.key,
@@ -249,12 +249,12 @@ class Scratch extends EventEmitter {
         this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
     }
 
-    onQuestion () {
+    onQuestion() {
         this.keyPresses = [];
         this.canvas.addEventListener('keydown', this._registerKeyPress);
     }
 
-    registerKeyPress (e) {
+    registerKeyPress(e) {
         if (e.key === 'Backspace') {
             this.keyPresses.pop();
         } else if (e.key === 'Enter') {

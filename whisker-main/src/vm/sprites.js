@@ -165,7 +165,7 @@ class Sprites {
 
         const newSprites = [];
         for (const target of this.vmWrapper.vm.runtime.targets) {
-            if (!this.spritesBefore.hasOwnProperty(target.id)) {
+            if (!Object.prototype.hasOwnProperty.call(this.spritesBefore, target.id)) {
                 const sprite = this.wrapTarget(target);
                 if (condition(sprite)) {
                     this.spritesBefore[target.id] = sprite;

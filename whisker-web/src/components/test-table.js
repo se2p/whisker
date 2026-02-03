@@ -2,7 +2,7 @@ const {$} = require('../web-libs');
 const index = require('../index');
 const Test = require('whisker-main/src/test-runner/test.js');
 const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
-const logger = require("../logger");
+const logger = require('../logger');
 
 const FAIL_SIGN = '\u2717';
 const SKIP_SIGN = '\u26A0';
@@ -16,7 +16,7 @@ const TIMEOUT_SIGN = '\u231B';
  * </div>
  */
 class TestTable {
-    constructor (div, runSingleTest, testRunner) {
+    constructor(div, runSingleTest, testRunner) {
         this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
@@ -100,7 +100,7 @@ class TestTable {
         });
     }
 
-    getProps () {
+    getProps() {
         const projectName = window.Whisker.projectFileSelect.getName();
         const accelerationFactor = 1;
         const seed = document.getElementById('seed').value;
@@ -109,7 +109,7 @@ class TestTable {
         return {accelerationFactor, seed, projectName, mutators};
     }
 
-    getModelProps () {
+    getModelProps() {
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -122,7 +122,7 @@ class TestTable {
     /**
      * @param {Test[]} tests .
      */
-    onRunStart (tests) {
+    onRunStart(tests) {
         if (this.testRunner.headless) {
             return;
         }
@@ -141,30 +141,30 @@ class TestTable {
         }
 
         if (result.test) {
-            let test = result.test;
-            let status = result.status;
+            const test = result.test;
+            const status = result.status;
             test.isRunning = false;
             test.testResultClass = status;
             test.translatedTestResult = index.i18n.t(status);
             test.error = result.error;
             test.log = result.log;
             switch (status) {
-                case Test.FAIL:
-                    test.testResultSign = FAIL_SIGN;
-                    break;
-                case Test.SKIP:
-                    test.testResultSign = SKIP_SIGN;
-                    break;
-                case Test.PASS:
-                    test.testResultSign = PASS_SIGN;
-                    break;
-                case Test.ERROR:
-                    test.testResultSign = ERROR_SIGN;
+            case Test.FAIL:
+                test.testResultSign = FAIL_SIGN;
+                break;
+            case Test.SKIP:
+                test.testResultSign = SKIP_SIGN;
+                break;
+            case Test.PASS:
+                test.testResultSign = PASS_SIGN;
+                break;
+            case Test.ERROR:
+                test.testResultSign = ERROR_SIGN;
             }
             this.updateTest(test);
         }
         if (result.modelResult) {
-           // todo adapt for model
+            // todo adapt for model
         }
     }
 
@@ -174,7 +174,7 @@ class TestTable {
      *
      * @param {object} data Contains the ID of the BBT test.
      */
-    onBBTTestStarted (data) {
+    onBBTTestStarted(data) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -193,7 +193,7 @@ class TestTable {
      *
      * @param {string} bbtTestID The ID of the BBT test.
      */
-    onBBTTestFinishedNaturally (bbtTestID) {
+    onBBTTestFinishedNaturally(bbtTestID) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -219,7 +219,7 @@ class TestTable {
      *
      * @param {string} bbtTestID the ID of the BBT test
      */
-    onBBTTestTimeout (bbtTestID) {
+    onBBTTestTimeout(bbtTestID) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -250,7 +250,7 @@ class TestTable {
      *
      * @param {object} errorObject information about the error as emitted by the VM
      */
-    onBBTErrorOccurred (errorObject) {
+    onBBTErrorOccurred(errorObject) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -279,7 +279,7 @@ class TestTable {
     /**
      * Register test execution abortion for BBT tests.
      */
-    onProjectRunStop () {
+    onProjectRunStop() {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -310,7 +310,7 @@ class TestTable {
      *
      * @param {object} data contains the test ID
      */
-    onBBTAssertionSuccess (data) {
+    onBBTAssertionSuccess(data) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -333,7 +333,7 @@ class TestTable {
      *
      * @param {object} test the test to be evaluated
      */
-    registerBBTTestResult (test) {
+    registerBBTTestResult(test) {
         if (!window.Whisker.bbtTests || !test) {
             return;
         }
@@ -358,7 +358,7 @@ class TestTable {
     /**
      * @param {Test[]} tests .
      */
-    onRunCancel (tests) {
+    onRunCancel(tests) {
         if (tests) {
             tests.forEach(test => this.resetRunDataAndShow(test));
         }
@@ -399,24 +399,24 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    updateTest (test) {
-        let tests = this.dataTable.data();
+    updateTest(test) {
+        const tests = this.dataTable.data();
         tests[test.index - 1] = test;
         this.setTests(tests);
     }
 
     updateAfterAbort() {
-        let tests = this.dataTable.data();
-        for (const index of Object.keys(tests)) {
-            if (tests[index].isRunning) {
-                tests[index].isRunning = false;
+        const tests = this.dataTable.data();
+        for (const i of Object.keys(tests)) {
+            if (tests[i].isRunning) {
+                tests[i].isRunning = false;
             }
         }
         this.setTests(tests);
     }
 
     /**
-     * @param {Object} tests    Either an array or an object with indexes as keys and tests as entries.
+     * @param {object} tests    Either an array or an object with indexes as keys and tests as entries.
      *                          In preprocessing steps the tests might get some more fields:
      *                          - index: Unique ID to locate the test in the data table // TODO is this always deterministic?
      *                          - isRunning: true if the test is currently running
@@ -425,13 +425,13 @@ class TestTable {
      *                          - error: if the test run resulted in an error, it is stored here
      *                          - log: if the test run resulted in log messages, they are stored here
      */
-    setTests (tests) {
+    setTests(tests) {
         if (this.dataTable) {
             this.dataTable.destroy();
         }
 
         this.dataTable = this.table.DataTable({
-            createdRow: function (row, data, dataIndex) {
+            createdRow: function (row, data, _dataIndex) {
                 $(row).addClass(data.testResultClass);
             },
             data: TestTable.prepareTests(tests),
@@ -459,17 +459,17 @@ class TestTable {
                 },
                 {
                     data: data => data,
-                    render: function (data, type, full) {
+                    render: function (data, _type, _full) {
                         if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
-                            return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
+                            return `<div class="tooltip-sign">${data.testResultSign}<span class="tooltip-sign-text">${data.translatedTestResult}</span></div>`;
                         } else if (data.isRunning) {
                             return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
-                        } else {
-                            return '-';
                         }
+                        return '-';
+
                     },
                     defaultContent: '-',
-                    width: "30%"
+                    width: '30%'
                 },
                 {
                     orderable: false,
@@ -506,16 +506,16 @@ class TestTable {
             language: {
                 search: '&#x1F50E;',
                 emptyTable: '-'
-            },
+            }
 
         });
     }
 
-    show () {
+    show() {
         $(this.div).show();
     }
 
-    hide () {
+    hide() {
         $(this.div).hide();
     }
 
@@ -523,10 +523,10 @@ class TestTable {
      * @param {Test[]} tests .
      * @return {Test[]} .
      */
-    static prepareTests (tests) {
-        let index = 1;
+    static prepareTests(tests) {
+        let idx = 1;
         return tests.map(test => {
-            test.index = index++;
+            test.index = idx++;
             return test;
         });
     }
@@ -536,20 +536,20 @@ class TestTable {
      * @return {string} .
      */
     static prepareDescription(test) {
-        let description = index.i18n.t("description");
+        const description = index.i18n.t('description');
         let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
-        let name = "name";
-        let msg = "message";
-        let expected = "expected";
-        let operator = "operator";
-        let actual = "actual";
-        let excludedProperties = ["generatedMessage", "stack", msg, name, expected, operator, actual];
-        let translatedProperties = [msg, name, expected, operator, actual];
+        const name = 'name';
+        const msg = 'message';
+        const expected = 'expected';
+        const operator = 'operator';
+        const actual = 'actual';
+        const excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
+        const translatedProperties = [msg, name, expected, operator, actual];
 
         function addRowIfPropertyPresent(prop) {
-            if (test.error.hasOwnProperty(prop)) {
+            if (Object.prototype.hasOwnProperty.call(test.error, prop)) {
                 if (translatedProperties.includes(prop)) {
-                    let translatedProp = index.i18n.t("error-" + prop);
+                    const translatedProp = index.i18n.t(`error-${prop}`);
                     result += `<td>${translatedProp}</td><td>${test.error[prop]}</td>\n</tr>`;
 
                 } else {
@@ -581,15 +581,15 @@ class TestTable {
             addRowIfPropertyPresent(operator);
             addRowIfPropertyPresent(actual);
 
-            for (let prop in test.error) {
+            for (const prop in test.error) {
                 if (!(excludedProperties.includes(prop))) {
                     result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
                 }
             }
         }
 
-        if (test.hasOwnProperty("log") && test.log.length) {
-            let log = index.i18n.t("log");
+        if (Object.prototype.hasOwnProperty.call(test, 'log') && test.log.length) {
+            const log = index.i18n.t('log');
             result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
         }
 
@@ -599,12 +599,22 @@ class TestTable {
 
     hideTestDetails() {
         if (this.dataTable) {
-            this.dataTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
+            // The "array-callback-return" eslint rule creates a false positive: We are not using Array.prototype.every,
+            // but rather DataTables.CellMethods.prototype.every.
+            /* eslint-disable-next-line array-callback-return */
+            this.dataTable.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
+                // The every() function binds `this` to the current row, which makes the use of `this` inside this
+                // function valid -> Disable "no-invalid-this" rule temporarily.
+                /* eslint-disable no-invalid-this */
+
                 if (this.child.isShown()) {
                     this.child.hide();
                 }
+
+                /* eslint-enable no-invalid-this */
             });
-            [...document.querySelectorAll('.toggle-details-icon')].forEach(function(icon) {
+
+            [...document.querySelectorAll('.toggle-details-icon')].forEach(icon => {
                 icon.classList.remove('fa-minus');
                 icon.classList.add('fa-plus');
             });

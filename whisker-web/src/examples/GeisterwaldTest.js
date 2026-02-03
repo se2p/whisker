@@ -1,32 +1,32 @@
 const goboInitialization = async function (t) {
     await t.wait(2);
-    let gobo = t.getSprite('Gobo');
+    const gobo = t.getSprite('Gobo');
     t.assert.ok(!gobo.visible, 'gobo must be not visible');
     t.end();
 };
 
 const creatureInitialization = async function (t) {
     await t.wait(2);
-    let creature = t.getSprite('Kreatur');
+    const creature = t.getSprite('Kreatur');
     t.assert.ok(!creature.visible, 'creature must be not visible');
     t.end();
 };
 
 const pointsInitialization = async function (t) {
     await t.wait(2);
-    let stage = t.getStage();
-    let score = stage.getVariable('Punkte');
+    const stage = t.getStage();
+    const score = stage.getVariable('Punkte');
     t.assert.ok(parseInt(score.value, 10) === 0, 'score must be reset');
     t.end();
 };
 
 const goboAppears = async function (t) {
     await t.wait(2);
-    let gobo = t.getSprite('Gobo');
+    const gobo = t.getSprite('Gobo');
     t.assert.ok(!gobo.visible, 'gobo must be not visible');
-    let creature = t.getSprite('Kreatur');
-    let stage = t.getStage();
-    let score = stage.getVariable('Punkte');
+    const creature = t.getSprite('Kreatur');
+    const stage = t.getStage();
+    const score = stage.getVariable('Punkte');
     t.addCallback(() => {
         for (const clone of creature.getClones()) {
             t.clickClone(clone);

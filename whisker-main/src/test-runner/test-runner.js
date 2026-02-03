@@ -195,7 +195,6 @@ class TestRunner extends EventEmitter {
      *
      * @param {VirtualMachine} vm
      * @param {Test[]} tests
-     * @param {ModelTester} modelTester
      * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
      * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
      * @param {{duration: number, repetitions: number}} modelProps

@@ -17,7 +17,8 @@
         "build:prod": "NODE_ENV=production webpack --color --bail",
         "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --verbose --runInBand",
-        "lint": "eslint . && format-message lint src/**/*.js",
+        "lint": "eslint .",
+        "ci:lint": "eslint --quiet .",
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {

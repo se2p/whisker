@@ -1,13 +1,13 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
 const Recorder = require('whisker-main/src/vm/recorder');
-const logger = require("../logger");
+const logger = require('../logger');
 
 /**
  * Enables to record user input for test recordings.
  */
 class InputRecorder extends EventEmitter {
-    constructor (scratch) {
+    constructor(scratch) {
         super();
 
         this.scratch = scratch;
@@ -38,7 +38,7 @@ class InputRecorder extends EventEmitter {
     /**
      * Sets the {@link InputRecorder} into its default setting for the test recording.
      */
-    startRecording () {
+    startRecording() {
         this.emit('startRecording');
         this.events = [];
         this.startTime = Date.now();
@@ -52,7 +52,7 @@ class InputRecorder extends EventEmitter {
     /**
      * Resets the {@link InputRecorder} into its default setting after test recording.
      */
-    stopRecording () {
+    stopRecording() {
         this.emit('stopRecording');
         this.scratch.removeListener('input', this._onInput);
         this.showInputs();
@@ -68,7 +68,7 @@ class InputRecorder extends EventEmitter {
      * Evaluates if the {@link InputRecorder} is currently active.
      * @returns {boolean} true if the recorder is active, false otherwise.
      */
-    isRecording () {
+    isRecording() {
         return this.startTime !== null;
     }
 
@@ -76,7 +76,7 @@ class InputRecorder extends EventEmitter {
      * Updates the step count of the {@link InputRecorder}.
      * @private
      */
-    _step () {
+    _step() {
         const steps = this.vm.runtime.stepsExecuted - this.stepCount;
         this.stepCount += steps;
         this.waitSteps += steps;
@@ -86,7 +86,7 @@ class InputRecorder extends EventEmitter {
      * After checking for mouse movement, a green flag event is added to the recorded events.
      * The step count is also updated after the event was recorded.
      */
-    greenFlag () {
+    greenFlag() {
         this._mouseMove();
         this.events.push(Recorder.greenFlag());
         this._step();
@@ -96,7 +96,7 @@ class InputRecorder extends EventEmitter {
      * After checking for mouse movement, an end event is added to the recorded events.
      * The step count is also updated after the event was recorded.
      */
-    stop () {
+    stop() {
         this._mouseMove();
         this.events.push(Recorder.end());
         this._step();
@@ -106,7 +106,7 @@ class InputRecorder extends EventEmitter {
      * Adds a wait event to the recorded events.
      * @private
      */
-    _wait () {
+    _wait() {
         if (this.waitSteps > 0) {
             this.events.push(Recorder.wait(this.waitSteps));
             this.waitSteps = 0;
@@ -118,7 +118,7 @@ class InputRecorder extends EventEmitter {
      * The step count is also updated after the event was recorded.
      * @private
      */
-    _mouseMove () {
+    _mouseMove() {
         if (this.mouseMoves.length > 0) {
             const end = this.mouseMoves[this.mouseMoves.length - 1];
             this.events.push(Recorder.mouseMove(end.x, end.y, this.waitSteps));
@@ -132,7 +132,7 @@ class InputRecorder extends EventEmitter {
      * Records input data of I/O devices and handles it accordingly.
      * @param {object} data The recorded input.
      */
-    onInput (data) {
+    onInput(data) {
         switch (data.device) {
         case 'mouse':
             this._onMouseInput(data);
@@ -155,7 +155,7 @@ class InputRecorder extends EventEmitter {
      * @param {object} data The recorded input.
      * @private
      */
-    _onMouseInput (data) {
+    _onMouseInput(data) {
         if (data.isDown) {
             this._mouseMove();
             const target = Util.getTargetSprite(this.vm);
@@ -175,7 +175,7 @@ class InputRecorder extends EventEmitter {
      * @param {object} data The recorded input.
      * @private
      */
-    _onKeyboardInput (data) {
+    _onKeyboardInput(data) {
         if (data.isDown && data.key !== null) {
             this._mouseMove();
             const key = data.key;
@@ -195,7 +195,7 @@ class InputRecorder extends EventEmitter {
      * @param {object} data The recorded input.
      * @private
      */
-    _onTextInput (data) {
+    _onTextInput(data) {
         if (data.answer !== null) {
             this._mouseMove();
             this.events.push(Recorder.typeText(data.answer));
@@ -207,10 +207,14 @@ class InputRecorder extends EventEmitter {
     /**
      * Displays the recorded test in the {@link TestEditor}.
      */
-    showInputs () {
+    showInputs() {
         if (this.events !== null && this.events.length !== 0) {
+            // `Whisker` has been attached to the global `window` object and is thus available implicitly.
+            // eslint-disable-next-line no-undef
             Whisker.testEditor.setValue(`${this.testBegin}\n${this.events.join('\n')}\n}${this.export}`);
         } else {
+            // `Whisker` has been attached to the global `window` object and is thus available implicitly.
+            // eslint-disable-next-line no-undef
             Whisker.testEditor.setValue(this.testBegin + this.testEnd + this.export);
         }
         // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow

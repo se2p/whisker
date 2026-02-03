@@ -27,7 +27,7 @@ class RandomInput {
         /**
          * @type {number} Weight property of data input.
          */
-        this.weight = data.hasOwnProperty('weight') ? data.weight : 1;
+        this.weight = Object.prototype.hasOwnProperty.call(data, 'weight') ? data.weight : 1;
 
         /**
          * @type {(Input|null)} Converted input from given data.
@@ -47,7 +47,7 @@ class RandomInput {
         }
 
         for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
-            if (randomData.hasOwnProperty(prop)) {
+            if (Object.prototype.hasOwnProperty.call(randomData, prop)) {
                 randomData[prop] = RandomInput.getRandomProp(randomData[prop]);
             }
         }
@@ -190,18 +190,18 @@ class RandomInputs {
         if (typeof props === 'undefined') {
             props = {};
         }
-        if (!props.hasOwnProperty('duration')) {
+        if (!Object.prototype.hasOwnProperty.call(props, 'duration')) {
             props.duration = [0, 2 * this.frequency];
         }
-        if (!props.hasOwnProperty('xOffset')) {
+        if (!Object.prototype.hasOwnProperty.call(props, 'xOffset')) {
             props.xOffset = [-50, 50];
         }
-        if (!props.hasOwnProperty('yOffset')) {
+        if (!Object.prototype.hasOwnProperty.call(props, 'yOffset')) {
             props.yOffset = [-50, 50];
         }
 
         for (const target of this.vmWrapper.vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if (Object.prototype.hasOwnProperty.call(target, 'blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     this._detectRandomInput(target, target.blocks.getBlock(blockId), props);
                 }
@@ -246,7 +246,7 @@ class RandomInputs {
             }]);
             break;
         case 'sensing_distancetomenu':
-            if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
+            if (Object.prototype.hasOwnProperty.call(fields, 'DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
                 this.registerRandomInputs([{
                     device: 'mouse',
                     x: [-(stageSize.width / 2), stageSize.width / 2],
@@ -293,7 +293,7 @@ class RandomInputs {
             }]);
             break;
         case 'sensing_touchingobjectmenu':
-            if (fields.hasOwnProperty('TOUCHINGOBJECTMENU') && fields.TOUCHINGOBJECTMENU.value === '_mouse_') {
+            if (Object.prototype.hasOwnProperty.call(fields, 'TOUCHINGOBJECTMENU') && fields.TOUCHINGOBJECTMENU.value === '_mouse_') {
                 const sprite = this.vmWrapper.sprites.wrapTarget(target);
                 if (sprite === this.vmWrapper.sprites.getStage()) {
                     this.registerRandomInputs([{
@@ -340,7 +340,7 @@ class RandomInputs {
             break;
         }
         case 'motion_pointtowards_menu':
-            if (fields.hasOwnProperty('TOWARDS') && fields.TOWARDS.value === '_mouse_') {
+            if (Object.prototype.hasOwnProperty.call(fields, 'TOWARDS') && fields.TOWARDS.value === '_mouse_') {
                 this.registerRandomInputs([{
                     device: 'mouse',
                     x: [-(stageSize.width / 2), stageSize.width / 2],

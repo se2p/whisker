@@ -70,7 +70,6 @@ async function runDynamicTestSuite(whisker, path) {
      */
     async function readTestResults() {
         const logOutput = await whisker.page.$('#output-log .output-content');
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName,testName')) {
