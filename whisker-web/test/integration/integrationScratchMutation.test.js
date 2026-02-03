@@ -8,16 +8,16 @@ const URL = 'dist/index.html';
 const timeout = 20000;
 const ACCELERATION = Infinity;
 
-const loadProject = async scratchPath => {
+async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-};
+}
 
-const getCSVResults = async () => {
+async function getCSVResults() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -37,7 +37,7 @@ const getCSVResults = async () => {
             };
         }
     }
-};
+}
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.

@@ -8,7 +8,7 @@ const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-const loadProjectAndTests = async (scratchPath, testPath) => {
+async function loadProjectAndTests (scratchPath, testPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-tests')).uploadFile(testPath);
     const projectTab = await page.$('#tabProject');
@@ -18,7 +18,7 @@ const loadProjectAndTests = async (scratchPath, testPath) => {
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-};
+}
 
 const expected = {
     testa: {
@@ -468,7 +468,7 @@ describe.each(Object.entries(expected))('Test execution traces', (name, trace) =
 
         // Comparing the entire stack trace is infeasible, because line numbers change when the source code is changed,
         // and paths are usually different on different machines. Thus, we map the stack traces to line numbers.
-        const mapStackTraceToLineNumber = o => {
+        function mapStackTraceToLineNumber (o) {
             if (typeof o !== 'object') {
                 return;
             }
@@ -484,7 +484,7 @@ describe.each(Object.entries(expected))('Test execution traces', (name, trace) =
                     mapStackTraceToLineNumber(value);
                 }
             }
-        };
+        }
 
         mapStackTraceToLineNumber(result.traces);
 

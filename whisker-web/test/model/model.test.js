@@ -7,16 +7,16 @@ const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-const uploadFile = async (selector, filePath) => {
+async function uploadFile (selector, filePath) {
     const exists = fs.existsSync(filePath);
     if (!exists) {
         console.log(`The file ${filePath} does not exist!`);
         expect(exists).toBe(true);
     }
     await (await page.$(selector)).uploadFile(filePath);
-};
+}
 
-const loadProject = async (scratchPath, modelPath, userModelOrTest) => {
+async function loadProject (scratchPath, modelPath, userModelOrTest) {
     await uploadFile('#fileselect-project', scratchPath);
     if (modelPath) {
         await uploadFile('#fileselect-models', modelPath);
@@ -33,9 +33,9 @@ const loadProject = async (scratchPath, modelPath, userModelOrTest) => {
     await page.evaluate(factor => {
         document.querySelector('#acceleration-value').innerText = factor;
     }, ACCELERATION);
-};
+}
 
-const readModelErrors = async () => {
+async function readModelErrors () {
     const errorWhenUploadingModelStart = `MODEL: [
       {
         "code": "invalid_type",
@@ -75,7 +75,7 @@ const readModelErrors = async () => {
             throw new Error(`Could not parse the model. Message:\n${log}`);
         }
     }
-};
+}
 
 beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
@@ -91,7 +91,7 @@ beforeEach(async () => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 });
 
-const testProgram = async (errors, fails, coverage) => {
+async function testProgram (errors, fails, coverage) {
     const seed = Date.now();
     await page.evaluate(s => {
         document.querySelector('#seed').value = s;
@@ -106,7 +106,7 @@ const testProgram = async (errors, fails, coverage) => {
     expect(errorsInModel).toBeLessThanOrEqual(errors);
     expect(failsInModel).toBeLessThanOrEqual(fails);
     expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
-};
+}
 
 // Tests for events during a step with a listener in check utility
 describe('Model tests without inputs', () => {
