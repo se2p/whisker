@@ -60,6 +60,14 @@ module.exports = {
         'no-unused-vars': ['error', {args: 'after-used', varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
 
         // As discussed in MR !717, we prefer function declarations over expressions.
-        'func-style': 'off'
+        'func-style': 'off',
+
+        'space-before-function-paren': [
+            'error', {
+                anonymous: 'always',
+                named: 'never',
+                asyncArrow: 'always'
+            }
+        ]
     }
 };
