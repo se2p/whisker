@@ -19,36 +19,36 @@ describe('Servant: Model-Based Testing', () => {
         const expectedCoverage =
 `Coverage:
  # coverage:
-#   combined: 0.96 (52/54)
+#   combined: 0.94 (51/54)
 #   individual:
 #     Stage: 1.00 (6/6)
 #     Bowl: 0.80 (8/10)
 #     Apple: 1.00 (15/15)
-#     Bananas: 1.00 (23/23)`
+#     Bananas: 0.96 (22/23)`
 
         const expectedModelCoverage =
 `Model coverage:
  # modelCoverage:
-#   combined: 0.85 (71/84)
+#   combined: 0.74 (62/84)
 #   individual:
 #     bowl: 0.67 (4/6)
-#     apple: 1.00 (4/4)
+#     apple: 0.25 (1/4)
 #     appleStop: 1.00 (5/5)
 #     bananasR: 0.67 (4/6)
-#     bananasB: 0.67 (4/6)
+#     bananasB: 0.50 (3/6)
 #     init: 1.00 (2/2)
 #     timer: 0.67 (2/3)
 #     timer2: 1.00 (3/3)
-#     points: 0.64 (7/11)
+#     points: 0.27 (3/11)
 #     spawnApple: 1.00 (3/3)
 #     spawnBanan: 1.00 (1/1)
 #     bananFalling: 1.00 (2/2)
 #     threeApples: 1.00 (4/4)
-#     threeBananas: 0.75 (3/4)
+#     threeBananas: 1.00 (4/4)
 #     appleState: 1.00 (3/3)
 #     bananState: 1.00 (3/3)
 #     bananas2: 1.00 (7/7)
-#     bananOnRed: 1.00 (7/7)
+#     bananOnRed: 0.71 (5/7)
 #     bowlMove: 1.00 (2/2)
 #     end: 0.50 (1/2)`;
 

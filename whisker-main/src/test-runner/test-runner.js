@@ -17,6 +17,7 @@ const {ModelTester} = require("../whisker/model/ModelTester");
 const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
 const {serializeError} = require("../util/serialize-error");
 const {modelCsvHeader, modelResultToCsvData} = require("./model-result");
+const {Container} = require("../whisker/utils/Container");
 
 function enableAssertionLevelBlockTracing(assertions, assumptions) {
     assert.onExecutedAssertion = onExecuted.bind(null, assertions);
@@ -72,10 +73,10 @@ class TestRunner extends EventEmitter {
      * @param {ModelTester} modelTester
      * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
      * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
-     * @param {{duration: number, repetitions: number}} modelProps
      * @returns {Promise<[{}, {}, []]>} .
      */
-    async runTests(vm, project, tests, modelTester, props, modelProps) {
+    async runTests(vm, project, tests, modelTester, props) {
+        Container.vm = vm;
         this.aborted = false;
 
         this.activateTracing(vm, props);
@@ -151,13 +152,11 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 if (tests) {
-                    csv += await this._executeTests(vm, tests, props, modelProps,
-                        resultRecords, testStatusResults, testResults,
+                    csv += await this._executeTests(vm, tests, props, resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
                         600000, false, coveragePerTest, timingsPerTest);
                 } else {
-                    csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
-                        testResults, projectMutation);
+                    csv += await this._executeUserModels(vm, modelTester, mutant, props, testResults, projectMutation);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -167,14 +166,14 @@ class TestRunner extends EventEmitter {
         } else if (modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
-            csv += await this._executeUserModels(vm, modelTester, project, props, modelProps, testResults, projectName);
+            csv += await this._executeUserModels(vm, modelTester, project, props, testResults, projectName);
             finalResults[projectName] = testResults;
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
             // test case as long as the test case runs or the model stops.
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-            const res = await this._executeTests(vm, tests, props, modelProps,
+            const res = await this._executeTests(vm, tests, props,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
                 0, true, coveragePerTest, timingsPerTest);
@@ -210,7 +209,7 @@ class TestRunner extends EventEmitter {
      * @param timingsPerTest
      * @return {Promise<string|null>}
      */
-    async _executeTests(vm, tests, props, modelProps,
+    async _executeTests(vm, tests, props,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectName, totalAssertions,
                         defaultTimeoutPerTest, canBeAborted, coveragePerTest, timingsPerTest) {
@@ -231,7 +230,7 @@ class TestRunner extends EventEmitter {
 
             } else {
                 let timeRunTest = Date.now();
-                result = await this._executeTest(vm, test, props, modelProps, defaultTimeoutPerTest);
+                result = await this._executeTest(vm, test, props, defaultTimeoutPerTest);
                 timeRunTest = Date.now() - timeRunTest;
 
                 testStatusResults.push(result.status);
@@ -267,24 +266,23 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project
      * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
      * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
-     * @param {{duration: number, repetitions: number}} modelProps
      * @param {TestResult[]} testResults
      * @param {string} projectName
      * @return {Promise<string>}
      */
-    async _executeUserModels(vm, modelTester, project, props, modelProps,
+    async _executeUserModels(vm, modelTester, project, props,
                              testResults, projectName) {
         let csv = "";
         const modifiedProps = {...props};
         const startSeed = modifiedProps.seed ? Number(modifiedProps.seed) : Date.now();
-        for (let i = 0; i < modelProps.repetitions; i++) {
+        for (let i = 0; i < modelTester.repetitions; i++) {
             modelTester.clearRepetitionCoverage();
             for (const uM of modelTester.userModelIndices()) {
                 modifiedProps.seed = startSeed + modelTester.runIndex;
                 this.util = await this._loadProject(vm, project, modifiedProps, modelTester);
                 this.vmWrapper.nextUserModelIndex = uM;
                 const startTime = Date.now();
-                const result = await this._executeTest(vm, null, modifiedProps, modelProps, 0);
+                const result = await this._executeTest(vm, null, modifiedProps, 0);
                 this.emit(TestRunner.TEST_MODEL, result);
                 testResults.push(result);
                 const duration = (Date.now() - startTime) / 1000;
@@ -582,12 +580,10 @@ class TestRunner extends EventEmitter {
      * @param {Test} test .
      * @param {{extend: object}} props .
      * @param {number} defaultTimeoutPerTest .
-     * @param {duration:number,repetitions:number} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, test, props,
-                       modelProps, defaultTimeoutPerTest = 0) {
+    async _executeTest(vm, test, props, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -660,7 +656,7 @@ class TestRunner extends EventEmitter {
             await this._determineCoverages(test, props);
         } else if (this.vmWrapper.modelTester.someModelLoaded()) {
             let updateResultStatus = true;
-            const duration = this.vmWrapper.modelTester.getDurationForUserModel(modelProps.duration);
+            const duration = this.vmWrapper.modelTester.getDurationForUserModel();
             // this code executes a User Model or executes the Models without inputs depending on the userModelIndex
             try {
                 // wait until either a maximal duration or until the model stops

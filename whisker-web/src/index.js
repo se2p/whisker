@@ -381,7 +381,7 @@ const _generateResults = function (coverage, coverageModels, summary) {
 };
 
 const _printSummaryForTestsAndModels = function (summary, coverage) {
-    const coverageModels = Whisker.modelTester.getTotalCoverage();
+    const coverageModels = Whisker.modelTester.getTotalCoverage(true);
 
     _generateResults(coverage, coverageModels, summary);
 
@@ -490,10 +490,6 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     const setMutators = document.querySelector('#container').mutators;
     const mutantDownload = document.querySelector('#container').downloadMutants;
 
-    const durationValue = Number(document.querySelector('#model-duration').value);
-    const duration = (durationValue <= 0 || Number.isNaN() ? 35 : durationValue) * 1000;
-    const repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
-
     const props = {
         accelerationFactor: $('#acceleration-value').text(),
         seed: document.getElementById('seed').value,
@@ -522,7 +518,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         CoverageGenerator.prepareVM(vm);
 
         [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] =
-            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props, {duration, repetitions});
+            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props);
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
 
@@ -552,7 +548,11 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
-    Whisker.modelTester.clearCoverage();
+    const durationValue = Number(document.querySelector('#model-duration').value);
+    Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
+    Whisker.modelTester.repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
+
+    Whisker.modelTester.clear();
 
     if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
         // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
@@ -610,7 +610,7 @@ const runAllTests = async function () {
             }
 
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
-            summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
+            summary = Container.vmWrapper.getTestResultsSummary();
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
                 await downloadMutants(properties.projectName, mutantPrograms);
@@ -981,7 +981,7 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.modelTester = new ModelTester.ModelTester();
+    Whisker.modelTester = ModelTester.ModelTester.getInstance();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
         Whisker.outputRun.println.bind(Whisker.outputRun));
