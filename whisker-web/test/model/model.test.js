@@ -7,7 +7,7 @@ const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-async function uploadFile (selector, filePath) {
+async function uploadFile(selector, filePath) {
     const exists = fs.existsSync(filePath);
     if (!exists) {
         console.log(`The file ${filePath} does not exist!`);
@@ -16,7 +16,7 @@ async function uploadFile (selector, filePath) {
     await (await page.$(selector)).uploadFile(filePath);
 }
 
-async function loadProject (scratchPath, modelPath, userModelOrTest) {
+async function loadProject(scratchPath, modelPath, userModelOrTest) {
     await uploadFile('#fileselect-project', scratchPath);
     if (modelPath) {
         await uploadFile('#fileselect-models', modelPath);
@@ -35,7 +35,7 @@ async function loadProject (scratchPath, modelPath, userModelOrTest) {
     }, ACCELERATION);
 }
 
-async function readModelErrors () {
+async function readModelErrors() {
     const errorWhenUploadingModelStart = `MODEL: [
       {
         "code": "invalid_type",
@@ -91,7 +91,7 @@ beforeEach(async () => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 });
 
-async function testProgram (errors, fails, coverage) {
+async function testProgram(errors, fails, coverage) {
     const seed = Date.now();
     await page.evaluate(s => {
         document.querySelector('#seed').value = s;

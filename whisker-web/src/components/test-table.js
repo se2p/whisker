@@ -16,7 +16,7 @@ const TIMEOUT_SIGN = '\u231B';
  * </div>
  */
 class TestTable {
-    constructor (div, runSingleTest, testRunner) {
+    constructor(div, runSingleTest, testRunner) {
         this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
@@ -100,7 +100,7 @@ class TestTable {
         });
     }
 
-    getProps () {
+    getProps() {
         const projectName = window.Whisker.projectFileSelect.getName();
         const accelerationFactor = 1;
         const seed = document.getElementById('seed').value;
@@ -109,7 +109,7 @@ class TestTable {
         return {accelerationFactor, seed, projectName, mutators};
     }
 
-    getModelProps () {
+    getModelProps() {
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -122,7 +122,7 @@ class TestTable {
     /**
      * @param {Test[]} tests .
      */
-    onRunStart (tests) {
+    onRunStart(tests) {
         if (this.testRunner.headless) {
             return;
         }
@@ -135,7 +135,7 @@ class TestTable {
     /**
      * @param {TestResult} result .
      */
-    onTestDone (result) {
+    onTestDone(result) {
         if (this.testRunner.headless) {
             return;
         }
@@ -174,7 +174,7 @@ class TestTable {
      *
      * @param {object} data Contains the ID of the BBT test.
      */
-    onBBTTestStarted (data) {
+    onBBTTestStarted(data) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -193,7 +193,7 @@ class TestTable {
      *
      * @param {string} bbtTestID The ID of the BBT test.
      */
-    onBBTTestFinishedNaturally (bbtTestID) {
+    onBBTTestFinishedNaturally(bbtTestID) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -219,7 +219,7 @@ class TestTable {
      *
      * @param {string} bbtTestID the ID of the BBT test
      */
-    onBBTTestTimeout (bbtTestID) {
+    onBBTTestTimeout(bbtTestID) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -250,7 +250,7 @@ class TestTable {
      *
      * @param {object} errorObject information about the error as emitted by the VM
      */
-    onBBTErrorOccurred (errorObject) {
+    onBBTErrorOccurred(errorObject) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -279,7 +279,7 @@ class TestTable {
     /**
      * Register test execution abortion for BBT tests.
      */
-    onProjectRunStop () {
+    onProjectRunStop() {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -310,7 +310,7 @@ class TestTable {
      *
      * @param {object} data contains the test ID
      */
-    onBBTAssertionSuccess (data) {
+    onBBTAssertionSuccess(data) {
         if (!window.Whisker.bbtTests) {
             return;
         }
@@ -333,7 +333,7 @@ class TestTable {
      *
      * @param {object} test the test to be evaluated
      */
-    registerBBTTestResult (test) {
+    registerBBTTestResult(test) {
         if (!window.Whisker.bbtTests || !test) {
             return;
         }
@@ -358,7 +358,7 @@ class TestTable {
     /**
      * @param {Test[]} tests .
      */
-    onRunCancel (tests) {
+    onRunCancel(tests) {
         if (tests) {
             tests.forEach(test => this.resetRunDataAndShow(test));
         }
@@ -368,7 +368,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    showNewRun (test) {
+    showNewRun(test) {
         this.resetRunData(test);
         test.isRunning = true;
         this.updateTest(test);
@@ -378,7 +378,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    resetRunData (test) {
+    resetRunData(test) {
         test.isRunning = false;
         test.testResultClass = null;
         test.translatedTestResult = null;
@@ -390,7 +390,7 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    resetRunDataAndShow (test) {
+    resetRunDataAndShow(test) {
         this.resetRunData(test);
         this.updateTest(test);
     }
@@ -399,13 +399,13 @@ class TestTable {
     /**
      * @param {Test} test .
      */
-    updateTest (test) {
+    updateTest(test) {
         const tests = this.dataTable.data();
         tests[test.index - 1] = test;
         this.setTests(tests);
     }
 
-    updateAfterAbort () {
+    updateAfterAbort() {
         const tests = this.dataTable.data();
         for (const i of Object.keys(tests)) {
             if (tests[i].isRunning) {
@@ -425,7 +425,7 @@ class TestTable {
      *                          - error: if the test run resulted in an error, it is stored here
      *                          - log: if the test run resulted in log messages, they are stored here
      */
-    setTests (tests) {
+    setTests(tests) {
         if (this.dataTable) {
             this.dataTable.destroy();
         }
@@ -511,11 +511,11 @@ class TestTable {
         });
     }
 
-    show () {
+    show() {
         $(this.div).show();
     }
 
-    hide () {
+    hide() {
         $(this.div).hide();
     }
 
@@ -523,7 +523,7 @@ class TestTable {
      * @param {Test[]} tests .
      * @return {Test[]} .
      */
-    static prepareTests (tests) {
+    static prepareTests(tests) {
         let idx = 1;
         return tests.map(test => {
             test.index = idx++;
@@ -535,7 +535,7 @@ class TestTable {
      * @param {Test} test .
      * @return {string} .
      */
-    static prepareDescription (test) {
+    static prepareDescription(test) {
         const description = index.i18n.t('description');
         let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
         const name = 'name';
@@ -546,7 +546,7 @@ class TestTable {
         const excludedProperties = ['generatedMessage', 'stack', msg, name, expected, operator, actual];
         const translatedProperties = [msg, name, expected, operator, actual];
 
-        function addRowIfPropertyPresent (prop) {
+        function addRowIfPropertyPresent(prop) {
             if (Object.prototype.hasOwnProperty.call(test.error, prop)) {
                 if (translatedProperties.includes(prop)) {
                     const translatedProp = index.i18n.t(`error-${prop}`);
@@ -597,7 +597,7 @@ class TestTable {
         return result;
     }
 
-    hideTestDetails () {
+    hideTestDetails() {
         if (this.dataTable) {
             // The "array-callback-return" eslint rule creates a false positive: We are not using Array.prototype.every,
             // but rather DataTables.CellMethods.prototype.every.

@@ -8,7 +8,7 @@ const URL = 'dist/index.html';
 const timeout = 50000;
 const ACCELERATION = Infinity;
 
-async function loadProject (scratchPath) {
+async function loadProject(scratchPath) {
     const projectSelection = await page.$('#fileselect-project');
     await projectSelection.uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
@@ -20,7 +20,7 @@ async function loadProject (scratchPath) {
     }, ACCELERATION);
 }
 
-async function getUncoveredBlocks () {
+async function getUncoveredBlocks() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -36,7 +36,7 @@ async function getUncoveredBlocks () {
     }
 }
 
-async function getCoverage () {
+async function getCoverage() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();

@@ -8,7 +8,7 @@ const URL = 'dist/index.html';
 const timeout = 30000;
 const ACCELERATION = Infinity;
 
-async function loadProject (scratchPath) {
+async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
@@ -22,7 +22,7 @@ async function loadProject (scratchPath) {
 /**
  * Reads the distances of fitness, approach level, and branch distance from #output-log
  */
-async function readFitnessLog () {
+async function readFitnessLog() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const outputContent = await output.getProperty('innerHTML');
@@ -39,7 +39,7 @@ async function readFitnessLog () {
 /**
  * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
  */
-async function checkFitnessValuesForExecutionHaltingBlocks () {
+async function checkFitnessValuesForExecutionHaltingBlocks() {
     const runSearch = await page.$('#run-search');
     await runSearch.evaluate(t => t.click());
     let log = await readFitnessLog();
