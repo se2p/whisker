@@ -139,32 +139,42 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         return this.currentState.isStopAllNode;
     }
 
-    toJSON(minimized = false): J {
-        let nodes: ProgramModelNode[] = Object.values(this.nodes);
+    toJSON(): J {
+        return {
+            usage: this.usage,
+            id: this.id,
+            startNodeId: this.startNodeId,
+            stopAllNodeIds: this.stopAllNodeIds.slice(),
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+            initialStorage: {...this.initialStorage}
+        } as J;
+    }
+
+    toMinimizedJSON() {
+        const filteredEdges = Object.values(this.edges).filter(e => this.coverageTotal.has(e.id));
+        if (filteredEdges.length === 0) {
+            logger.log("For model", this.id, "no edge was used when starting minimization");
+            return this.toJSON();
+        }
         let edges: ProgramModelEdge[] = Object.values(this.edges);
+        let nodes: ProgramModelNode[] = Object.values(this.nodes);
         let stopAllNodeIds: string[] = this.stopAllNodeIds;
-        if (minimized === true) { // JSON.stringify uses 0 as the value for whatever reason instead of false
-            const filteredEdges = Object.values(this.edges).filter(e => this.coverageTotal.has(e.id));
-            if (filteredEdges.length !== 0) {
-                const edgeCount = edges.length;
-                const nodeCount = nodes.length;
-                const stopNodeCount = stopAllNodeIds.length;
-                edges = filteredEdges;
-                const nodeSet = new Set(edges.map(e => [e.from, e.to]).flat());
-                nodes = nodes.filter(n => nodeSet.has(n.id));
-                stopAllNodeIds = stopAllNodeIds.filter(id => nodeSet.has(id));
-                const edgeDif = edgeCount - edges.length;
-                const nodeDif = nodeCount - nodes.length;
-                const stopNodeDif = stopNodeCount - stopAllNodeIds.length;
-                if (edgeDif + nodeDif + stopNodeDif === 0) {
-                    console.log("The model", this.id, "is already minimized");
-                } else {
-                    console.log("For model", this.id, "removed", edgeDif, "edges,",
-                        nodeDif, "nodes of which", stopNodeDif, "stop all nodes,");
-                }
-            } else {
-                console.log("For model", this.id, "no edge was used when starting minimization");
-            }
+        const edgeCount = edges.length;
+        const nodeCount = nodes.length;
+        const stopNodeCount = stopAllNodeIds.length;
+        edges = filteredEdges;
+        const nodeSet = new Set(edges.map(e => [e.from, e.to]).flat());
+        nodes = nodes.filter(n => nodeSet.has(n.id));
+        stopAllNodeIds = stopAllNodeIds.filter(id => nodeSet.has(id));
+        const edgeDif = edgeCount - edges.length;
+        const nodeDif = nodeCount - nodes.length;
+        const stopNodeDif = stopNodeCount - stopAllNodeIds.length;
+        if (edgeDif + nodeDif + stopNodeDif === 0) {
+            logger.log("The model", this.id, "is already minimized");
+        } else {
+            logger.log("For model", this.id, "removed", edgeDif, "edges,",
+                nodeDif, "nodes of which", stopNodeDif, "stop all nodes,");
         }
         return {
             usage: this.usage,
@@ -173,7 +183,7 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
             stopAllNodeIds: stopAllNodeIds,
             nodes: nodes.map((node) => node.toJSON()),
             edges: edges.map((edge) => edge.toJSON()),
-            initialStorage: this.initialStorage
+            initialStorage: {...this.initialStorage}
         } as J;
     }
 
@@ -222,8 +232,8 @@ export class ProgramModel extends AbstractProgramModel<ProgramModelJSON> {
         return "program";
     }
 
-    override toJSON(minimized = false): ProgramModelJSON {
-        const json = super.toJSON(minimized);
+    override toJSON(): ProgramModelJSON {
+        const json = super.toJSON();
         if (this.type != "GreenFlag") {
             json.type = this.type;
             json.param = this.param;

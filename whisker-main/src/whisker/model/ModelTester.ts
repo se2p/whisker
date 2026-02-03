@@ -221,8 +221,8 @@ export class ModelTester extends EventEmitter {
 
     minimizeProgramModels(): void {
         const minimizedProgramModels = [
-            ...this._programModels.map((m) => m.toJSON(true)),
-            ...this._onTestEndModels.map((m) => m.toJSON(true))
+            ...this._programModels.map((m) => m.toMinimizedJSON()),
+            ...this._onTestEndModels.map((m) => m.toMinimizedJSON())
         ];
         const modelsString = JSON.stringify(minimizedProgramModels);
         this._load(modelsString, true, true, false);
