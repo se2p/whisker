@@ -430,51 +430,62 @@ class ModelEditor {
             }
         }
 
-        this.curveEdgesBetweenTwoNodes(nodes, edges);
+        this.routeParallelEdgesAsSymmetricArcs(edges);
+
         return edges;
     }
 
     /**
-     * Arranges the edges between two node pairs. If there is at most one edge between to nodes nothing happens.
-     * Otherwise the edges are curved such that half the edges curve in one direction and the other half curves
-     * in the other direction. All edges from node A to node B will be on side and all nodes from B to A on the other
-     * side if there are equally many. Otherwise there is an overflow of edges in the "wrong" direction to the side
-     * with fewer edges.
+     * Tries to route parallel edges as symmetric arcs. We draw an imaginary straight line between the source and target
+     * node. Parallel edges between these nodes are then rendered as evenly spaced arcs, such that half of the arcs
+     * curve above the straight line, and the other half below that line. If two nodes are connected by just one edge,
+     * vis' default routing is used. See Whisker MR !719 for an illustration.
+     *
+     * @param edges The model's edges
      */
-    curveEdgesBetweenTwoNodes(nodes, edges) {
-        const nodeOrder = Object.values(nodes).map(n => n.id);
-        nodeOrder.sort();
-        const edgesBetweenTwoNodes = {};
+    routeParallelEdgesAsSymmetricArcs(edges) {
+
+        /**
+         * Parallel edges grouped by the nodes they connect. The keys represent node ids. The edge direction is ignored.
+         * @type {Record<string, Record<string, Object[]>>}
+         */
+        const parallelEdgesGroupedByNodes = {};
+
         for (const edge of edges) {
-            const indexFrom = nodeOrder.indexOf(edge.from);
-            const indexTo = nodeOrder.indexOf(edge.to);
-            const reversed = indexFrom < indexTo;
-            const key = reversed ? `${edge.from}:${edge.to}` : `${edge.to}:${edge.from}`;
-            const value = edgesBetweenTwoNodes[key];
-            if (value) {
-                (reversed ? value.reverse : value.normal).push(edge);
-                value.count += 1;
-            } else if (reversed) {
-                edgesBetweenTwoNodes[key] = {count: 1, normal: [], reverse: [edge]};
-            } else {
-                edgesBetweenTwoNodes[key] = {count: 1, normal: [edge], reverse: []};
+            let {from, to} = edge;
+
+            // To establish groups of parallel edges, it only matters that the edges connect the same nodes. To this,
+            // the edge direction must be ignored, which is done by imposing a total order on the nodes via their ids.
+            if (from > to) {
+                ([from, to] = [to, from]);
             }
+
+            ((parallelEdgesGroupedByNodes[from] ??= {})[to] ??= []).push(edge);
         }
-        for (const entry of Object.values(edgesBetweenTwoNodes).filter(e => e.count > 1)) {
-            const edgesInBothDirections = entry.normal.concat(entry.reverse);
-            const halfLength = Math.floor(edgesInBothDirections.length / 2);
-            const roundnessGap = Math.min(0.2, 1.0 / (halfLength + 1));
-            for (let i = 0; i < halfLength; i++) {
-                edgesInBothDirections[i].smooth = {
-                    type: i < entry.normal.length ? 'curvedCCW' : 'curvedCW',
-                    roundness: (i + 1) * roundnessGap
-                };
-            }
-            for (let i = halfLength; i < edgesInBothDirections.length; i++) {
-                edgesInBothDirections[i].smooth = {
-                    type: i < entry.normal.length ? 'curvedCW' : 'curvedCCW',
-                    roundness: (i - halfLength + 1) * roundnessGap
-                };
+
+        for (const from of Object.keys(parallelEdgesGroupedByNodes)) {
+            for (const to of Object.keys(parallelEdgesGroupedByNodes[from])) {
+                const parallelEdges = parallelEdgesGroupedByNodes[from][to];
+
+                if (parallelEdges.length < 2) { // No parallel edges -> no special routing necessary
+                    continue;
+                }
+
+                const mid = Math.ceil(parallelEdges.length / 2); // Symmetry index
+                const gap = Math.min(0.2, 1.0 / (mid + 1)); // The gap by which the edges are evenly spaced
+
+                for (const [i, edge] of parallelEdges.entries()) {
+                    const reversed = edge.from !== from; // Recover the direction of the edge
+
+                    edge.smooth = {
+                        // The direction of an edge (A -> B vs. B <- A) together with its location above or below the
+                        // imaginary straight line between A and B determine whether it should be curved CW or CCW.
+                        type: (reversed ^ (i < mid)) ? 'curvedCCW' : 'curvedCW',
+
+                        // Causes roundness to decrease the closer we are to the imaginary straight line
+                        roundness: (1 + (i % mid)) * gap
+                    };
+                }
             }
         }
     }
