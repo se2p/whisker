@@ -19,9 +19,7 @@
     "delModel": "X",
     "t-delModel": "Delete model",
     "deletePromptMessage": "Are you sure you want to delete the current model?",
-    "minimize-models": "Minimize models",
     "t-generate-models": "generate program models for the uploaded program",
-    "t-minimize-models": "Minimize the program models by removing unused edges",
     "confirmGeneratingModels": "There are currently models in the model editor. If you continue they will be lost.",
     "modelGenErrorNoProject": "No scratch project provided! Upload a scratch project before clicking this button.",
     "okButton": "Ok",
@@ -176,5 +174,12 @@
     "pixelate": "pixelate",
     "mosaic": "mosaic",
     "brightness": "brightness",
-    "ghost": "ghost"
+    "ghost": "ghost",
+    "minimize-models": "Minimize models",
+    "t-minimize-models": "Minimize the program models by removing unused edges",
+    "minimizationHeader": "The following nodes and edges will be removed without any backup:",
+    "alreadyMinimized": "All models are already minimized",
+    "edges": "Edges",
+    "nodes": "Nodes",
+    "stopAllNodes": "Stop all nodes"
 }

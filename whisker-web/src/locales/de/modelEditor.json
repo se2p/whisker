@@ -20,9 +20,7 @@
     "t-delModel": "Modell löschen",
     "deletePromptMessage": "Dieses Modell wirklich löschen?",
     "generate-models": "Modelle generieren",
-    "minimize-models": "Modelle minimieren",
     "t-generate-models": "Modelle für das hochgeladene Program generieren",
-    "t-minimize-models": "Modelle minimimeren, indem unbenützte Kanten entfernt werden",
     "confirmGeneratingModels": "Es sind aktuell Modelle im Model Editor gespeichert. Diese Funktion überschreibt die geladenen Modelle.",
     "modelGenErrorNoProject": "Kein Scratch Projekt vorhanden. Um diese Funtion zu nutzen, muss zuerst ein Scratch Projekt hochgeladen werden",
     "okButton": "Ok",
@@ -176,5 +174,12 @@
     "pixelate": "Pixel",
     "mosaic": "Mosaic",
     "brightness": "Helligkeit",
-    "ghost": "Durchsichtigkeit"
+    "ghost": "Durchsichtigkeit",
+    "minimize-models": "Modelle minimieren",
+    "t-minimize-models": "Modelle minimimeren, indem unbenützte Kanten entfernt werden",
+    "minimizationHeader": "Die folgenden Kanten und Knoten werden ohne Backup dauerhaft entfernt",
+    "alreadyMinimized": "Es sind bereits alle Modelle minimiert",
+    "edges": "Kanten",
+    "nodes": "Knoten",
+    "stopAllNodes": "Stoppe alle Knoten"
 }

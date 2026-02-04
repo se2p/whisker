@@ -19,6 +19,21 @@ export interface ModelCoverageResult extends CoverageResult {
     totalCovered: number;
 }
 
+export type MinimizationResult = MinimizationResultUnchanged | MinimizationResultUpdated;
+
+interface MinimizationResultUnchanged {
+    status: false
+    minimized: OracleModelJSON;
+}
+
+interface MinimizationResultUpdated {
+    status: true
+    minimized: OracleModelJSON;
+    removedEdges: number,
+    removedNodes: number,
+    removedStopAllNodes: number,
+}
+
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
  *
@@ -151,11 +166,10 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         } as J;
     }
 
-    toMinimizedJSON() {
+    toMinimizedJSON(): MinimizationResult {
         const filteredEdges = Object.values(this.edges).filter(e => this.coverageTotal.has(e.id));
         if (filteredEdges.length === 0) {
-            logger.log("For model", this.id, "no edge was used when starting minimization");
-            return this.toJSON();
+            return {status: false, minimized: this.toJSON()};
         }
         let edges: ProgramModelEdge[] = Object.values(this.edges);
         let nodes: ProgramModelNode[] = Object.values(this.nodes);
@@ -167,24 +181,24 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
         const nodeSet = new Set(edges.map(e => [e.from, e.to]).flat());
         nodes = nodes.filter(n => nodeSet.has(n.id));
         stopAllNodeIds = stopAllNodeIds.filter(id => nodeSet.has(id));
-        const edgeDif = edgeCount - edges.length;
-        const nodeDif = nodeCount - nodes.length;
-        const stopNodeDif = stopNodeCount - stopAllNodeIds.length;
-        if (edgeDif + nodeDif + stopNodeDif === 0) {
-            logger.log("The model", this.id, "is already minimized");
-        } else {
-            logger.log("For model", this.id, "removed", edgeDif, "edges,",
-                nodeDif, "nodes of which", stopNodeDif, "stop all nodes,");
-        }
+        const removedEdges = edgeCount - edges.length;
+        const removedNodes = nodeCount - nodes.length;
+        const removedStopAllNodes = stopNodeCount - stopAllNodeIds.length;
         return {
-            usage: this.usage,
-            id: this.id,
-            startNodeId: this.startNodeId,
-            stopAllNodeIds: stopAllNodeIds,
-            nodes: nodes.map((node) => node.toJSON()),
-            edges: edges.map((edge) => edge.toJSON()),
-            initialStorage: {...this.initialStorage}
-        } as J;
+            status: true,
+            minimized: {
+                usage: this.usage,
+                id: this.id,
+                startNodeId: this.startNodeId,
+                stopAllNodeIds: stopAllNodeIds,
+                nodes: nodes.map((node) => node.toJSON()),
+                edges: edges.map((edge) => edge.toJSON()),
+                initialStorage: {...this.initialStorage}
+            } as J,
+            removedEdges,
+            removedNodes,
+            removedStopAllNodes
+        };
     }
 
     clearRepetitionCoverage() {

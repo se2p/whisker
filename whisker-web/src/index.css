@@ -1273,10 +1273,10 @@ input:checked + .slider:before {
     width: 30px;
 }
 .popup {
-    width: 33.33%;
+    width: 40%;
     padding: 15px;
     left: 0;
-    margin-left: 33.333333%;
+    margin-left: 30%;
     border: 1px solid #ccc;
     border-radius: 10px;
     background: white;
