@@ -1,7 +1,9 @@
 /* eslint-disable valid-jsdoc */
 
-const {ModelTester, attributeAndEffectNames, keys,
-    convertArgs, convertInputArgs, checkToString} = require('whisker-main');
+const {
+    ModelTester, attributeAndEffectNames, keys,
+    convertArgs, convertInputArgs, checkToString
+} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
@@ -154,7 +156,7 @@ class ModelEditor {
 
     onLoadEvent() {
         this.models = this.modelTester.getAllModels();
-        if (this.models.length === 0){
+        if (this.models.length === 0) {
             this.insertNewGraph();
         }
         this.createAllTabs();
@@ -439,7 +441,7 @@ class ModelEditor {
      * side if there are equally many. Otherwise there is an overflow of edges in the "wrong" direction to the side
      * with fewer edges.
      */
-    curveEdgesBetweenTwoNodes (nodes, edges) {
+    curveEdgesBetweenTwoNodes(nodes, edges) {
         const nodeOrder = Object.values(nodes).map(n => n.id);
         nodeOrder.sort();
         const edgesBetweenTwoNodes = {};
@@ -715,7 +717,7 @@ class ModelEditor {
     addEffectAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
-        if (this.currentModel.usage === 'user'){
+        if (this.currentModel.usage === 'user') {
             $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newUserInput');
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newUserInput'));
         } else {
@@ -1097,7 +1099,7 @@ class ModelEditor {
 
         const isAUserModel = this.currentModel.usage === 'user';
         const effectInputLabel = $(ModelEditor.EFFECT_OR_INPUT_LABEL);
-        if (isAUserModel){
+        if (isAUserModel) {
             effectInputLabel.attr('data-original-title', i18n.t('modelEditor:t-userInputs'));
             effectInputLabel.text(i18n.t('modelEditor:userInputs'));
         } else {
