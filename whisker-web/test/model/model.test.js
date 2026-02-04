@@ -1,19 +1,19 @@
 const fileUrl = require('file-url');
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = "dist/index.html";
+const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
 
-async function uploadFile(selector, path) {
-    const exists = fs.existsSync(path);
+async function uploadFile(selector, filePath) {
+    const exists = fs.existsSync(filePath);
     if (!exists) {
-        console.log(`The file ${path} does not exist!`);
+        console.log(`The file ${filePath} does not exist!`);
         expect(exists).toBe(true);
     }
-    await (await page.$(selector)).uploadFile(path);
+    await (await page.$(selector)).uploadFile(filePath);
 }
 
 async function loadProject(scratchPath, modelPath, userModelOrTest) {
@@ -22,13 +22,17 @@ async function loadProject(scratchPath, modelPath, userModelOrTest) {
         await uploadFile('#fileselect-models', modelPath);
     }
     if (userModelOrTest === null) {
-        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
+        await page.evaluate(factor => {
+            document.querySelector('#model-duration').value = factor;
+        }, 35);
     } else {
         await uploadFile('#fileselect-tests', userModelOrTest);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(factor => {
+        document.querySelector('#acceleration-value').innerText = factor;
+    }, ACCELERATION);
 }
 
 async function readModelErrors() {
@@ -44,28 +48,28 @@ async function readModelErrors() {
     while (true) {
         const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         if (log.includes('summary')) {
-            const logArray = log.split("\n");
+            const logArray = log.split('\n');
 
             // Delete all lines from the log up until the summary
             for (let i = 0; i < logArray.length; i++) {
-                if (logArray[i].includes("summary")) {
+                if (logArray[i].includes('summary')) {
                     break;
                 }
 
-                logArray[i] = "";
+                logArray[i] = '';
             }
 
-            expect(log.includes("modelErrors")).toBe(true);
-            const errors = logArray.find(x => x.includes("modelErrors")).split("(")[1].split(")")[0];
-            const fails = logArray.find(x => x.includes("modelFails")).split("(")[1].split(")")[0];
-            const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
+            expect(log.includes('modelErrors')).toBe(true);
+            const errors = logArray.find(x => x.includes('modelErrors')).split('(')[1].split(')')[0];
+            const fails = logArray.find(x => x.includes('modelFails')).split('(')[1].split(')')[0];
+            const coverageIndex = logArray.findIndex(x => x.includes('modelCoverage'));
             expect(coverageIndex).not.toBe(-1);
-            const coverage = logArray[coverageIndex + 1].split(": ")[1].split(" ")[0];
+            const coverage = logArray[coverageIndex + 1].split(': ')[1].split(' ')[0];
             return {
-                errorsInModel: parseInt(errors),
-                failsInModel: parseInt(fails),
+                errorsInModel: parseInt(errors, 10),
+                failsInModel: parseInt(fails, 10),
                 modelCoverage: parseFloat(coverage),
-                loggedOutput: logArray.filter(s => s !== "").join("\n")
+                loggedOutput: logArray.filter(s => s !== '').join('\n')
             };
         } else if (log.includes('"ZodError"') || log.indexOf(errorWhenUploadingModelStart) !== -1) {
             throw new Error(`Could not parse the model. Message:\n${log}`);
@@ -77,9 +81,9 @@ beforeEach(async () => {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
     // Since this is a purely visual feature and does not harm the test execution in any way,
     // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
+    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
     if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath)
+        fs.unlinkSync(prettifyPath);
     }
 
     await jestPuppeteer.resetBrowser();
@@ -89,12 +93,14 @@ beforeEach(async () => {
 
 async function testProgram(errors, fails, coverage) {
     const seed = Date.now();
-    await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
+    await page.evaluate(s => {
+        document.querySelector('#seed').value = s;
+    }, seed);
     await (await page.$('#run-all-tests')).click();
 
     const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
     if (errorsInModel + failsInModel > errors + fails || modelCoverage < coverage) {
-        console.log("Used seed:", seed);
+        console.log('Used seed:', seed);
         console.log(loggedOutput);
     }
     expect(errorsInModel).toBeLessThanOrEqual(errors);
@@ -115,8 +121,8 @@ describe('Model tests without inputs', () => {
         ['output event listener', 'OutputEvent', 'OutputEvent'],
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange'],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents'],
-        ['stop models', 'StopOtherScripts', 'StopOtherScripts'],
-    ]
+        ['stop models', 'StopOtherScripts', 'StopOtherScripts']
+    ];
 
     it.each(table)('%s', async (name, projectFileName, modelFileName) => {
         const programPath = `test/model/scratch-programs/${projectFileName}.sb3`;
@@ -133,9 +139,9 @@ describe('Model tests with inputs', () => {
     const table = [
         ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModels.json'],
         ['fruitcatcher game test', 'Fruitcatcher', 0.85, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
-        ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.69, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
-        ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
-    ]
+        ['fruitcatcher with dynamic inputs', 'Fruitcatcher', 0.69, 'test/integration/networkSuites/FruitCatchingMultiLabel.json'],
+        ['fruitcatcher with static inputs', 'Fruitcatcher', 0.97, 'test/model/FruitCatching-manual_small.js']
+    ];
 
     it.each(table)('%s', async (name, projectName, coverage, testOrModel) => {
         const programPath = `test/model/scratch-programs/${projectName}.sb3`;

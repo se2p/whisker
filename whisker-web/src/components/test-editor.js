@@ -9,7 +9,7 @@ const {saveAs} = require('file-saver');
  * </div>
  */
 class TestEditor {
-    constructor (div, loadTests) {
+    constructor(div, loadTests) {
         this.div = div;
 
         this.agentTests = null;
@@ -35,23 +35,23 @@ class TestEditor {
             });
     }
 
-    getValue () {
+    getValue() {
         return this.codemirror.getValue();
     }
 
-    setValue (value) {
+    setValue(value) {
         this.codemirror.setValue(value);
     }
 
-    setAgentTests (agentTests) {
+    setAgentTests(agentTests) {
         this.agentTests = agentTests;
     }
 
-    setProjectName (projectName) {
+    setProjectName(projectName) {
         this.projectName = projectName;
     }
 
-    setDefaultValue () {
+    setDefaultValue() {
         this.setValue('' +
 `const test = async function (t) {
     /* your code here */
@@ -71,16 +71,16 @@ module.exports = [
         );
     }
 
-    show () {
+    show() {
         $(this.div).show();
         this.codemirror.refresh();
     }
 
-    hide () {
+    hide() {
         $(this.div).hide();
     }
 
-    async save () {
+    async save() {
         if (this.agentTests !== null) {
             console.log('Downloading RL models as zip file...');
             await this.downloadModelsAsZip(this.agentTests, this.projectName);
@@ -97,7 +97,7 @@ module.exports = [
         }
     }
 
-    async downloadModelsAsZip (agentTests, projectName) {
+    async downloadModelsAsZip(agentTests, projectName) {
         const zip = new JSZip();
 
         try {

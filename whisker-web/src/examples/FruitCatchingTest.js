@@ -1130,7 +1130,7 @@ module.exports = [
         categories: ['fruit falling', 'banana']
     },
     { // 09
-       test: testBananaFallingDetails,
+        test: testBananaFallingDetails,
         name: 'Banana Falling Details Test',
         description: 'Tests details of the banana falling down. The banana must fall in steps of -7 and must not move up or move horizontally.',
         categories: ['fruit falling', 'banana', 'constraints']

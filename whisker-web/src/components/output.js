@@ -8,7 +8,7 @@ const {$, FileSaver} = require('../web-libs');
  * </div>
  */
 class Output {
-    constructor (div) {
+    constructor(div) {
         this.div = div;
         this.output = $(div).find('.output-content');
 
@@ -27,41 +27,41 @@ class Output {
         this.setText('');
     }
 
-    getText () {
+    getText() {
         return this.text;
     }
 
-    setText (text) {
+    setText(text) {
         this.text = text;
         $(this.output).text(text);
     }
 
-    print (text) {
+    print(text) {
         text = this.text + text;
         this.setText(text);
     }
 
-    println (text = '') {
+    println(text = '') {
         this.print(`${text}\n`);
     }
 
-    clear () {
+    clear() {
         this.setText('');
     }
 
-    show () {
+    show() {
         $(this.div).show();
     }
 
-    hide () {
+    hide() {
         $(this.div).hide();
     }
 
-    setTitle (title){
+    setTitle(title){
         this.title = title;
     }
 
-    save () {
+    save() {
         if (this.getText().length > 1) {
             if (this.getText().includes('Networks') && this.getText().includes('Nodes')) {
                 const blob = new Blob([this.getText()], {type: 'application/json;charset=utf-8'});

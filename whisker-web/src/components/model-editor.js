@@ -95,7 +95,7 @@ class ModelEditor {
     /**
      * @param {ModelTester} modelTester
      */
-    constructor (modelTester) {
+    constructor(modelTester) {
         this.modelTester = modelTester;
         this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.onLoadEvent.bind(this));
 
@@ -152,7 +152,7 @@ class ModelEditor {
         this.checkIndex = -1;
     }
 
-    onLoadEvent () {
+    onLoadEvent() {
         this.models = this.modelTester.getAllModels();
         if (this.models.length === 0){
             this.insertNewGraph();
@@ -162,7 +162,7 @@ class ModelEditor {
         this.showGeneralSettings(0);
     }
 
-    removeCheck (check) {
+    removeCheck(check) {
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
         for (let i = 0; i < edge.conditions.length; i++) {
             if (edge.conditions[i] === check) {
@@ -180,7 +180,7 @@ class ModelEditor {
 
     // ###################### Graph manipulation ###########################
 
-    addNode (data, callback) {
+    addNode(data, callback) {
         if (data.label === 'new') {
             data.label = i18n.t('modelEditor:newNode');
         }
@@ -189,7 +189,7 @@ class ModelEditor {
         callback(data);
     }
 
-    addEdge (data, callback) {
+    addEdge(data, callback) {
         if (this.currentModel.stopAllNodeIds.includes(data.from)) {
             this.showPopup(i18n.t('modelEditor:errEdgeStopAllNode'));
             return;
@@ -212,7 +212,7 @@ class ModelEditor {
         this.showAddButtons();
     }
 
-    insertNewGraph () {
+    insertNewGraph() {
         const id = i18n.t('modelEditor:tabContent') + (this.models.length + 1);
         this.models.push({
             id: id,
@@ -224,11 +224,11 @@ class ModelEditor {
         });
     }
 
-    get currentModel () {
+    get currentModel() {
         return this.models[this.currentTab];
     }
 
-    deleteCurrentModel () {
+    deleteCurrentModel() {
         this.models.splice(this.currentTab, 1);
     }
 
@@ -236,7 +236,7 @@ class ModelEditor {
      * Delete the selected nodes and edges from the graph, only if the start node is not contained.
      * @return {boolean} Whether they were deleted.
      */
-    deleteSelection () {
+    deleteSelection() {
         const selection = this.network.getSelection();
 
         if (selection.nodes.includes(this.currentModel.startNodeId)) {
@@ -251,16 +251,16 @@ class ModelEditor {
         return true;
     }
 
-    getNotRemovedOnesByString (original, toRemove) {
+    getNotRemovedOnesByString(original, toRemove) {
         return original.filter(item => !toRemove.includes(item));
     }
 
-    getNotRemovedOnesByID (original, toRemove) {
+    getNotRemovedOnesByID(original, toRemove) {
         return original.filter(item => !toRemove.includes(item.id));
     }
 
     /** For the currently selected edge by the network save the check in the check div. */
-    saveCheck () {
+    saveCheck() {
         const name = $(ModelEditor.CHECK_CHOOSER).val();
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         let args = [];
@@ -311,25 +311,25 @@ class ModelEditor {
         return {status: true, message: ''};
     }
 
-    getEdgeById (edgeID) {
+    getEdgeById(edgeID) {
         return this.currentModel.edges.find(e => e.id === edgeID);
     }
 
     /** Delete all effects of edges of the current model if there are any */
-    deleteEffects () {
+    deleteEffects() {
         for (const edge of this.currentModel.edges) {
             edge.effects = [];
         }
     }
 
     /** Check whether the current model has effects on any edges */
-    hasEffects () {
+    hasEffects() {
         return this.currentModel.edges.some(e => e.effects.length > 0);
     }
 
     // ############################# Plotting and GUI setup ############################
 
-    loadModel (tabNbr = 0) {
+    loadModel(tabNbr = 0) {
         if (tabNbr < 0 || tabNbr >= this.models.length) {
             throw Error('Tab number negative or higher than number of models.');
         }
@@ -350,7 +350,7 @@ class ModelEditor {
     /**
      * Show the general settings for a model, id, usage etc.
      */
-    showGeneralSettings (tabNbr) {
+    showGeneralSettings(tabNbr) {
         $(ModelEditor.GENERAL_SETTINGS_DIV).removeClass('hide');
         $(ModelEditor.CONFIG_NODE).addClass('hide');
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
@@ -372,7 +372,7 @@ class ModelEditor {
     /**
      * Style the nodes of the graph.
      */
-    setupNodes (json) {
+    setupNodes(json) {
         const nodes = cloneDeep(json.nodes);
         for (const node in nodes) {
             if (nodes[node].id === json.startNodeId) {
@@ -390,7 +390,7 @@ class ModelEditor {
     /**
      * Style the edges and move loops to different angles.. Could be solves better if the
      */
-    setupEdges (json, nodes) {
+    setupEdges(json, nodes) {
         const edges = cloneDeep(json);
         const loops = [];
         const priorities = [];
@@ -477,14 +477,14 @@ class ModelEditor {
         }
     }
 
-    makeLabel (edge, priority) {
+    makeLabel(edge, priority) {
         edge.label = `${priority}: ${edge.label} (${edge.conditions.length}|${edge.effects.length})`;
     }
 
     /**
      * Set up gui buttons such as save, apply, add tab etc.
      */
-    setUpGUI () {
+    setUpGUI() {
         // apply and download below model editor
         $(ModelEditor.APPLY_BUTTON).on('click', this.applyButton.bind(this));
         $(ModelEditor.SAVE_PROGRAM_MODEL_BUTTON).on('click', this.downloadProgramModels.bind(this));
@@ -558,7 +558,7 @@ class ModelEditor {
     /**
      * Buttons and input fields of general settings
      */
-    setupGeneralSettings () {
+    setupGeneralSettings() {
         $(ModelEditor.MODEL_ID_FIELD).on('keyup change', this.onModelIDChange.bind(this));
         $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => this.checkForTypeChange('program'));
         $(ModelEditor.USER_TYPE_CHOICE).on('click', () => this.checkForTypeChange('user'));
@@ -566,7 +566,7 @@ class ModelEditor {
         $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
     }
 
-    checkForTypeChange (newType) {
+    checkForTypeChange(newType) {
         // if there are no effects of a program model than save it
         if (!this.hasEffects()) {
             this.currentModel.usage = newType;
@@ -580,7 +580,7 @@ class ModelEditor {
         }, () => this.changeModelType(this.currentModel.usage));
     }
 
-    changeModelType (usage = 'program') {
+    changeModelType(usage = 'program') {
         $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', usage === 'program');
         $(ModelEditor.USER_TYPE_CHOICE).prop('checked', usage === 'user');
         $(ModelEditor.END_TYPE_CHOICE).prop('checked', usage === 'end');
@@ -589,7 +589,7 @@ class ModelEditor {
     /**
      * Buttons and input fields on node select
      */
-    setupNodeConfiguration () {
+    setupNodeConfiguration() {
         $(ModelEditor.CONFIG_NODE_LABEL).on('keyup change', () => {
             const text = $(ModelEditor.CONFIG_NODE_LABEL).val();
 
@@ -625,7 +625,7 @@ class ModelEditor {
     /**
      * Buttons and input fields on edge select
      */
-    setupEdgeConfiguration () {
+    setupEdgeConfiguration() {
         $(ModelEditor.CONFIG_EDGE_LABEL).on('keyup change', () => {
             const text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
 
@@ -690,7 +690,7 @@ class ModelEditor {
         });
     }
 
-    addConditionAction () {
+    addConditionAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newCondition'));
@@ -712,7 +712,7 @@ class ModelEditor {
         this.addExplanation('AttrChange');
     }
 
-    addEffectAction () {
+    addEffectAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         if (this.currentModel.usage === 'user'){
@@ -750,19 +750,19 @@ class ModelEditor {
         this.checkIndex = -1;
     }
 
-    hideAddButtons () {
+    hideAddButtons() {
         $(ModelEditor.ADD_BUTTONS_DIV).addClass('hide');
         $(ModelEditor.CANCEL_ADD_DIV).removeClass('hide');
         $(ModelEditor.DELETE_DIV).addClass('hide');
     }
 
-    showAddButtons () {
+    showAddButtons() {
         $(ModelEditor.ADD_BUTTONS_DIV).removeClass('hide');
         $(ModelEditor.CANCEL_ADD_DIV).addClass('hide');
         $(ModelEditor.DELETE_DIV).addClass('hide');
     }
 
-    showDeleteButton () {
+    showDeleteButton() {
         $(ModelEditor.ADD_BUTTONS_DIV).addClass('hide');
         $(ModelEditor.CANCEL_ADD_DIV).addClass('hide');
         $(ModelEditor.DELETE_DIV).removeClass('hide');
@@ -772,7 +772,7 @@ class ModelEditor {
      * Change the view to a model based on a clicked tab.
      * @param tabNr Number of the tab
      */
-    changeToTab (tabNr) {
+    changeToTab(tabNr) {
         this.loadModel(parseInt(tabNr, 10));
 
         const children = $(ModelEditor.TABS).children();
@@ -792,7 +792,7 @@ class ModelEditor {
     /**
      * Create tabs based on the models loaded.
      */
-    createAllTabs () {
+    createAllTabs() {
         // clear tabs
         $(ModelEditor.TABS).children()
             .remove();
@@ -809,7 +809,7 @@ class ModelEditor {
     /**
      * Add a new tab to the editor with the model having the given name.
      */
-    addTab (name, nbr) {
+    addTab(name, nbr) {
         const button = document.createElement('button');
         button.type = 'button';
         button.setAttribute('class', 'tab-model-editor-button');
@@ -826,7 +826,7 @@ class ModelEditor {
      * Load the models from the editor into the modelTester and change to the last active tab (as the order of
      * models can switch based on model type).
      */
-    applyButton () {
+    applyButton() {
         // get current active tab
         const lastFocus = $(ModelEditor.TABS).children('.active')[0].textContent;
 
@@ -849,14 +849,14 @@ class ModelEditor {
     }
 
     /** Download the program and end models in the editor. */
-    downloadProgramModels () {
+    downloadProgramModels() {
         const json = JSON.stringify(this.models.filter(m => m.usage !== 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'progam-models.json');
     }
 
     /** Download the user models in the editor. */
-    downloadUserModels () {
+    downloadUserModels() {
         const json = JSON.stringify(this.models.filter(m => m.usage === 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'user-models.json');
@@ -866,7 +866,7 @@ class ModelEditor {
      * When the id input field sends a keyup change event, check for duplicate model ids (if true add a number to
      * the id) and update the model.
      */
-    onModelIDChange () {
+    onModelIDChange() {
         const newValue = $(ModelEditor.MODEL_ID_FIELD).val();
 
         // ignore all not changing buttons such as SHIFT
@@ -890,7 +890,7 @@ class ModelEditor {
     /**
      * When the delete model button is clicked show a popup to confirm.
      */
-    onDeleteModelButton () {
+    onDeleteModelButton() {
         this.showConfirmPopup(i18n.t('modelEditor:deletePromptMessage'),
             () => {
                 this.deleteCurrentModel();
@@ -901,7 +901,7 @@ class ModelEditor {
     /**
      * Remove the currently active tab and move to the previous one
      */
-    removeCurrentTab () {
+    removeCurrentTab() {
         $(ModelEditor.TABS).children('.active')
             .remove();
         this.createAllTabs();
@@ -912,7 +912,7 @@ class ModelEditor {
      * Make an overlay over the model editor and show a confirm popup.
      * @param message Message of the popup
      */
-    showPopup (message) {
+    showPopup(message) {
         const dialog = $('<div/>', {class: 'popup'})
             .append(
                 $('<p/>').html(message)
@@ -939,7 +939,7 @@ class ModelEditor {
      * @param callbackOnOk Callback function on ok button click.
      * @param callbackOnCancel Callback function on cancel button click
      */
-    showConfirmPopup (message, callbackOnOk, callbackOnCancel) {
+    showConfirmPopup(message, callbackOnOk, callbackOnCancel) {
         const dialog = $('<div/>', {class: 'popup'})
             .append(
                 $('<p/>').html(message)
@@ -975,7 +975,7 @@ class ModelEditor {
     /**
      * Setup the click events on nodes and edges.
      */
-    setUpClickEvents () {
+    setUpClickEvents() {
         // Control the buttons on select
         this.network.on('select', data => {
             if (data.edges.length + data.nodes.length === 0) {
@@ -996,7 +996,7 @@ class ModelEditor {
         });
     }
 
-    showNodeOptions (nodeID) {
+    showNodeOptions(nodeID) {
         $(ModelEditor.GENERAL_SETTINGS_DIV).addClass('hide');
         $(ModelEditor.CONFIG_NODE).removeClass('hide');
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
@@ -1020,7 +1020,7 @@ class ModelEditor {
     }
 
     /** to sort the edge priorities */
-    showPriorityChanger (nodeID, node) {
+    showPriorityChanger(nodeID, node) {
         const outgoingEdges = this.currentModel.edges.filter(edge => edge.from === nodeID);
 
         const tag = 'model-priority-row';
@@ -1058,7 +1058,7 @@ class ModelEditor {
     }
 
     /** set the edge with edgeID of node to the new position */
-    setPriority (node, oldEdgeId, edgeID) {
+    setPriority(node, oldEdgeId, edgeID) {
         let firstIndex = -1;
         let secondIndex = -1;
 
@@ -1079,7 +1079,7 @@ class ModelEditor {
         this.showNodeOptions(node.id);
     }
 
-    showEdgeOptions (edgeID) {
+    showEdgeOptions(edgeID) {
         $(ModelEditor.GENERAL_SETTINGS_DIV).addClass('hide');
         $(ModelEditor.CONFIG_NODE).addClass('hide');
         $(ModelEditor.CONFIG_EDGE).removeClass('hide');
@@ -1134,7 +1134,7 @@ class ModelEditor {
         }
     }
 
-    showCheckOptions (check, isAnEffect = false, isAUserModel = false) {
+    showCheckOptions(check, isAnEffect = false, isAUserModel = false) {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         let checkNames;
@@ -1172,7 +1172,7 @@ class ModelEditor {
         this.addExplanation(check.name);
     }
 
-    addExplanation (type) {
+    addExplanation(type) {
         $(ModelEditor.CHECK_EXPLANATION).children()
             .remove();
         const argTypes = checkLabelCodes[type] ?? inputLabelCodes[type];
@@ -1197,7 +1197,7 @@ class ModelEditor {
     /**
      * Show argument inputs for a new check of a type.
      */
-    showEmptyArgsForCheckType (type) {
+    showEmptyArgsForCheckType(type) {
         $(ModelEditor.CHECK_ARGS_DIV).children()
             .remove();
 
@@ -1214,7 +1214,7 @@ class ModelEditor {
      * @param type Type of check, has to be of checkLabelCodes
      * @param args Arguments of the check
      */
-    changeCheckType (isAnEffect, isAUserModel, type, args) {
+    changeCheckType(isAnEffect, isAUserModel, type, args) {
         const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes;
         const argNames = codes[type];
 
@@ -1229,7 +1229,7 @@ class ModelEditor {
         }
     }
 
-    appendInputBasedOnType (type, value, i) {
+    appendInputBasedOnType(type, value, i) {
         switch (type) {
         case argType.spriteName:
             this.appendInputWithPattern('modelEditor:spriteName', value,
@@ -1302,7 +1302,7 @@ class ModelEditor {
         }
     }
 
-    appendAreaInput (key, value, placeholder, idNbr) {
+    appendAreaInput(key, value, placeholder, idNbr) {
         const textarea = $('<textarea/>', {
             class: 'col mr-2',
             style: 'overflow:auto;',
@@ -1323,7 +1323,7 @@ class ModelEditor {
             .append($('<div/>', {class: 'row'}).append(textarea));
     }
 
-    appendInputWithPattern (key, value, pattern, idNbr, style = null, unit = null, placeholder = null) {
+    appendInputWithPattern(key, value, pattern, idNbr, style = null, unit = null, placeholder = null) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const row = $('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': key}).text(i18n.t(key)))
@@ -1356,7 +1356,7 @@ class ModelEditor {
         $(ModelEditor.CHECK_ARGS_DIV).append(row);
     }
 
-    appendComparisonSelection (value, idNbr) {
+    appendComparisonSelection(value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:comp'})
@@ -1376,7 +1376,7 @@ class ModelEditor {
             ));
     }
 
-    appendKeys (value, idNbr) {
+    appendKeys(value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectKey${idNbr}`, id: id});
         for (let i = 0; i < keys.length; i++) {
@@ -1391,7 +1391,7 @@ class ModelEditor {
         select.val(value);
     }
 
-    appendAttributeNames (value, idNbr) {
+    appendAttributeNames(value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
         for (const attrName of attributeAndEffectNames) {
@@ -1406,7 +1406,7 @@ class ModelEditor {
         select.val(attributeAndEffectNames[0]);
     }
 
-    appendBool (value, idNbr) {
+    appendBool(value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:bool'})
@@ -1427,7 +1427,7 @@ class ModelEditor {
     }
 
     /** Append a row element that shows a condition or effect and its arguments.     */
-    getCheckElement (check, index, isAnEffect = false, isAUserModel = false) {
+    getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         const key = `modelEditor:${check.name}`;
         const name = checkToString(check, s => i18n.t(`modelEditor:${s}`), 40);
 
@@ -1454,7 +1454,7 @@ class ModelEditor {
     }
 
     /** for fixing model position after loading the element */
-    reposition () {
+    reposition() {
         this.network.fit();
     }
 }

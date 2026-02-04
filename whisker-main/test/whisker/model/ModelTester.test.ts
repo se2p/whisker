@@ -9,14 +9,14 @@ import {EndModelJSON, ProgramModelJSON, UserModelJSON} from "../../../src/whiske
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         expect(modelTester.programModelsLoaded()).toBe(false);
         expect(modelTester.userModelsLoaded()).toBe(false);
         expect(modelTester.someModelLoaded()).toBe(false);
     });
 
     test("Load only program model", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(programModel);
         expect(modelTester.programModelsLoaded()).toBe(true);
         expect(modelTester.userModelsLoaded()).toBe(false);
@@ -24,7 +24,7 @@ describe('ModelTester', () => {
     });
 
     test("Load only user model", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(userModel);
         expect(modelTester.programModelsLoaded()).toBe(false);
         expect(modelTester.userModelsLoaded()).toBe(true);
@@ -32,13 +32,13 @@ describe('ModelTester', () => {
     });
 
     test("UserModel not running immediately after loading", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(userModel);
         expect(modelTester.running()).toBe(false);
     });
 
     test("Loading faulty model clears previous models", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(programModel);
         expect(() => {
             modelTester.load(faultyModel);
@@ -49,7 +49,7 @@ describe('ModelTester', () => {
     });
 
     test("Successfully loading model clears previous models", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(programModel);
         modelTester.load(userModel);
         expect(modelTester.programModelsLoaded()).toBe(false);
@@ -71,7 +71,7 @@ describe('ModelTester', () => {
         };
 
         test("GetAllModels returns the correct amount of models", () => {
-            const modelTester = new ModelTester();
+            const modelTester = ModelTester.getInstance();
 
             modelTester.load(allModels);
             const models = modelTester.getAllModels();
@@ -79,7 +79,7 @@ describe('ModelTester', () => {
         });
 
         test("GetAllModels() loads ProgramModel correctly", () => {
-            const modelTester = new ModelTester();
+            const modelTester = ModelTester.getInstance();
 
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[0];
@@ -93,7 +93,7 @@ describe('ModelTester', () => {
         });
 
         test("GetAllModels() loads UserModel correctly", () => {
-            const modelTester = new ModelTester();
+            const modelTester = ModelTester.getInstance();
 
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[1];
@@ -107,7 +107,7 @@ describe('ModelTester', () => {
         });
 
         test("GetAllModels() loads OnTestEndModel correctly", () => {
-            const modelTester = new ModelTester();
+            const modelTester = ModelTester.getInstance();
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
@@ -122,9 +122,9 @@ describe('ModelTester', () => {
     });
 
     test("Model Tester coverages", () => {
-        const modelTester = new ModelTester();
+        const modelTester = ModelTester.getInstance();
         modelTester.load(allModels);
-        const result = modelTester.getTotalCoverage();
+        const result = modelTester.getTotalCoverage(false);
         expect(Object.keys(result)).toHaveLength(2);
         expect(result["bowl"]).toStrictEqual({
             covered: 0,

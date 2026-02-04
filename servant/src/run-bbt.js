@@ -6,7 +6,6 @@ const {getProjectsInScratchPath} = require("./common");
 async function getOutputLogWhenBBTTestsAreDone(page, clearLogAfterFinished = false) {
     const logOutput = await page.$('#output-log .output-content');
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
         const log = await (await logOutput.getProperty('innerHTML')).jsonValue();
 

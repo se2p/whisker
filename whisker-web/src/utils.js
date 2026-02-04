@@ -19,15 +19,15 @@ const showModal = function (title, content) {
     );
     modal.appendTo(document.body);
     modal.modal('show');
-}
+};
 
 /* https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript */
 const escapeHtml = function (html) {
-    var text = document.createTextNode(html);
-    var p = document.createElement('p');
+    const text = document.createTextNode(html);
+    const p = document.createElement('p');
     p.appendChild(text);
     return p.innerHTML;
-}
+};
 
 module.exports = {
     showModal,

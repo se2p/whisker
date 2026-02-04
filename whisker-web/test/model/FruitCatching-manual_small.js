@@ -387,7 +387,7 @@ const testAppleGameOver = async function (t) {
 
     // -------------------------------- END INLINED CALL to getSpritesAndVariables --------------------------------(t, ['banana', 'time', 'score']);
     t.addConstraint(() => {
-        for (let appleInstance of apple.getClones(true)) {
+        for (const appleInstance of apple.getClones(true)) {
             t.assert.equal(appleInstance.x, appleInstance.old.x,
                 'Apple must not move after game is over (should be over).');
         }

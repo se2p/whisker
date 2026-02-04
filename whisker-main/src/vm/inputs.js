@@ -47,7 +47,7 @@ class Input {
          */
         this._data = data;
 
-        if (this._data.hasOwnProperty('key')) {
+        if (Object.prototype.hasOwnProperty.call(this._data, 'key')) {
             this._data.key = Util.scratchKeyToKeyString(this._data.key);
         }
 
@@ -148,10 +148,10 @@ class Input {
                 data.y = data.sprite.y;
             } else {
                 const mousePos = this._inputs.getMousePos();
-                if (!data.hasOwnProperty('x')) {
+                if (!Object.prototype.hasOwnProperty.call(data, 'x')) {
                     data.x = mousePos.x;
                 }
-                if (!data.hasOwnProperty('y')) {
+                if (!Object.prototype.hasOwnProperty.call(data, 'y')) {
                     data.y = mousePos.y;
                 }
             }
@@ -169,10 +169,10 @@ class Input {
             data.canvasHeight = canvasRect.height;
 
         } else if (data.device === 'drag') {
-            if (!data.hasOwnProperty('x')) {
+            if (!Object.prototype.hasOwnProperty.call(data, 'x')) {
                 data.x = data.sprite.x;
             }
-            if (!data.hasOwnProperty('y')) {
+            if (!Object.prototype.hasOwnProperty.call(data, 'y')) {
                 data.y = data.sprite.y;
             }
 

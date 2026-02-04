@@ -49,7 +49,6 @@ async function configureWhiskerWebInstance(whisker) {
 async function runGeneticSearch(page) {
     async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('uncovered')) {

@@ -44,8 +44,8 @@ const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
-const Footer = require('./components/footer');
-const Header = require('./components/header');
+require('./components/footer'); // attaches an event listener as side effect
+require('./components/header'); // attaches an event listener as side effect
 const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
@@ -152,13 +152,13 @@ const loadTestsFromString = async function (string) {
          * dummy object called "module", letting the test set the "module.exports" property, and return that as
          * result of evaluating the test.
          */
-        /* eslint-disable-next-line no-eval */
         // IMPORTANT!!!
         // DO NOT CHANGE THE FORMATTING OF THE NEXT LINE OR CODE WILL BREAK!                                    (lol)
         // For some parts of Whisker (e.g., program repair) it is important not to change the stack traces of Whisker
         // tests, which would be the case if, e.g., line breaks were added in the code below to put every statement
         // on one line.
         // @formatter:off
+        /* eslint-disable-next-line no-eval */
         tests = eval(`(function () { const module = Object.create(null); ${string}; return module.exports; })();`);
         // @formatter:on
     } catch (err) {
@@ -308,6 +308,14 @@ const injectBBTsAndDownloadProject = async function (projectName, blockBasedTest
     element.click();
 };
 
+const _enableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', false);
+};
+
+const _disableVMRelatedButtons = function (exception) {
+    $(`.vm-related:not(${exception})`).prop('disabled', true);
+};
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
@@ -373,7 +381,7 @@ const _generateResults = function (coverage, coverageModels, summary) {
 };
 
 const _printSummaryForTestsAndModels = function (summary, coverage) {
-    const coverageModels = Whisker.modelTester.getTotalCoverage();
+    const coverageModels = Whisker.modelTester.getTotalCoverage(true);
 
     _generateResults(coverage, coverageModels, summary);
 
@@ -398,6 +406,69 @@ const _printSummaryForTestsAndModels = function (summary, coverage) {
     ].join('\n'));
 };
 
+const _isNeatestSuite = function () {
+    return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'));
+};
+
+const _isRLSuite = function () {
+    return `${Whisker.tests.name}`.split('.').pop() === 'zip';
+};
+
+const _isAgentSuite = function () {
+    return _isNeatestSuite() || _isRLSuite();
+};
+
+const _showRunIcon = () => {
+    $('#run-tests-icon').show();
+    $('#stop-tests-icon').hide();
+    $('#run-all-tests').off('click');
+
+    // Suppress the rule for this line because there's a cyclic dependency.
+    // eslint-disable-next-line no-use-before-define
+    $('#run-all-tests').on('click', runAllTests);
+};
+
+/**
+ * Abort running all tests.
+ */
+const abortRunAllTests = function () {
+    if (!testsRunning) {
+        return;
+    }
+    testsRunning = false;
+
+    Whisker.outputLog.println('Stop-Button pressed, aborting...');
+    Whisker.outputRun.println('Stop-Button pressed, aborting...');
+
+    Whisker.scratch.stop();
+    Whisker.testRunner.abort();
+    Whisker.testTable.updateAfterAbort();
+    accSlider.slider('enable');
+    _showRunIcon();
+    _enableVMRelatedButtons();
+};
+
+const _showStopIcon = () => {
+    $('#run-tests-icon').hide();
+    $('#stop-tests-icon').show();
+    $('#run-all-tests').off('click');
+    $('#run-all-tests').on('click', abortRunAllTests);
+};
+
+const runAllBBTTests = async function () {
+    const bbtTests = Array.from(Whisker.bbtTests.values());
+
+    for (const bbtTest of bbtTests) {
+        if (!testsRunning) {
+            // Test chain execution might have been stopped,
+            // don't continue starting new tests.
+            return;
+        }
+
+        await runBBTTest(bbtTest);
+    }
+};
+
 const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings, headless) {
 
     // Activate listener for tracing executed blocks
@@ -418,10 +489,6 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
 
     const setMutators = document.querySelector('#container').mutators;
     const mutantDownload = document.querySelector('#container').downloadMutants;
-
-    const durationValue = Number(document.querySelector('#model-duration').value);
-    const duration = (durationValue <= 0 || Number.isNaN() ? 35 : durationValue) * 1000;
-    const repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
 
     const props = {
         accelerationFactor: $('#acceleration-value').text(),
@@ -451,7 +518,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         CoverageGenerator.prepareVM(vm);
 
         [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] =
-            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props, {duration, repetitions});
+            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props);
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
 
@@ -478,128 +545,14 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     return [coveragePerTest, timingsPerTest];
 };
 
-const runTest = async function (test) {
-    Whisker.scratch.stop();
-    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
-    Whisker.outputRun.clear();
-    Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner, defaultTracerSettings, false);
-};
-
-/**
- * Runs a single test. Detects if it's a Whisker test or a block-based test.
- *
- * @param {object} test The test object to run.
- */
-const runSingleTest = async function (test) {
-    if (test.type && test.type === 'BBT') {
-        await runBBTTest(test);
-    } else {
-        await runTest(test);
-    }
-};
-
-const runAllBBTTests = async function () {
-    const bbtTests = Array.from(Whisker.bbtTests.values());
-
-    for (const bbtTest of bbtTests) {
-        if (!testsRunning) {
-            // Test chain execution might have been stopped,
-            // don't continue starting new tests.
-            return;
-        }
-
-        await runBBTTest(bbtTest);
-    }
-};
-
-/**
- * Abort running all tests.
- */
-const abortRunAllTests = function () {
-    if (!testsRunning) {
-        return;
-    }
-    testsRunning = false;
-
-    Whisker.outputLog.println('Stop-Button pressed, aborting...');
-    Whisker.outputRun.println('Stop-Button pressed, aborting...');
-
-    Whisker.scratch.stop();
-    Whisker.testRunner.abort();
-    Whisker.testTable.updateAfterAbort();
-    accSlider.slider('enable');
-    _showRunIcon();
-    _enableVMRelatedButtons();
-};
-
-const abortTestRun = function () {
-    Whisker.scratch.stop();
-    Whisker.outputRun.clear();
-    Whisker.outputLog.clear();
-};
-
-window.Whisker.runTestsForRepair = async function () {
-    abortTestRun();
-
-    const vm = Whisker.scratch.vm;
-    const project = await Whisker.projectFileSelect.loadAsArrayBuffer(0);
-
-    // Seems to be necessary to load the project here as well (even though it is also loaded by the test runner later).
-    // But if we don't load it here, the VMWrapper fails to set or restore the save state because stuff is undefined.
-    await vm.loadProject(project);
-
-    // Performance optimizations: Avoid overhead caused by tracing used by test generation etc.
-    const tracerSettings = {
-        traceBlockCoverage: false,
-        traceBranchCoverage: false,
-        traceAttributes: false,
-        traceDebug: false
-    };
-
-    const [traces, timings] = await _runTestsWithCoverage(vm, project, Whisker.tests, tracerSettings, true);
-
-    for (const trace of traces) {
-        // Rename the property key "coveredBlocks" to "covered".
-        trace.covered = trace.coveredBlocks;
-        delete trace.coveredBlocks;
-
-        // Add coverage level information.
-        trace.level = 'block';
-    }
-
-    const resetProject = timings.reduce((s, timing) => timing.resetProject + s, 0);
-    const runTests = timings.reduce((s, timing) => timing.runTest + s, 0);
-
-    // The coverage achieved by the entire test suite.
-    const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-
-    return {
-        traces,
-        coverage: covered / total,
-        timings: {
-            resetProject,
-            runTests
-        }
-    };
-};
-
-const _isNeatestSuite = function () {
-    return (`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))
-};
-
-const _isRLSuite = function () {
-    return `${Whisker.tests.name}`.split('.').pop() === 'zip';
-};
-
-const _isAgentSuite = function () {
-    return _isNeatestSuite() || _isRLSuite();
-};
-
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
-    Whisker.modelTester.clearCoverage();
+    const durationValue = Number(document.querySelector('#model-duration').value);
+    Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
+    Whisker.modelTester.repetitions = Math.max(1, Number(document.querySelector('#model-repetitions').value) ?? 1);
+
+    Whisker.modelTester.clear();
 
     if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
         // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
@@ -657,7 +610,7 @@ const runAllTests = async function () {
             }
 
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
-            summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
+            summary = Container.vmWrapper.getTestResultsSummary();
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
                 await downloadMutants(properties.projectName, mutantPrograms);
@@ -721,7 +674,11 @@ const runAllTests = async function () {
                 await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings, false);
             }
 
+            // I suppressed the eslint error for this line because we have been using this for years now, I don't think
+            // we ever noticed a problem -> Likely a false positive.
+            // eslint-disable-next-line require-atomic-updates
             testsRunning = false;
+
             _showRunIcon();
             _enableVMRelatedButtons();
             $('#green-flag').prop('disabled', false);
@@ -733,6 +690,78 @@ const runAllTests = async function () {
             Whisker.outputLog.println();
         }
     }
+};
+
+const runTest = async function (test) {
+    Whisker.scratch.stop();
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner, defaultTracerSettings, false);
+};
+
+/**
+ * Runs a single test. Detects if it's a Whisker test or a block-based test.
+ *
+ * @param {object} test The test object to run.
+ */
+const runSingleTest = async function (test) {
+    if (test.type && test.type === 'BBT') {
+        await runBBTTest(test);
+    } else {
+        await runTest(test);
+    }
+};
+
+const abortTestRun = function () {
+    Whisker.scratch.stop();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+};
+
+window.Whisker.runTestsForRepair = async function () {
+    abortTestRun();
+
+    const vm = Whisker.scratch.vm;
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer(0);
+
+    // Seems to be necessary to load the project here as well (even though it is also loaded by the test runner later).
+    // But if we don't load it here, the VMWrapper fails to set or restore the save state because stuff is undefined.
+    await vm.loadProject(project);
+
+    // Performance optimizations: Avoid overhead caused by tracing used by test generation etc.
+    const tracerSettings = {
+        traceBlockCoverage: false,
+        traceBranchCoverage: false,
+        traceAttributes: false,
+        traceDebug: false
+    };
+
+    const [traces, timings] = await _runTestsWithCoverage(vm, project, Whisker.tests, tracerSettings, true);
+
+    for (const trace of traces) {
+        // Rename the property key "coveredBlocks" to "covered".
+        trace.covered = trace.coveredBlocks;
+        delete trace.coveredBlocks;
+
+        // Add coverage level information.
+        trace.level = 'block';
+    }
+
+    const resetProject = timings.reduce((s, timing) => timing.resetProject + s, 0);
+    const runTests = timings.reduce((s, timing) => timing.runTest + s, 0);
+
+    // The coverage achieved by the entire test suite.
+    const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
+
+    return {
+        traces,
+        coverage: covered / total,
+        timings: {
+            resetProject,
+            runTests
+        }
+    };
 };
 
 const initScratch = function () {
@@ -952,7 +981,7 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.modelTester = new ModelTester.ModelTester();
+    Whisker.modelTester = ModelTester.ModelTester.getInstance();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
         Whisker.outputRun.println.bind(Whisker.outputRun));
@@ -968,6 +997,68 @@ const initComponents = function () {
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
+};
+
+const _jumpTo = elem => {
+    location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem;
+    window.scrollBy(0, -100); // respect header size
+};
+
+const _showAndJumpTo = elem => {
+    $(elem).show();
+    _jumpTo(elem);
+};
+
+const _showTooltipIfTooLong = function (label, event) {
+    $(event.target).parent()
+        .tooltip('dispose');
+    if (label.scrollWidth > label.offsetWidth) {
+        $(event.target).parent()
+            .tooltip({animation: true});
+        setTimeout(() => {
+            $(event.target).parent()
+                .tooltip('hide');
+        }, 2000);
+    }
+};
+
+const _addFileListeners = function () {
+    $('#fileselect-config').on('change', event => {
+        const fileName = Whisker.configFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-project').on('change', event => {
+        const fileName = Whisker.projectFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+        if (document.querySelector('#container').stateActionRecorder) {
+            Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
+        }
+    });
+    $('#fileselect-tests').on('change', event => {
+        const fileName = Whisker.testFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-models').on('change', event => {
+        const fileName = Whisker.modelFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+    });
 };
 
 const initEvents = function () {
@@ -1188,6 +1279,57 @@ const toggleComponents = function () {
     }
 };
 
+const localize = locI18next.init(i18next, {
+    selectorAttr: 'data-i18n', // selector for translating elements
+    targetAttr: 'i18n-target',
+    optionsAttr: 'i18n-options',
+    useOptionsAttr: false,
+    parseDefaultValueFromContent: true
+});
+
+const _updateLang = () => {
+    localize('#body');
+    $('[data-toggle="tooltip"]').tooltip();
+    if (Whisker.testTable) {
+        Whisker.testTable.hideTestDetails();
+    }
+};
+
+const _initLangSelect = function () {
+    const newLabel = document.createElement('label');
+    let html = '<select id="lang-select">';
+    const lngs = ['de', 'en'];
+    let i;
+    for (i = 0; i < lngs.length; i++) {
+        html += `<option value='${lngs[i]}' `;
+        if ((initialLanguage !== null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
+            html += 'selected';
+        }
+        html += ` data-i18n="${lngs[i]}">${i18next.t(lngs[i])}</option>`;
+    }
+    html += '</select>';
+    newLabel.innerHTML = html;
+    document.querySelector('#form-lang').appendChild(newLabel);
+};
+
+const _getKeyByValue = (langData, value) => Object.keys(langData).find(key => langData[key] === value);
+
+const _translateTooltip = (tooltipElement, oldData, newData) => {
+    const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
+    tooltipElement.innerHTML = newData[key];
+};
+
+const _translateTestTableTooltips = function (oldLanguage, newLanguage) {
+    const oldLangData = i18next.getDataByLanguage(oldLanguage);
+    const oldIndexData = oldLangData.index;
+    const newLangData = i18next.getDataByLanguage(newLanguage);
+    const newIndexData = newLangData.index;
+    $('.tooltip-sign-text').html(function () {
+        // Inside this function, jQuery binds `this` to the current element in the set of matched elements.
+        // eslint-disable-next-line no-invalid-this
+        _translateTooltip(this, oldIndexData, newIndexData);
+    });
+};
 
 const loadHeader = function () {
     _initLangSelect();
@@ -1265,14 +1407,6 @@ window.onbeforeunload = function () {
     }
 };
 
-const localize = locI18next.init(i18next, {
-    selectorAttr: 'data-i18n', // selector for translating elements
-    targetAttr: 'i18n-target',
-    optionsAttr: 'i18n-options',
-    useOptionsAttr: false,
-    parseDefaultValueFromContent: true
-});
-
 i18next
     .init({
         whitelist: ['de', 'en'],
@@ -1315,134 +1449,6 @@ i18next
         _updateLang();
     }).then();
 
-function _showRunIcon() {
-    $('#run-tests-icon').show();
-    $('#stop-tests-icon').hide();
-    $('#run-all-tests').off('click');
-    $('#run-all-tests').on('click', runAllTests);
-}
-
-function _showStopIcon() {
-    $('#run-tests-icon').hide();
-    $('#stop-tests-icon').show();
-    $('#run-all-tests').off('click');
-    $('#run-all-tests').on('click', abortRunAllTests);
-}
-
-const _enableVMRelatedButtons = function () {
-    $('.vm-related').prop('disabled', false);
-};
-
-const _disableVMRelatedButtons = function (exception) {
-    $(`.vm-related:not(${exception})`).prop('disabled', true);
-};
-
-function _showAndJumpTo(elem) {
-    $(elem).show();
-    _jumpTo(elem);
-}
-
-function _jumpTo(elem) {
-    location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-    location.href = elem;
-    window.scrollBy(0, -100); // respect header size
-}
-
-const _addFileListeners = function () {
-    $('#fileselect-config').on('change', event => {
-        const fileName = Whisker.configFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-project').on('change', event => {
-        const fileName = Whisker.projectFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-        if (document.querySelector('#container').stateActionRecorder) {
-            Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
-        }
-    });
-    $('#fileselect-tests').on('change', event => {
-        const fileName = Whisker.testFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-models').on('change', event => {
-        const fileName = Whisker.modelFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-};
-
-const _showTooltipIfTooLong = function (label, event) {
-    $(event.target).parent()
-        .tooltip('dispose');
-    if (label.scrollWidth > label.offsetWidth) {
-        $(event.target).parent()
-            .tooltip({animation: true});
-        setTimeout(() => {
-            $(event.target).parent()
-                .tooltip('hide');
-        }, 2000);
-    }
-};
-
-const _initLangSelect = function () {
-    const newLabel = document.createElement('label');
-    let html = '<select id="lang-select">';
-    const lngs = ['de', 'en'];
-    let i;
-    for (i = 0; i < lngs.length; i++) {
-        html += `<option value='${lngs[i]}' `;
-        if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
-            html += 'selected';
-        }
-        html += ` data-i18n="${lngs[i]}">${i18next.t(lngs[i])}</option>`;
-    }
-    html += '</select>';
-    newLabel.innerHTML = html;
-    document.querySelector('#form-lang').appendChild(newLabel);
-};
-
-function _translateTestTableTooltips(oldLanguage, newLanguage) {
-    const oldLangData = i18next.getDataByLanguage(oldLanguage);
-    const oldIndexData = oldLangData.index;
-    const newLangData = i18next.getDataByLanguage(newLanguage);
-    const newIndexData = newLangData.index;
-    $('.tooltip-sign-text').html(function () {
-        _translateTooltip(this, oldIndexData, newIndexData);
-    });
-}
-
-function _translateTooltip(tooltipElement, oldData, newData) {
-    const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
-    tooltipElement.innerHTML = newData[key];
-}
-
-function _getKeyByValue(langData, value) {
-    return Object.keys(langData).find(key => langData[key] === value);
-}
-
-function _updateLang() {
-    localize('#body');
-    $('[data-toggle="tooltip"]').tooltip();
-    if (Whisker.testTable) {
-        Whisker.testTable.hideTestDetails();
-    }
-}
-
 $('#form-lang').on('change', () => {
     $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
@@ -1453,17 +1459,7 @@ $('#form-lang').on('change', () => {
     i18next.changeLanguage(lng).then(_updateLang());
 });
 
-$('.nav-link').on('click', event => {
-    const lng = $('#lang-select').val();
-    const href = event.target.getAttribute('href');
-    if (href) {
-        location.href = `${href}?lng=${lng}`;
-        event.preventDefault();
-    }
-    _updateFilenameLabels();
-});
-
-function _updateFilenameLabels() {
+const _updateFilenameLabels = () => {
     if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
         $('#project-label').html(Whisker.projectFileSelect.getName());
     }
@@ -1476,7 +1472,16 @@ function _updateFilenameLabels() {
     if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }
-}
+};
 
+$('.nav-link').on('click', event => {
+    const lng = $('#lang-select').val();
+    const href = event.target.getAttribute('href');
+    if (href) {
+        location.href = `${href}?lng=${lng}`;
+        event.preventDefault();
+    }
+    _updateFilenameLabels();
+});
 
 export {i18next as i18n};

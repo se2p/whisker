@@ -7,7 +7,7 @@ const standardConfig = require('../../../config/mio.json');
  * <input type="file">
  */
 class FileSelect {
-    constructor (fileselect, onLoad) {
+    constructor(fileselect, onLoad) {
         this.fileselect = fileselect;
         this.files = [];
 
@@ -32,22 +32,22 @@ class FileSelect {
         });
     }
 
-    length () {
+    length() {
         return this.files.length;
     }
 
-    hasName () {
+    hasName() {
         return this.files && this.files[0];
     }
 
-    getName (index = 0) {
+    getName(index = 0) {
         return this.files[index].name;
     }
 
     async loadDefault() {
         return await new Promise((resolve, reject) => {
-            let json = JSON.stringify(standardConfig);
-            const blob = new Blob([json], {type:"application/json"});
+            const json = JSON.stringify(standardConfig);
+            const blob = new Blob([json], {type: 'application/json'});
 
             const reader = new FileReader();
             reader.onload = event => resolve(event.target.result);
@@ -56,7 +56,7 @@ class FileSelect {
         });
     }
 
-    async loadAsArrayBuffer (index = 0) {
+    async loadAsArrayBuffer(index = 0) {
         return await new Promise((resolve, reject) => {
             const file = this.files[index];
             const reader = new FileReader();
@@ -66,9 +66,9 @@ class FileSelect {
         });
     }
 
-    async loadAsString (index = 0) {
+    async loadAsString(index = 0) {
         let arrayBuffer;
-        if (this.files[0] == null) {
+        if (this.files[0] === null) {
             arrayBuffer = await this.loadDefault();
         } else {
             arrayBuffer = await this.loadAsArrayBuffer(index);

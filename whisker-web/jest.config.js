@@ -1,12 +1,12 @@
 module.exports = {
-    preset: "jest-puppeteer",
+    preset: 'jest-puppeteer',
     globals: {
-        URL: "dist/index.html",
-        ACCELERATION: "2"
+        URL: 'dist/index.html',
+        ACCELERATION: '2'
     },
     testMatch: [
-        "**/test/**/*.test.js"
+        '**/test/**/*.test.js'
     ],
     verbose: true,
     testTimeout: 30000
-}
+};
