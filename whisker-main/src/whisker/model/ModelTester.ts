@@ -265,7 +265,7 @@ export class ModelTester extends EventEmitter {
         this._modelTestResults = [];
     }
 
-    getDurationForUserModel(modelDuration: number): number {
+    getDurationForUserModel(): number {
         return this._runningUserModel !== null && this._runningUserModel.hasMaxDuration
             ? Math.min(this._duration, this._runningUserModel.maxDuration)
             : this._duration;
