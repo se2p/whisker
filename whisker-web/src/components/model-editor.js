@@ -428,38 +428,53 @@ class ModelEditor {
             }
         }
 
-        const mapping = {};
-        for (const edge of edges){
-            const reversed = edge.from < edge.to;
-            const key = reversed ? [edge.from, edge.to] : [edge.to, edge.from];
-            const value = mapping[key];
+        this.curveEdgesBetweenTwoNodes(nodes, edges);
+        return edges;
+    }
+
+    /**
+     * Arranges the edges between two node pairs. If there is at most one edge between to nodes nothing happens.
+     * Otherwise the edges are curved such that half the edges curve in one direction and the other half curves
+     * in the other direction. All edges from node A to node B will be on side and all nodes from B to A on the other
+     * side if there are equally many. Otherwise there is an overflow of edges in the "wrong" direction to the side
+     * with fewer edges.
+     */
+    curveEdgesBetweenTwoNodes (nodes, edges) {
+        const nodeOrder = Object.values(nodes).map(n => n.id);
+        nodeOrder.sort();
+        const edgesBetweenTwoNodes = {};
+        for (const edge of edges) {
+            const indexFrom = nodeOrder.indexOf(edge.from);
+            const indexTo = nodeOrder.indexOf(edge.to);
+            const reversed = indexFrom < indexTo;
+            const key = reversed ? `${edge.from}:${edge.to}` : `${edge.to}:${edge.from}`;
+            const value = edgesBetweenTwoNodes[key];
             if (value) {
                 (reversed ? value.reverse : value.normal).push(edge);
                 value.count += 1;
             } else if (reversed) {
-                mapping[key] = {count: 1, normal: [], reverse: [edge]};
+                edgesBetweenTwoNodes[key] = {count: 1, normal: [], reverse: [edge]};
             } else {
-                mapping[key] = {count: 1, normal: [edge], reverse: []};
+                edgesBetweenTwoNodes[key] = {count: 1, normal: [edge], reverse: []};
             }
         }
-        for (const entry of Object.values(mapping).filter(e => e.count > 1)) {
-            const list = entry.normal.concat(entry.reverse);
-            const halfLength = Math.floor(list.length / 2);
+        for (const entry of Object.values(edgesBetweenTwoNodes).filter(e => e.count > 1)) {
+            const edgesInBothDirections = entry.normal.concat(entry.reverse);
+            const halfLength = Math.floor(edgesInBothDirections.length / 2);
             const roundnessGap = Math.min(0.2, 1.0 / (halfLength + 1));
             for (let i = 0; i < halfLength; i++) {
-                list[i].smooth = {
+                edgesInBothDirections[i].smooth = {
                     type: i < entry.normal.length ? 'curvedCCW' : 'curvedCW',
                     roundness: (i + 1) * roundnessGap
                 };
             }
-            for (let i = halfLength; i < list.length; i++) {
-                list[i].smooth = {
+            for (let i = halfLength; i < edgesInBothDirections.length; i++) {
+                edgesInBothDirections[i].smooth = {
                     type: i < entry.normal.length ? 'curvedCW' : 'curvedCCW',
                     roundness: (i - halfLength + 1) * roundnessGap
                 };
             }
         }
-        return edges;
     }
 
     makeLabel (edge, priority) {
