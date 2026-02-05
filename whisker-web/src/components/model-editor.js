@@ -1,7 +1,9 @@
 /* eslint-disable valid-jsdoc */
 
-const {ModelTester, attributeAndEffectNames, keys,
-    convertArgs, convertInputArgs} = require('whisker-main');
+const {
+    ModelTester, attributeAndEffectNames, keys,
+    convertArgs, convertInputArgs, checkToString
+} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
@@ -105,6 +107,9 @@ class ModelEditor {
         this.insertNewGraph();
 
         this.options = {
+            nodes: {
+                physics: false
+            },
             edges: {
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
@@ -128,11 +133,12 @@ class ModelEditor {
             locale: $('#lang-select').val(),
             clickToUse: false,
             height: '420px',
-            autoResize: false
+            autoResize: true
         };
         this.data = {nodes: [{id: 'start', label: 'start', color: 'rgb(0,151,163)'}], edges: []};
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
+        this.network.on('resize', () => this.network.fit());
 
         // setup gui
         this.setUpGUI();
@@ -150,6 +156,9 @@ class ModelEditor {
 
     onLoadEvent() {
         this.models = this.modelTester.getAllModels();
+        if (this.models.length === 0) {
+            this.insertNewGraph();
+        }
         this.createAllTabs();
         this.changeToTab(0);
         this.showGeneralSettings(0);
@@ -421,7 +430,64 @@ class ModelEditor {
             }
         }
 
+        this.routeParallelEdgesAsSymmetricArcs(edges);
+
         return edges;
+    }
+
+    /**
+     * Tries to route parallel edges as symmetric arcs. We draw an imaginary straight line between the source and target
+     * node. Parallel edges between these nodes are then rendered as evenly spaced arcs, such that half of the arcs
+     * curve above the straight line, and the other half below that line. If two nodes are connected by just one edge,
+     * vis' default routing is used. See Whisker MR !719 for an illustration.
+     *
+     * @param edges The model's edges
+     */
+    routeParallelEdgesAsSymmetricArcs(edges) {
+
+        /**
+         * Parallel edges grouped by the nodes they connect. The keys represent node ids. The edge direction is ignored.
+         * @type {Record<string, Record<string, Object[]>>}
+         */
+        const parallelEdgesGroupedByNodes = {};
+
+        for (const edge of edges) {
+            let {from, to} = edge;
+
+            // To establish groups of parallel edges, it only matters that the edges connect the same nodes. To this,
+            // the edge direction must be ignored, which is done by imposing a total order on the nodes via their ids.
+            if (from > to) {
+                ([from, to] = [to, from]);
+            }
+
+            ((parallelEdgesGroupedByNodes[from] ??= {})[to] ??= []).push(edge);
+        }
+
+        for (const from of Object.keys(parallelEdgesGroupedByNodes)) {
+            for (const to of Object.keys(parallelEdgesGroupedByNodes[from])) {
+                const parallelEdges = parallelEdgesGroupedByNodes[from][to];
+
+                if (parallelEdges.length < 2) { // No parallel edges -> no special routing necessary
+                    continue;
+                }
+
+                const mid = Math.ceil(parallelEdges.length / 2); // Symmetry index
+                const gap = Math.min(0.2, 1.0 / (mid + 1)); // The gap by which the edges are evenly spaced
+
+                for (const [i, edge] of parallelEdges.entries()) {
+                    const reversed = edge.from !== from; // Recover the direction of the edge
+
+                    edge.smooth = {
+                        // The direction of an edge (A -> B vs. B <- A) together with its location above or below the
+                        // imaginary straight line between A and B determine whether it should be curved CW or CCW.
+                        type: (reversed ^ (i < mid)) ? 'curvedCCW' : 'curvedCW',
+
+                        // Causes roundness to decrease the closer we are to the imaginary straight line
+                        roundness: (1 + (i % mid)) * gap
+                    };
+                }
+            }
+        }
     }
 
     makeLabel(edge, priority) {
@@ -662,7 +728,7 @@ class ModelEditor {
     addEffectAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
-        if (this.currentModel.usage === 'user'){
+        if (this.currentModel.usage === 'user') {
             $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newUserInput');
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newUserInput'));
         } else {
@@ -1009,7 +1075,7 @@ class ModelEditor {
         let firstIndex = -1;
         let secondIndex = -1;
 
-        for (const [i, edge] of this.this.currentModel.edges.entries()) {
+        for (const [i, edge] of this.currentModel.edges.entries()) {
             if (edge.id === oldEdgeId) {
                 firstIndex = i;
             } else if (edge.id === edgeID) {
@@ -1044,7 +1110,7 @@ class ModelEditor {
 
         const isAUserModel = this.currentModel.usage === 'user';
         const effectInputLabel = $(ModelEditor.EFFECT_OR_INPUT_LABEL);
-        if (isAUserModel){
+        if (isAUserModel) {
             effectInputLabel.attr('data-original-title', i18n.t('modelEditor:t-userInputs'));
             effectInputLabel.text(i18n.t('modelEditor:userInputs'));
         } else {
@@ -1376,15 +1442,7 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         const key = `modelEditor:${check.name}`;
-        let name = `${check.negated ? '!' : ''}${i18n.t(key)} `;
-
-        if (check.name === 'Key') {
-            name += `(${i18n.t(`modelEditor:${check.args[0]}`)})`;
-        } else if (check.name === 'Expr') {
-            name += check.args[0].length < 40 ? `(${check.args})` : `(${check.args[0].substring(0, 35)})...)`;
-        } else {
-            name += `(${check.args})`;
-        }
+        const name = checkToString(check, s => i18n.t(`modelEditor:${s}`), 40);
 
         return $('<div/>', {class: 'row', style: 'margin:0;'})
             .append($('<div/>', {class: 'col model-check'}).append($('<label/>',
