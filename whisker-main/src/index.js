@@ -10,6 +10,7 @@ const ModelTester = require("./whisker/model/ModelTester");
 const {keys, attributeAndEffectNames} = require("./whisker/model/checks/CheckTypes");
 const {convertArgs} = require("./whisker/model/checks/newCheck");
 const {convertInputArgs} = require("./whisker/model/inputs/newUserInput");
+const {checkToString} = require("./whisker/model/util/ModelUtil");
 
 module.exports = {
     Test,
@@ -24,5 +25,6 @@ module.exports = {
     attributeAndEffectNames,
     keys,
     convertArgs,
-    convertInputArgs
+    convertInputArgs,
+    checkToString
 };

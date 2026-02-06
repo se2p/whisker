@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {UserInputJSON} from "./newUserInput";
 import {SpriteName} from "../checks/CheckTypes";
+import {checkToString} from "../util/ModelUtil";
 
 export interface IUserInputJSON<N extends string, A extends (string | number | boolean | SpriteName)[]> {
     name: N;
@@ -24,4 +25,8 @@ export abstract class AbstractUserInput<J extends UserInputJSON> {
     }
 
     protected abstract _validate(json: J): J;
+
+    public toString(): string {
+        return checkToString(this._inputJSON);
+    }
 }
