@@ -174,5 +174,12 @@
     "pixelate": "pixelate",
     "mosaic": "mosaic",
     "brightness": "brightness",
-    "ghost": "ghost"
+    "ghost": "ghost",
+    "minimize-models": "Minimize models",
+    "t-minimize-models": "Minimize the program models by removing unused edges",
+    "minimizationHeader": "The following nodes and edges will be removed without any backup:",
+    "alreadyMinimized": "All models are already minimized",
+    "edges": "Edges",
+    "nodes": "Nodes",
+    "stopAllNodes": "Stop all nodes"
 }

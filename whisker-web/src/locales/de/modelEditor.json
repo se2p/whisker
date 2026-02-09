@@ -174,5 +174,12 @@
     "pixelate": "Pixel",
     "mosaic": "Mosaic",
     "brightness": "Helligkeit",
-    "ghost": "Durchsichtigkeit"
+    "ghost": "Durchsichtigkeit",
+    "minimize-models": "Modelle minimieren",
+    "t-minimize-models": "Modelle minimimeren, indem unbenützte Kanten entfernt werden",
+    "minimizationHeader": "Die folgenden Kanten und Knoten werden ohne Backup dauerhaft entfernt",
+    "alreadyMinimized": "Es sind bereits alle Modelle minimiert",
+    "edges": "Kanten",
+    "nodes": "Knoten",
+    "stopAllNodes": "Stoppe alle Knoten"
 }

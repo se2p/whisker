@@ -38,6 +38,7 @@ class ModelEditor {
     // below the model editor
     static SAVE_PROGRAM_MODEL_BUTTON = '#model-editor-save-model';
     static SAVE_USER_MODEL_BUTTON = '#model-editor-save-user-model';
+    static MINIMIZE_MODELS = '#model-minimize-btn';
     static APPLY_BUTTON = '#model-editor-apply';
     static ADD_NODE = '#model-add-node';
     static ADD_EDGE = '#model-add-edge';
@@ -502,6 +503,7 @@ class ModelEditor {
         $(ModelEditor.APPLY_BUTTON).on('click', this.applyButton.bind(this));
         $(ModelEditor.SAVE_PROGRAM_MODEL_BUTTON).on('click', this.downloadProgramModels.bind(this));
         $(ModelEditor.SAVE_USER_MODEL_BUTTON).on('click', this.downloadUserModels.bind(this));
+        $(ModelEditor.MINIMIZE_MODELS).on('click', this.minimizeOracleModels.bind(this));
 
         // tab behaviour
         $(ModelEditor.ADD_TAB).on('click', () => {
@@ -873,6 +875,32 @@ class ModelEditor {
         const json = JSON.stringify(this.models.filter(m => m.usage === 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'user-models.json');
+    }
+
+    minimizeOracleModels() {
+        const result = this.modelTester.minimizeOracleModels();
+        const changed = result.filter(m => m.status);
+        if (changed.length === 0) {
+            this.showPopup(i18n.t('modelEditor:alreadyMinimized'));
+            return;
+        }
+        const edges = i18n.t('modelEditor:edges');
+        const nodes = i18n.t('modelEditor:nodes');
+        const stopAllNodes = i18n.t('modelEditor:stopAllNodes');
+        const toCell = v =>
+            `<td style="border:1px solid black;padding:5px;text-align:center; vertical-align:middle;">${v}</td>`;
+        const toHeadCell = v => `<th style="border:1px solid black;padding:5px;">${v}</th>`;
+        const toRow = (values, mapper) => `<tr>${values.map(mapper).join('')}</tr>`;
+        const changedInfo = changed
+            .map(res => [res.minimized.id, res.removedEdges, res.removedNodes, res.removedStopAllNodes])
+            .map(row => toRow(row, toCell));
+        const msg = `${i18n.t('modelEditor:minimizationHeader')}<br><br>
+<table style="border:1px solid black; border-collapse:collapse;">
+    ${toRow(['id', edges, nodes, stopAllNodes], toHeadCell)}
+    ${changedInfo}
+</table>`;
+        const updateModels = () => this.modelTester.loadProgramModels(JSON.stringify(result.map(r => r.minimized)));
+        this.showConfirmPopup(msg, updateModels);
     }
 
     /**

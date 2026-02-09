@@ -8,7 +8,7 @@ import {Callback} from "../../vm/callbacks";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
-import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
+import {CoverageResult, EndModel, MinimizationResult, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
 import {Check} from "./checks/newCheck";
@@ -248,6 +248,13 @@ export class ModelTester extends EventEmitter {
         this._executionCount = 0;
         this._programModels.forEach(model => model.clearTotalCoverage());
         this._onTestEndModels.forEach(model => model.clearTotalCoverage());
+    }
+
+    minimizeOracleModels(): MinimizationResult[] {
+        return [
+            ...this._programModels.map((m) => m.toMinimizedJSON()),
+            ...this._onTestEndModels.map((m) => m.toMinimizedJSON())
+        ];
     }
 
     clear(): void {
