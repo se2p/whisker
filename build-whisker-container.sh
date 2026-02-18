@@ -19,7 +19,7 @@ with_local_data_root() {
 }
 
 echo "🔨 Building Whisker Docker image ${IMG_TAG}"
-with_local_data_root docker build . -t "${IMG_TAG}" -f Dockerfile --no-cache
+with_local_data_root docker build . -t "${IMG_TAG}" -f build-for-apptainer.Dockerfile --no-cache
 
 echo "🔄 Converting to Apptainer SIF"
 with_local_data_root apptainer build "${IMG_TAG}.sif" "docker-daemon://${IMG_TAG}"
