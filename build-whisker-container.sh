@@ -3,7 +3,7 @@
 set -euo pipefail
 
 COMMIT=$(git rev-parse --short HEAD)
-declare -l BRANCH
+declare -l BRANCH # Make contents of the variable lowercase
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 IMG_TAG="whisker:${BRANCH}-${COMMIT}"
