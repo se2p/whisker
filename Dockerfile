@@ -50,12 +50,6 @@
 # https://hub.docker.com/layers/satantime/puppeteer-node/24.11.0-bullseye-slim/images/sha256-6050cafd3f8faab90389fe939ef5bae5227695c07d4f3c12a3b32025de76dac4
 ARG version=@sha256:6050cafd3f8faab90389fe939ef5bae5227695c07d4f3c12a3b32025de76dac4
 
-# Whether the image should only include open source GPU drivers for Intel
-# and AMD ("base"), or install drivers for Nvidia Titan Black GPU ("nvidia").
-# The latter breaks support for Intel and AMD. The default is "base", but you
-# can override this via `--build-arg execute=nvidia` on the command line.
-ARG execute=base
-
 # (a) We use a base image that already includes Node.JS and a minimal set
 #     of packages required to run Puppeteer (without packaging Puppeteer
 #     itself – we install the right version of Puppeteer later using yarn).
@@ -68,17 +62,6 @@ RUN : \
         libegl1 \
         libgl1-mesa-dri \
     && rm -rf /usr/share/icons \
-    && :
-
-# Also install proprietary drivers for Nvidia Titan Black GPU if desired.
-# https://wiki.debian.org/NvidiaGraphicsDrivers#Debian_11_.22Bullseye.22
-FROM base as nvidia
-RUN : \
-    && sed -i 's/bullseye main/bullseye main contrib non-free/g' /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y \
-        libgles2 \
-        nvidia-tesla-470-egl-icd \
     && :
 
 # (b) Install packages only required to build Whisker, not to run it.
@@ -120,7 +103,7 @@ RUN : \
 
 # We use the base image again to drop build dependencies (installed via `apt-get`)
 # and the yarn build cache from the final image.
-FROM ${execute} as execute
+FROM base as execute
 
 # Signal Node.JS that we are running in a production environment. This leads to some
 # differences compared to a development environment [1], such as logging and caching.
