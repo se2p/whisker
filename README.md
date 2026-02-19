@@ -118,7 +118,7 @@ Now, you can run the dockerized version of Whisker via
 ```bash
 docker run whisker <additional arguments>
 ```
-The main entry point to the container is the wrapper script `whisker-docker.sh`, which calls Whisker's servant in
+The main entry point to the container is the wrapper script `whisker-container.sh`, which calls Whisker's servant in
 headless mode (using the flags `-d`, `-k` and `-l`, among others.) Any `<additional arguments>` given by the user will
 be forwarded by the script to the servant.
 

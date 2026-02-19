@@ -58,7 +58,7 @@ set -- ${WHISKER_ARGS}
 REDIRECT_OUTPUT="${2}"
 if [ "${REDIRECT_OUTPUT}" = "--" ]; then
     # Redirection is desired. Script invocation syntax:
-    #   whisker-docker.sh <output-dir> -- <whisker-args>
+    #   whisker-container.sh <output-dir> -- <whisker-args>
     OUTPUT_DIR="${1}"
     shift 2
     whisker "$@" \
@@ -66,7 +66,7 @@ if [ "${REDIRECT_OUTPUT}" = "--" ]; then
         2>"${OUTPUT_DIR}/whisker-log-err.txt"
 else
     # No redirection. Script invocation syntax:
-    #   whisker-docker.sh <whisker-args>
+    #   whisker-container.sh <whisker-args>
     whisker "$@"
 fi
 

@@ -62,4 +62,4 @@ COPY --from=build /whisker-build /whisker
 # containers (e.g., when using Apptainer).
 RUN rm -f /whisker/whisker-web/dist/includes/prettify.js
 
-ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
+ENTRYPOINT ["/whisker/servant/whisker-container.sh"]
