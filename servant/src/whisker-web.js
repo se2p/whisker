@@ -6,31 +6,31 @@ const opts = require("./cli").opts;
 const {headless} = opts;
 
 // Workaround for Whisker issue #241
-async function openNewBrowserWithRetry(options) {
-    while (true) {
+async function openNewBrowserWithRetry(options, maxRetries = 5) {
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+        attempt++;
         try {
             const browser = await puppeteer.launch(options);
 
-            try {
-                await Promise.race([
-                    browser.pages(),
-                    new Promise((_resolve, reject) => setTimeout(() => {
-                        reject(new puppeteer.TimeoutError('Timed out after 5 seconds trying to access browser pages'));
-                    }, 5000)),
-                ]);
-            } catch (e) {
-                await browser.close();
-                throw e;
+            // Timeout if pages() does not respond
+            await Promise.race([
+                browser.pages(),
+                new Promise((_resolve, reject) =>
+                    setTimeout(() => reject(new puppeteer.TimeoutError("Timed out waiting for pages")), 5000)
+                ),
+            ]);
+
+            return browser; // success
+        } catch (err) {
+            logger.warn(`Browser launch attempt ${attempt} failed: ${err.message}`);
+
+            if (attempt >= maxRetries) {
+                throw new Error(`Failed to launch browser after ${maxRetries} attempts`);
             }
 
-            // Puppeteer succeeded with opening a new browser.
-            return browser;
-        } catch (e) {
-            if (e instanceof puppeteer.TimeoutError) {
-                logger.warn("Timeout while opening browser! Retrying...");
-            } else {
-                throw e;
-            }
+            await new Promise(r => setTimeout(r, 1000)); // short delay before retry
         }
     }
 }

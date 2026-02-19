@@ -7,6 +7,11 @@ if [ ! -f /.dockerenv ] && [ ! -f /.singularity.d/Singularity ] && [ ! -f /run/.
     exit 1
 fi
 
+print_info() {
+    . /etc/os-release
+    echo "INFO: Running Node.js $(node --version) on ${PRETTY_NAME}"
+}
+
 # The base command for Whisker. We enable headless mode, console and log
 # forwarding, and already set the file URL of the Whisker instance.
 whisker() {
@@ -20,34 +25,11 @@ whisker() {
     exec node /whisker/servant "$@" -d -vv
 }
 
-print_info() {
-    node_ver=$(node --version)
-    . /etc/os-release
-    echo "INFO: Running Node.js ${node_ver} on ${PRETTY_NAME}"
-    # Just to double check how much memory is available to Whisker.
-    df -h /dev/shm
-}
-
-WHISKER_ARGS=""
-
 # Make sure llvmpipe is used as software rasterizer. It is faster than softpipe and swiftshader.
 # https://wiki.archlinux.org/title/OpenGL#Mesa
 # https://docs.mesa3d.org/envvars.html
 export MESA_LOADER_DRIVER_OVERRIDE=/usr/lib/x86_64-linux-gnu/dri/swrast
 export GALLIUM_DRIVER=llvmpipe
-
-# If --enable-gpu is given, do not use llvmpipe, but try to use the host's
-# physical GPU. Do not forward the --enable-gpu flag to Whisker.
-for a in "$@"; do
-    if [ "$a" = '--enable-gpu' ]; then
-        unset MESA_LOADER_DRIVER_OVERRIDE
-        unset GALLIUM_DRIVER
-    else
-        WHISKER_ARGS="${WHISKER_ARGS} ${a}"
-    fi
-done
-
-set -- ${WHISKER_ARGS}
 
 # We support redirection of stdout and stderr to files in a custom directory.
 # This directory must be specified as first argument of this script, followed
@@ -58,7 +40,7 @@ set -- ${WHISKER_ARGS}
 REDIRECT_OUTPUT="${2}"
 if [ "${REDIRECT_OUTPUT}" = "--" ]; then
     # Redirection is desired. Script invocation syntax:
-    #   whisker-docker.sh <output-dir> -- <whisker-args>
+    #   whisker-container.sh <output-dir> -- <whisker-args>
     OUTPUT_DIR="${1}"
     shift 2
     whisker "$@" \
@@ -66,7 +48,7 @@ if [ "${REDIRECT_OUTPUT}" = "--" ]; then
         2>"${OUTPUT_DIR}/whisker-log-err.txt"
 else
     # No redirection. Script invocation syntax:
-    #   whisker-docker.sh <whisker-args>
+    #   whisker-container.sh <whisker-args>
     whisker "$@"
 fi
 
