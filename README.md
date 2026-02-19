@@ -106,30 +106,21 @@ instance:
 node servant run -s project.sb3 -t tests.js -a 10 -d -j 2
 ```
 
-## Using Docker (Headless Mode)
+## Using Apptainer (Headless Mode)
 
-Alternatively, you can build and run Whisker in headless mode using docker. This can be beneficial if you want to
-conduct large-scale experiments on a computing cluster. To this, create a Docker image for Whisker, for example using
-the command
+Alternatively, you can run Whisker in headless mode using Apptainer. This can be beneficial if you want to conduct
+large-scale experiments on a computing cluster. To this, build a SIF image of Whisker:
 ```bash
-docker build -t whisker .
+./build-whisker-container.sh
 ```
-Now, you can run the dockerized version of Whisker via
+Prerequisites: You need to install Apptainer and Docker on the build machine.
+Now, you can run the containerized version of Whisker via
 ```bash
-docker run whisker <additional arguments>
+apptainer run <name-of-the-sif-file>.sif <Whisker args>
 ```
 The main entry point to the container is the wrapper script `whisker-container.sh`, which calls Whisker's servant in
-headless mode (using the flags `-d`, `-k` and `-l`, among others.) Any `<additional arguments>` given by the user will
+headless mode (using the flags `-d` and `-vv`.) The `<Whisier args>` given by the user will
 be forwarded by the script to the servant.
-
-In case you want to copy the artefacts created by Whisker (including redirection of stdout and stderr) to files in a
-writable bind mount, you can achieve this for example as follows:
-```bash
-docker run -v "/on/the/host:/inside/the/container" whisker /inside/the/container -- <Whisker arguments>
-```
-This will mount the directory `/on/the/host` as `/inside/the/container`, instruct Whisker to copy its output (such as
-generated test files and log messages) to files in `/inside/the/container`, and make them accessible to you in the
-directory `/on/the/host`.
 
 ## Writing Tests
 
