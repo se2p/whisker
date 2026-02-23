@@ -116,6 +116,19 @@ export abstract class AbstractEdge {
         });
     }
 
+    /**
+     * Returns the readable label of this edge if it exists, appended with some characters from its id to make it unique
+     * If the label is empty the id is used instead.
+     * This is just likely to be unique, not 100% guaranteed. If uniqueness is important, use the full id instead.
+     */
+    getReadableId(): string{
+        if(this.label === ""){
+            return this.id;
+        } else {
+            return `${this.label}_${this.id.substring(0,4)}`;
+        }
+    }
+
     abstract toJSON(): ModelEdgeJSON;
 
     private _getTimeLimitFailedOutput(condition: Check, t: TestDriver): string {
