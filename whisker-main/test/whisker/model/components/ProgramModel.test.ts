@@ -18,9 +18,10 @@ function getValidProgramModelForCoverage(): MockedProgram {
 
 class MockedProgram extends ProgramModel {
     setCoverageForKey(key: string) {
-        this.coverageCurrentRun.add(key);
-        this.coverageRepetition.add(key);
-        this.coverageTotal.add(key);
+        const edge = this.edges[key];
+        this.coverageCurrentRun.add(edge);
+        this.coverageRepetition.add(edge);
+        this.coverageTotal.add(edge);
     }
 }
 

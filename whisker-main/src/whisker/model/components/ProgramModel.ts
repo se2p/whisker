@@ -48,9 +48,9 @@ interface MinimizationResultUpdated {
  * taken. So that it not gets ambiguous.
  */
 abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractModel<ProgramModelEdge> {
-    protected coverageCurrentRun: Set<string> = new Set();
-    protected coverageTotal: Set<string> = new Set();
-    protected coverageRepetition: Set<string> = new Set();
+    protected coverageCurrentRun: Set<ProgramModelEdge> = new Set();
+    protected coverageTotal: Set<ProgramModelEdge> = new Set();
+    protected coverageRepetition: Set<ProgramModelEdge> = new Set();
     private _manuallyStopped = false;
     private _restartable = false;
 
@@ -98,9 +98,9 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
      */
     getCoverageCurrentRun(debug = false): ModelCoverageResult {
         if (debug) {
-            const notCoveredIds = Object.keys(this.edges).filter(k => !this.coverageCurrentRun.has(k));
+            const notCoveredIds = Object.values(this.edges).filter(edge => !this.coverageCurrentRun.has(edge));
             if (notCoveredIds.length > 0) {
-                logger.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
+                logger.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds.map(e=> e.getReadableId())}`);
             }
         }
         return {
@@ -125,9 +125,9 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
     getTotalCoverage(): ExtendedCoverageResult {
-        const keys = Object.keys(this.edges);
-        const total = keys.length;
-        const missedEdges = keys.filter(k => !this.coverageTotal.has(k));
+        const edges = Object.values(this.edges);
+        const total = edges.length;
+        const missedEdges = edges.filter(k => !this.coverageTotal.has(k)).map(e=> e.getReadableId());
         return {
             covered: total - missedEdges.length,
             total,
@@ -207,9 +207,9 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
     }
 
     protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
-        this.coverageCurrentRun.add(edge.id);
-        this.coverageRepetition.add(edge.id);
-        this.coverageTotal.add(edge.id);
+        this.coverageCurrentRun.add(edge);
+        this.coverageRepetition.add(edge);
+        this.coverageTotal.add(edge);
         super._takeEdge(edge, t);
     }
 }
