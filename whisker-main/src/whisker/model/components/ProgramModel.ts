@@ -167,7 +167,7 @@ abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractM
     }
 
     toMinimizedJSON(): MinimizationResult {
-        const filteredEdges = Object.values(this.edges).filter(e => this.coverageTotal.has(e.id));
+        const filteredEdges = Object.values(this.edges).filter(e => this.coverageTotal.has(e));
         if (filteredEdges.length === 0) {
             return {status: false, minimized: this.toJSON()};
         }
