@@ -111,7 +111,7 @@ class WhiskerSubCommand extends Command {
         this.option(
             '--keepalive-timeout <Integer>',
             'Timeout in seconds for the keepalive timeout',
-            (timeout) => util.processPositiveInt(timeout) * 1000,
+            (timeout) => timeout * 1000,
         );
     }
 
