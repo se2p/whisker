@@ -163,7 +163,7 @@ class TestRunner extends EventEmitter {
                 testResults.length = 0;
                 i++;
             }
-        } else if (modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
+        } else if (modelTester && modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
             csv += await this._executeUserModels(vm, modelTester, project, props, testResults, projectName);
