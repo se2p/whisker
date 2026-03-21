@@ -23,7 +23,7 @@ import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
-import {CoverageOverTime, StatisticsCollector} from "../utils/StatisticsCollector";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
@@ -144,11 +144,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
-        const timeLineValues: CoverageOverTime = {
-            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            branchCoverage: StatisticsCollector.getInstance().branchCoverage
-        };
-        StatisticsCollector.getInstance().updateCoverageOverTime(Date.now() - this._startTime, timeLineValues);
+        StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
 
     getCurrentSolution(): TestChromosome[] {

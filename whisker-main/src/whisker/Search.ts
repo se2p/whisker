@@ -42,6 +42,7 @@ import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
 import logger from "../util/logger";
 import {SearchResult} from "../types/SearchResult";
+import {FitnessEvaluationStoppingCondition} from "./search/stoppingconditions/FitnessEvaluationStoppingCondition";
 import {BasicNeuroevolutionParameter} from "./agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
 import {RLTestSuite} from "./agentTraining/reinforcementLearning/misc/RLTestSuite";
 
@@ -110,18 +111,30 @@ export class Search {
         if (config.searchAlgorithmProperties instanceof BasicNeuroevolutionParameter ||
             config.getAlgorithm() === 'dql') {
             let upperBound: number = undefined;
+            const collector = StatisticsCollector.getInstance();
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FixedTimeStoppingCondition) {
+            if (stoppingCondition instanceof FixedTimeStoppingCondition &&
+                collector.stepType === "time") {
                 upperBound = stoppingCondition.maxTime;
+            } else if (stoppingCondition instanceof FitnessEvaluationStoppingCondition &&
+                collector.stepType === "evaluations") {
+                upperBound = stoppingCondition.maxEvaluations;
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FixedTimeStoppingCondition) {
+                    if (d instanceof FixedTimeStoppingCondition &&
+                        collector.stepType === "time") {
                         upperBound = d.maxTime;
+                        break;
+                    } else if (d instanceof FitnessEvaluationStoppingCondition &&
+                        collector.stepType === "evaluations") {
+                        upperBound = d.maxEvaluations;
+                        break;
                     }
                 }
             }
-            // Sample every minute
-            const csvOutput = StatisticsCollector.getInstance().asCSVAgentTraining(60000, upperBound);
+            // Sample by step
+            const stepSize = collector.stepSize;
+            const csvOutput = collector.asCSVAgentTraining(stepSize, upperBound);
             logger.info(csvOutput);
             return csvOutput;
         } else {

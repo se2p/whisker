@@ -79,6 +79,7 @@ import {DeepQLearningHyperparameter} from "../agentTraining/reinforcementLearnin
 import {FeatureExtraction} from "../agentTraining/featureExtraction/FeatureExtraction";
 import {RLEventExtractor} from "../agentTraining/reinforcementLearning/misc/RLEventExtractor";
 import {OptimizationAlgorithmType} from "../core/OptimizationAlgorithmType";
+import {StatisticsCollector} from "./StatisticsCollector";
 
 
 class ConfigException implements Error {
@@ -113,6 +114,8 @@ export class WhiskerSearchConfiguration {
             this._properties = this._buildSearchAlgorithmProperties();
             Container.isNeuroevolution = false;
         }
+
+        this._updateStatisticsCollectorProperties();
     }
 
     private _buildSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
@@ -469,6 +472,26 @@ export class WhiskerSearchConfiguration {
             stableCount: this._config['coverageObjective']['stableCount'] ?? 1,
             switchTargetThreshold: this._config['coverageObjective']['switchTargetThreshold'] ?? Number.MAX_SAFE_INTEGER
         };
+    }
+
+    private _updateStatisticsCollectorProperties() {
+        const collector = StatisticsCollector.getInstance();
+        if ("csvOutput" in this._config) {
+            const entry = this._config["csvOutput"];
+            switch(entry["stepType"]) {
+                case "evaluations":
+                    collector.stepType = "evaluations";
+                    collector.stepSize = entry["stepSize"] ?? 10;
+                    break;
+                case "time":
+                case undefined:
+                    collector.stepType = "time";
+                    collector.stepSize = entry["stepSize"] ?? 60000;
+                    break;
+                default:
+                    throw new ConfigException(`Unknown step type ${entry["stepType"]}`);
+            }
+        }
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {

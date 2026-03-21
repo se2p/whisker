@@ -23,7 +23,7 @@
         "ci:prepare-downstream-build": "node .prepare-downstream-build.js",
         "lint": "yarn --cwd whisker-main lint && yarn --cwd whisker-web lint && yarn --cwd servant lint",
         "ci:lint": "yarn --cwd whisker-main ci:lint && yarn --cwd whisker-web ci:lint && yarn --cwd servant ci:lint",
-        "servant": "yarn --cwd servant node servant.js",
+        "servant": "yarn --cwd servant node src/servant.js",
         "test": "yarn --cwd whisker-main test && yarn --cwd servant unittest",
         "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant integrationtest",
         "clean:cache": "rm -rf **/.webpack-cache*"
