@@ -29,7 +29,7 @@ function mustBeFile(path, allowedExtensions = [""]) {
         throw new InvalidArgumentError('File must exist.');
     }
 
-    if (!fs.lstatSync(path).isFile()) {
+    if (!fs.statSync(path).isFile()) {
         throw new InvalidArgumentError('Must be a file.');
     }
 
@@ -47,7 +47,7 @@ function mustBeDirectory(path) {
         throw new InvalidArgumentError('Directory must exist.');
     }
 
-    if (!fs.lstatSync(path).isDirectory()) {
+    if (!fs.statSync(path).isDirectory()) {
         throw new InvalidArgumentError('Must be a directory.');
     }
 }
