@@ -477,19 +477,29 @@ export class WhiskerSearchConfiguration {
     private _updateStatisticsCollectorProperties() {
         const collector = StatisticsCollector.getInstance();
         if ("csvOutput" in this._config) {
-            const entry = this._config["csvOutput"];
-            switch(entry["stepType"]) {
+            let defaultTimeStep = 10000;
+            let isAgentTraining = false;
+            if (Container.isNeuroevolution || this.getAlgorithm() === "dql") {
+                defaultTimeStep = 60000;
+                isAgentTraining = true;
+            }
+
+            const entry = this._config.csvOutput;
+            switch(entry.stepType) {
                 case "evaluations":
+                    if (!isAgentTraining) {
+                        throw new ConfigException("Step type of evaluations is only allowed in agent training");
+                    }
                     collector.stepType = "evaluations";
-                    collector.stepSize = entry["stepSize"] ?? 10;
+                    collector.stepSize = entry.stepSize ?? 10;
                     break;
                 case "time":
                 case undefined:
                     collector.stepType = "time";
-                    collector.stepSize = entry["stepSize"] ?? 60000;
+                    collector.stepSize = entry.stepSize ?? defaultTimeStep;
                     break;
                 default:
-                    throw new ConfigException(`Unknown step type ${entry["stepType"]}`);
+                    throw new ConfigException(`Unknown step type ${entry.stepType}`);
             }
         }
     }

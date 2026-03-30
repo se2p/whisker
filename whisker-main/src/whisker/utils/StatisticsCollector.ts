@@ -176,7 +176,7 @@ export class StatisticsCollector {
             branchCoverage: this._branchCoverage,
         };
         if (this._stepType === "evaluations") {
-            this._coverageMap.set(this.evaluations, coverage);
+            this._coverageMap.set(this._evaluations, coverage);
         } else {
             this._coverageMap.set(Date.now() - this._startTime, coverage);
         }
