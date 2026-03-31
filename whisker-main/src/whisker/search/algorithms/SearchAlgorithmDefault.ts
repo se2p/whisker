@@ -25,7 +25,7 @@ import {FitnessFunction} from "../FitnessFunction";
 import {Selection} from "../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
-import {CoverageOverTime, StatisticsCollector} from "../../utils/StatisticsCollector";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {StoppingCondition} from "../StoppingCondition";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
@@ -174,10 +174,6 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      * Updates the coverage over time timeline.
      */
     protected updateCoverageTimeLine():void {
-        const timeLineValues: CoverageOverTime = {
-            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            branchCoverage: StatisticsCollector.getInstance().branchCoverage
-        };
-        StatisticsCollector.getInstance().updateCoverageOverTime(Date.now() - this._startTime, timeLineValues);
+        StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
 }

@@ -42,6 +42,7 @@ import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
 import logger from "../util/logger";
 import {SearchResult} from "../types/SearchResult";
+import {FitnessEvaluationStoppingCondition} from "./search/stoppingconditions/FitnessEvaluationStoppingCondition";
 import {BasicNeuroevolutionParameter} from "./agentTraining/neuroevolution/hyperparameter/BasicNeuroevolutionParameter";
 import {RLTestSuite} from "./agentTraining/reinforcementLearning/misc/RLTestSuite";
 
@@ -106,52 +107,48 @@ export class Search {
          * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
+        let isAgentTraining = false;
         let stoppingCondition: StoppingCondition<Chromosome>;
         if (config.searchAlgorithmProperties instanceof BasicNeuroevolutionParameter ||
             config.getAlgorithm() === 'dql') {
-            let upperBound: number = undefined;
+            isAgentTraining = true;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FixedTimeStoppingCondition) {
-                upperBound = stoppingCondition.maxTime;
-            } else if (stoppingCondition instanceof OneOfStoppingCondition) {
-                for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FixedTimeStoppingCondition) {
-                        upperBound = d.maxTime;
-                    }
-                }
-            }
-            // Sample every minute
-            const csvOutput = StatisticsCollector.getInstance().asCSVAgentTraining(60000, upperBound);
-            logger.info(csvOutput);
-            return csvOutput;
         } else {
             stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
         }
 
-        // Retrieve the time limit (in milliseconds) of the search, if any.
-        let maxTime: number = undefined;
-        if (stoppingCondition instanceof FixedTimeStoppingCondition) {
-            maxTime = stoppingCondition.maxTime;
+        let upperBound: number;
+        const collector = StatisticsCollector.getInstance();
+        if (stoppingCondition instanceof FixedTimeStoppingCondition &&
+            collector.stepType === "time") {
+            upperBound = stoppingCondition.maxTime;
+        } else if (stoppingCondition instanceof FitnessEvaluationStoppingCondition &&
+            collector.stepType === "evaluations") {
+            upperBound = stoppingCondition.maxEvaluations;
         } else if (stoppingCondition instanceof OneOfStoppingCondition) {
-            for (const d of stoppingCondition.conditions) {
-                if (d instanceof FixedTimeStoppingCondition) {
-                    if (maxTime == undefined || maxTime > d.maxTime) { // take the minimum
-                        maxTime = d.maxTime;
-                    }
+            for (const condition of stoppingCondition.conditions) {
+                if (condition instanceof FixedTimeStoppingCondition &&
+                    collector.stepType === "time") {
+                    upperBound = condition.maxTime;
+                    break;
+                } else if (condition instanceof FitnessEvaluationStoppingCondition &&
+                    collector.stepType === "evaluations") {
+                    upperBound = condition.maxEvaluations;
+                    break;
                 }
             }
         }
 
-        const truncateFitnessTimeline = maxTime != undefined;
-        let csvString: string;
-        if (truncateFitnessTimeline) {
-            // Sample every 10 seconds.
-            csvString = StatisticsCollector.getInstance().asCsv(10000, maxTime);
+        // Sample by step
+        const stepSize = collector.stepSize;
+        let csvOutput: string;
+        if (isAgentTraining) {
+            csvOutput = collector.asCSVAgentTraining(stepSize, upperBound);
         } else {
-            csvString = StatisticsCollector.getInstance().asCsv();
+            csvOutput = collector.asCsv(stepSize, upperBound);
         }
-        logger.info(csvString);
-        return csvString;
+        logger.info(csvOutput);
+        return csvOutput;
     }
 
     /*

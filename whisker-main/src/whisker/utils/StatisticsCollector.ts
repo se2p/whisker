@@ -57,8 +57,10 @@ export class StatisticsCollector {
     private _branchCoverage: number;
     private _winningStates: Record<string, string>;
     private _seed: number
+    private _stepType: "time" | "evaluations";
+    private _stepSize: number;
     private readonly _networkSuiteResults: AgentSuiteResults[];
-    private readonly _coverageOverTime: Map<number, CoverageOverTime>;
+    private readonly _coverageMap: Map<number, CoverageGroup>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -82,10 +84,12 @@ export class StatisticsCollector {
         this._averageTestExecutionCount = 0;
         this._testEventCount = 0;
         this._evaluations = 0;
-        this._coverageOverTime = new Map<number, CoverageOverTime>();
+        this._coverageMap = new Map<number, CoverageGroup>();
         this._networkSuiteResults = [];
         this._statementCoverage = 0;
         this._branchCoverage = 0;
+        this._stepType = "time";
+        this._stepSize = 60000;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -166,8 +170,16 @@ export class StatisticsCollector {
         }
     }
 
-    public updateCoverageOverTime(timeStamp: number, value: CoverageOverTime): void {
-        this._coverageOverTime.set(timeStamp, value);
+    public updateCoverageTimeLine(): void {
+        const coverage: CoverageGroup = {
+            statementCoverage: this._statementCoverage,
+            branchCoverage: this._branchCoverage,
+        };
+        if (this._stepType === "evaluations") {
+            this._coverageMap.set(this._evaluations, coverage);
+        } else {
+            this._coverageMap.set(Date.now() - this._startTime, coverage);
+        }
     }
 
     set averageTestExecutionTime(value: number) {
@@ -253,6 +265,22 @@ export class StatisticsCollector {
         this._seed = value;
     }
 
+    get stepType() {
+        return this._stepType;
+    }
+
+    set stepType(value: "time" | "evaluations") {
+        this._stepType = value;
+    }
+
+    get stepSize() {
+        return this._stepSize;
+    }
+
+    set stepSize(value: number) {
+        this._stepSize = value;
+    }
+
     /**
      * Outputs a CSV string that summarises statistics about the search.
      * Among others, this includes a coverage timeline, which reports the achieved coverage over time.
@@ -261,7 +289,8 @@ export class StatisticsCollector {
      * @returns Formatted csv string containing the results of the search algorithm.
      */
     public asCsv(sampleStepSize = 10000, maxTimeStep?: number): string {
-        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, this._adjustCoverageOverTime(sampleStepSize), maxTimeStep);
+        const coverageByStep = this._adjustCoverageByStep(sampleStepSize);
+        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, coverageByStep, maxTimeStep);
 
         const coverageHeaders = header.join(",");
         const coverageValues = values.join(",");
@@ -283,14 +312,14 @@ export class StatisticsCollector {
 
     /**
      * Outputs a CSV string that summarises statistics about the Reinforcement Learning optimization.
-     * This includes a {@link CoverageOverTime} timeline, which reports the achieved coverage over time.
+     * This includes a {@link CoverageGroup} timeline, which reports the achieved coverage over time.
      * @param sampleStepSize the step size for sampling coverage values.
      * @param maxTimeStep defines at which point the coverage timeline will be truncated.
      * @returns Formatted csv string containing the results of the Reinforcement Learning algorithm.
      */
     public asCSVAgentTraining(sampleStepSize: number, maxTimeStep: number): string {
-        const valuesOverTime = this._adjustCoverageOverTime(sampleStepSize);
-        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, valuesOverTime, maxTimeStep);
+        const coverageByStep = this._adjustCoverageByStep(sampleStepSize);
+        const [header, values] = this._getPaddedTimeLineData(sampleStepSize, coverageByStep, maxTimeStep);
 
         const fitnessHeaders = header.join(",");
         const fitnessValues = values.join(",");
@@ -335,7 +364,7 @@ export class StatisticsCollector {
      * @param maxTimeStep defines at which point the coverage timeline will be truncated.
      * @return Array containing the formatted header and body of the coverage timeline for the respective csv row.
      */
-    private _getPaddedTimeLineData(sampleStepSize: number, timelineData: Map<number, CoverageOverTime>,
+    private _getPaddedTimeLineData(sampleStepSize: number, timelineData: Map<number, CoverageGroup>,
                                    maxTimeStep?: number): [number[], string[]] {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
         const timestamps = [...timelineData.keys()].sort((a, b) => a - b);
@@ -367,19 +396,18 @@ export class StatisticsCollector {
         return [header, values];
     }
 
-
-    private _adjustCoverageOverTime(sampleDistance: number): Map<number, CoverageOverTime> {
-        const adjusted: Map<number, CoverageOverTime> = new Map();
+    private _adjustCoverageByStep(sampleDistance: number): Map<number, CoverageGroup> {
+        const adjusted: Map<number, CoverageGroup> = new Map();
         let maxTime = 0;
-        for (const timeSample of this._coverageOverTime.keys()) {
+        for (const timeSample of this._coverageMap.keys()) {
             const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
-            adjusted.set(rounded, this._coverageOverTime.get(timeSample));
+            adjusted.set(rounded, this._coverageMap.get(timeSample));
             if (rounded > maxTime) {
                 maxTime = rounded;
             }
         }
 
-        let max: CoverageOverTime = {
+        let max: CoverageGroup = {
             statementCoverage: 0,
             branchCoverage: 0
         };
@@ -509,7 +537,7 @@ export interface AgentSuiteResults {
     modelResult?: ModelResult,
 }
 
-export interface CoverageOverTime {
+export interface CoverageGroup {
     statementCoverage: number,
     branchCoverage: number
 }

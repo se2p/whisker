@@ -6,7 +6,7 @@ import {DeepQLearningHyperparameter} from "../hyperparameter/DeepQLearningHyperp
 import * as tf from "@tensorflow/tfjs";
 import logger from "../../../../util/logger";
 import {RLTestGenerationAlgorithm} from "./RLTestGenerationAlgorithm";
-import {CoverageOverTime, StatisticsCollector} from "../../../utils/StatisticsCollector";
+import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import {RewardFunction} from "../rewards/RewardFunction";
 
 
@@ -103,7 +103,7 @@ export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
         // Perform an episode and collect samples for the replay memory.
         if (this._observedEpisodes % this._hyperparameter.evaluationFrequency === 0) {
             await this._evaluate(this._actingNetwork, this._environment, rewardFunction);
-            this._updateTimeLineStats();
+            StatisticsCollector.getInstance().updateCoverageTimeLine();
         } else {
             await this.performEpisode(this._environment, this._actingNetwork, rewardFunction, false);
         }
@@ -289,17 +289,6 @@ export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
     }
 
     /**
-     * Updates over time statistics after each evaluation episode.
-     */
-    private _updateTimeLineStats(): void {
-        const timelineData: CoverageOverTime = {
-            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            branchCoverage: StatisticsCollector.getInstance().branchCoverage,
-        };
-        StatisticsCollector.getInstance().updateCoverageOverTime(Date.now() - this._startTime, timelineData);
-    }
-
-    /**
      * Updates global statistics at the end of the optimization process.
      */
     protected _updateGlobalStats(): void {
@@ -309,6 +298,6 @@ export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
         if (this._getUncoveredObjectives().length === 0) {
             statisticsCollector.timeToReachFullCoverage = (Date.now() - this._startTime) / 1000;
         }
-        this._updateTimeLineStats();
+        StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
 }
