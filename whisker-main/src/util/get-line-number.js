@@ -21,7 +21,8 @@ const getLineNumber = (stack) => {
         }
     }
 
-    throw new Error(`Unable to extract line number from stack trace:\n${stack}`);
+    // fallback if we cannot extract the actual line number
+    return 0;
 };
 
 module.exports = {
