@@ -22,7 +22,7 @@ const getLineNumber = (stack) => {
     }
 
     // fallback if we cannot extract the actual line number
-    return 0;
+    return -1;
 };
 
 module.exports = {
