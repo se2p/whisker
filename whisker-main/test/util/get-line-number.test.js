@@ -77,7 +77,29 @@ test.each([
         "   at Generator.next (<anonymous>)",
         "   at /whisker/whisker-main/dist/node/whisker.js:91210:71",
         "   at new Promise (<anonymous>)",
-    ], 1553]
+    ], 1553],
+    // Stack traces like these are encountered when Whisker is called from the Scratch GUI.
+    // In these cases, they look a lot different and the line number cannot be extracted.
+    [[
+        "getLineNumber get-line-number.js:24",
+        "serializeError serialize-error.js:19",
+        "postProcessResults test-runner.js:39",
+        "_executeTests test-runner.js:248",
+        "runTests test-runner.js:176",
+        "runSequentially test-runner.js:98",
+        "runTest2 test-runner.js:150",
+        "onTest debugging-tutorial-step.jsx:62",
+        "onStartTests debugging-tutorial-step.jsx:274",
+        "onStartAfterHold tutorial-flow.jsx:232",
+        "current overview-page.jsx:39",
+        "handleHoldButton tutorial-step-util.jsx:16",
+        "setTimeout handler*handleHoldButton tutorial-step-util.jsx:15",
+        "handleMouseDown overview-page.jsx:36",
+        "React 17",
+        "unstable_runWithPriority scheduler.development.js:653",
+        "runWithPriority$1 React",
+    ], -1],
+    [[], -1],
 ])('getLineNumber test #%#', (trace, lineNumber) => {
     expect(getLineNumber(trace.join('\n'))).toStrictEqual(lineNumber);
     expect(getLineNumber(trace.join('\r\n'))).toStrictEqual(lineNumber);
