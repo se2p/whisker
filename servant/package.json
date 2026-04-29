@@ -10,7 +10,9 @@
         "generic-pool": "^3.9.0",
         "puppeteer": "^22.12.1",
         "whisker-web": "0.8.0",
-        "yaml": "^1.10.2"
+        "yaml": "^1.10.2",
+        "express": "5.2.1",
+        "express-fileupload": "1.5.2"
     },
     "scripts": {
         "build": "webpack --color --bail",
