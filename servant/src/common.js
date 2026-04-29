@@ -117,6 +117,96 @@ function recordLineNumbersOfAssertions(code) {
     return instrumented;
 }
 
+async function runTests(whisker, targetProject) {
+    await whisker.uploadProject(targetProject);
+    const page = whisker.page;
+
+    /**
+     * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
+     * entire test run.
+     * @returns {Promise<string>}
+     */
+    async function readTestResults() {
+        const logOutput = await page.$('#output-log .output-content');
+        while (true) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('projectName')) {
+                break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const endIndex = coverageLogLines.indexOf("", csvHeaderIndex);
+        return coverageLogLines.slice(csvHeaderIndex, endIndex).join("\n")
+    }
+
+    /**
+     * Generates a coverage object based on the coveredBlockIdsPerSprite and blockIdsPerSprite from the
+     * CoverageGenerator used in serializeAndReturnCoverageObject.
+     *
+     * @param {*} serializedCoverage  The coverage object, using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeteer
+     * @returns {coverage}            The coverage object
+     */
+    function convertSerializedCoverageToCoverage(serializedCoverage) {
+        const coveredBlockIdsPerSprite = new Map();
+        serializedCoverage.coveredBlockIdsPerSprite
+            .forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
+        const blockIdsPerSprite = new Map();
+        serializedCoverage.blockIdsPerSprite.forEach(({key, values}) => blockIdsPerSprite.set(key, new Set(values)));
+        return {coveredBlockIdsPerSprite, blockIdsPerSprite};
+    }
+
+    /**
+     * Generates a model coverage object based on the coveragePerModel and missedEdges.
+     *
+     * @param {*} serializedCoverage  The model coverage object using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeter
+     */
+    function convertSerializedModelCoverage(serializedCoverage) {
+        const modelCoverage = {};
+        serializedCoverage.modelCoverage.forEach(({key, values}) => {
+            const coverageObject = {};
+            values.forEach(({key, values}) => {
+                coverageObject[key] = values;
+            });
+            modelCoverage[key] = coverageObject;
+        });
+        return modelCoverage;
+    }
+
+    /**
+     * Uses the CoverageGenerator, which is attached to the window object in the whisker-web/index.js to get the coverage
+     * of the test run and transfer it from the Whisker instance in the browser to this script.
+     * The original Maps and Sets have to be reworked to be a collection of objects and arrays, otherwise the coverage raw
+     * data cannot be transferred from the Chrome instance to the nodejs instance.
+     */
+    async function onFinishedCallback() {
+        return page.evaluate(() => new Promise(resolve => {
+            document.defaultView.messageServantCallback = message => resolve(message);
+        }));
+    }
+
+    try {
+        const promise = onFinishedCallback();
+        await (await page.$('#run-all-tests')).click();
+
+        const csvRow = await readTestResults();
+        const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
+
+        return Promise.resolve({
+            summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
+            csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)
+        });
+    } catch (e) {
+        logger.error(e);
+        return Promise.reject(e);
+    }
+}
+
 module.exports = {
     switchToProjectTab,
     switchToUploadTab,
@@ -124,4 +214,5 @@ module.exports = {
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
     recordLineNumbersOfAssertions,
+    runTests,
 };
