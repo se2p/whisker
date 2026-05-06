@@ -15,7 +15,7 @@
 # We use a base image that already includes Node.JS and a minimal set of packages required to run Puppeteer (without
 # packaging Puppeteer itself – we install the right version of Puppeteer later using yarn). Also install libraries
 # required for hardware acceleration.
-FROM satantime/puppeteer-node:24.11.0-bullseye-slim as base
+FROM satantime/puppeteer-node:24.11.0-bullseye-slim AS base
 
 RUN : \
     && apt-get update \
@@ -26,7 +26,7 @@ RUN : \
     && :
 
 
-FROM base as build
+FROM base AS build
 
 RUN : \
     && apt-get update \
@@ -51,8 +51,28 @@ RUN : \
     && yarn install --production \
     && :
 
+################################################################################
 
-FROM base as execute
+FROM base AS api
+
+ENV NODE_ENV=production
+
+COPY --from=build /whisker-build /whisker
+
+# Workaround for NPEs caused by prettify.js. The file is also deleted by servant.js but this doesn't work for immutable
+# containers (e.g., when using Apptainer).
+RUN rm -f /whisker/whisker-web/dist/includes/prettify.js
+
+WORKDIR /whisker/servant/
+
+EXPOSE 8091
+
+ENTRYPOINT ["/whisker/servant/whisker-container.sh"]
+CMD ["api", "--headless", "--acceleration", "10", "--port", "8091", "--number-of-jobs", "1"]
+
+################################################################################
+
+FROM base AS execute
 
 ENV NODE_ENV=production
 
