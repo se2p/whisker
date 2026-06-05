@@ -148,5 +148,11 @@
     "ASSERTION_VALUE_LESS": "Wert kleiner als Vergleichswert",
     "ASSERTION_VALUE_LESS_OR_EQUAL": "Wert kleiner oder gleich Vergleichswert",
     "CONDITION_IS_FALSE": "Bedingung ist falsch",
-    "CONDITION_IS_TRUE": "Bedingung ist wahr"
+    "CONDITION_IS_TRUE": "Bedingung ist wahr",
+    "topbar-upload-project": "Scratch-Projekt hochladen",
+    "topbar-upload-tests": "Tests hochladen",
+    "topbar-run": "Starten",
+    "topbar-stop": "Stoppen",
+    "tab-search": "Suchbasiertes Testen",
+    "tab-learning": "Lernbasiertes Testen"
 }

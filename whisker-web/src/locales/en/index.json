@@ -148,5 +148,11 @@
     "ASSERTION_VALUE_LESS": "Value less than comparison value",
     "ASSERTION_VALUE_LESS_OR_EQUAL": "Value less than or equal to comparison value",
     "CONDITION_IS_FALSE": "Condition is false",
-    "CONDITION_IS_TRUE": "Condition is true"
+    "CONDITION_IS_TRUE": "Condition is true",
+    "topbar-upload-project": "Upload .sb3 Project",
+    "topbar-upload-tests": "Upload Tests",
+    "topbar-run": "Run",
+    "topbar-stop": "Stop",
+    "tab-search": "Search-Based Testing",
+    "tab-learning": "Learning-Based Testing"
 }
