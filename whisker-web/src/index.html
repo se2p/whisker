@@ -130,8 +130,8 @@
         </button>
     </nav>
 
-    <!-- Legacy Bootstrap tab nav (hidden, keeps JS wiring intact) -->
-    <div style="display:none;">
+    <!-- Legacy Bootstrap tab nav (visually hidden, keeps JS wiring and Puppeteer clicks intact) -->
+    <div style="position:fixed; opacity:0; top:-200px; left:0; z-index:-1;">
         <ul class="nav nav-tabs" id="whiskerTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabUpload" data-bs-toggle="tab" data-bs-target="#contentUpload"

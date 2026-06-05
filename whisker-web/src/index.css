@@ -231,15 +231,22 @@ p {
 /* ==== Header Structure ==== */
 
 #small-logo {
-    position: absolute;
-    width: 180px;
-    margin-left: 30px;
-    margin-top: 10px;
+    position: static;
+    width: auto;
+    height: 36px;
+    margin: 0;
 }
 
 .banner {
     width: 100%;
     transform: translateY(-4%);
+}
+
+
+@media (max-width: 600px) {
+    .banner {
+        padding-top: 50px !important;
+    }
 }
 
 
@@ -495,12 +502,20 @@ pre.prettyprint {
 }
 
 @media (max-width: 1400px) {
+    .banner {
+        padding-top: 20px !important;
+    }
+
     .nav .nav-item a {
         font-size: 14px !important;
     }
 }
 
 @media (max-width: 970px) {
+    .banner {
+        padding-top: 30px !important;
+    }
+
     .scratchBlocksHome {
         display: none;
     }
@@ -512,6 +527,10 @@ pre.prettyprint {
 }
 
 @media (max-width: 800px) {
+    .banner {
+        padding-top: 40px !important;
+    }
+
     .nav .nav-item a {
         font-size: 12px !important;
     }
@@ -1492,8 +1511,10 @@ label {
 }
 
 .whisker-topbar-logo img {
+    position: static;
     height: 36px;
     width: auto;
+    margin: 0;
 }
 
 .whisker-logo-icon {
@@ -1597,6 +1618,45 @@ label {
 
 .whisker-advanced-toggle span {
     color: #6b7280;
+}
+
+/* ===== NEW SHELL: Topbar Responsive ===== */
+
+@media (max-width: 1100px) {
+    #whisker-topbar {
+        padding: 8px 16px;
+        gap: 8px;
+    }
+    .whisker-upload-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    .whisker-btn-run,
+    .whisker-btn-stop {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    .whisker-advanced-toggle span {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .whisker-topbar-center {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .whisker-upload-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+        gap: 4px;
+        white-space: nowrap;
+    }
+    .whisker-btn-run,
+    .whisker-btn-stop {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
 }
 
 /* ===== NEW SHELL: Tab Bar ===== */

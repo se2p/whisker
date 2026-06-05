@@ -149,7 +149,7 @@
     "ASSERTION_VALUE_LESS_OR_EQUAL": "Wert kleiner oder gleich Vergleichswert",
     "CONDITION_IS_FALSE": "Bedingung ist falsch",
     "CONDITION_IS_TRUE": "Bedingung ist wahr",
-    "topbar-upload-project": "Scratch-Projekt hochladen",
+    "topbar-upload-project": ".sb3 Projekt hochladen",
     "topbar-upload-tests": "Tests hochladen",
     "topbar-run": "Starten",
     "topbar-stop": "Stoppen",
