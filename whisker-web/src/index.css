@@ -1149,6 +1149,19 @@ img {
 
 #whiskerTabContent {
     margin-bottom: 50px;
+    padding-left: calc(6vw + 75px);
+}
+
+@media only screen and (max-width: 1300px) {
+    #whiskerTabContent {
+        padding-left: 80px;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    #whiskerTabContent {
+        padding-left: 70px;
+    }
 }
 
 .scrolled {
@@ -1627,15 +1640,18 @@ label {
         padding: 8px 16px;
         gap: 8px;
     }
+
     .whisker-upload-btn {
         padding: 6px 10px;
         font-size: 13px;
     }
+
     .whisker-btn-run,
     .whisker-btn-stop {
         padding: 6px 12px;
         font-size: 13px;
     }
+
     .whisker-advanced-toggle span {
         display: none;
     }
@@ -1646,12 +1662,14 @@ label {
         flex-direction: column;
         gap: 4px;
     }
+
     .whisker-upload-btn {
         padding: 4px 8px;
         font-size: 12px;
         gap: 4px;
         white-space: nowrap;
     }
+
     .whisker-btn-run,
     .whisker-btn-stop {
         padding: 5px 10px;
@@ -1700,4 +1718,106 @@ label {
     height: 2px;
     background-color: #2563eb;
     border-radius: 2px 2px 0 0;
+}
+
+/* ===== NEW SHELL: Testing Workspace Split ===== */
+
+#contentUpload,
+#contentLogs,
+#contentTestEditor,
+#contentModelEditor {
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#contentProject {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.whisker-workspace-split {
+    display: flex;
+    min-height: 580px;
+}
+
+.whisker-config-panel {
+    width: 40%;
+    min-width: 240px;
+    max-width: 380px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 1px solid #e5e7eb;
+    background: #ffffff;
+    padding: 24px 20px;
+}
+
+.whisker-main-panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+.whisker-view-toggle-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.whisker-view-toggle {
+    display: inline-flex;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.whisker-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    background: transparent;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.whisker-view-btn:hover {
+    color: #111827;
+}
+
+.whisker-view-btn--active {
+    background: #ffffff;
+    color: #111827;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.whisker-view-content {
+    flex: 1;
+    padding: 16px;
+}
+
+.whisker-config-title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    text-align: left !important;
+    margin-bottom: 24px !important;
+}
+
+.whisker-config-title::before,
+.whisker-config-title::after {
+    display: none !important;
 }
