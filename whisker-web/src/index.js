@@ -9,6 +9,26 @@ import uid from 'scratch-vm/src/util/uid';
 import {Container} from 'whisker-main/src/whisker/utils/Container';
 import JSZip from 'jszip';
 
+/* Algorithm config map — bundled at build time to avoid CORS issues with file:// */
+window._whiskerConfigMap = {
+    'config/mio.json':                              JSON.stringify(require('../../config/mio.json')),
+    'config/mosa.json':                             JSON.stringify(require('../../config/mosa.json')),
+    'config/random.json':                           JSON.stringify(require('../../config/random.json')),
+    'config/oneplusone.json':                       JSON.stringify(require('../../config/oneplusone.json')),
+    'config/randomSearch.json':                     JSON.stringify(require('../../config/randomSearch.json')),
+    'config/Neuroevolution/neatest.json':            JSON.stringify(require('../../config/Neuroevolution/neatest.json')),
+    'config/Neuroevolution/neatestBackprop.json':    JSON.stringify(require('../../config/Neuroevolution/neatestBackprop.json')),
+    'config/Neuroevolution/mio.json':               JSON.stringify(require('../../config/Neuroevolution/mio.json')),
+    'config/Neuroevolution/mosa.json':              JSON.stringify(require('../../config/Neuroevolution/mosa.json')),
+    'config/Neuroevolution/cosineNovelty.json':     JSON.stringify(require('../../config/Neuroevolution/cosineNovelty.json')),
+    'config/Neuroevolution/eventNovelty.json':      JSON.stringify(require('../../config/Neuroevolution/eventNovelty.json')),
+    'config/Neuroevolution/newsd.json':             JSON.stringify(require('../../config/Neuroevolution/newsd.json')),
+    'config/Neuroevolution/random.json':            JSON.stringify(require('../../config/Neuroevolution/random.json')),
+    'config/Neuroevolution/score.json':             JSON.stringify(require('../../config/Neuroevolution/score.json')),
+    'config/Neuroevolution/survive.json':           JSON.stringify(require('../../config/Neuroevolution/survive.json')),
+    'config/ReinforcementLearning/dql.json':        JSON.stringify(require('../../config/ReinforcementLearning/dql.json')),
+};
+
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
@@ -321,16 +341,15 @@ const runSearch = async function () {
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
-    const configName =
-        Whisker.configFileSelect.hasName() ?
-            Whisker.configFileSelect.getName() :
-            'mio.json';
+    const configName = window._whiskerSelectedConfig
+        ? (JSON.parse(window._whiskerSelectedConfig).algorithm || 'selected')
+        : 'mio.json';
     logger.info(`loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
-    const config = await Whisker.configFileSelect.loadAsString();
+    const config = window._whiskerSelectedConfig || window._whiskerConfigMap['config/mio.json'];
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
     const generateBBTs = useBBTToggle.is(':checked');
@@ -989,8 +1008,8 @@ const initComponents = function () {
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
-    Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer());
+    // Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
+    //     fileSelect => fileSelect.loadAsArrayBuffer());
 
 
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
@@ -1024,14 +1043,14 @@ const _showTooltipIfTooLong = function (label, event) {
 };
 
 const _addFileListeners = function () {
-    $('#fileselect-config').on('change', event => {
-        const fileName = Whisker.configFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
+    // $('#fileselect-config').on('change', event => {
+    //     const fileName = Whisker.configFileSelect.getName();
+    //     $(event.target).parent()
+    //         .removeAttr('data-i18n')
+    //         .attr('title', fileName);
+    //     const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
+    //     _showTooltipIfTooLong(label, event);
+    // });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent()
@@ -1125,7 +1144,7 @@ const initEvents = function () {
                 FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
-                Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
+                Promise.resolve(window._whiskerSelectedConfig || window._whiskerConfigMap['config/mio.json']).then(config => Whisker.stateActionRecorder.startRecording(config));
                 Whisker.scratch.enableInput();
             }
         } else if (Whisker.inputRecorder.isRecording()) {
@@ -1466,9 +1485,9 @@ const _updateFilenameLabels = () => {
     if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
         $('#tests-label').html(Whisker.testFileSelect.getName());
     }
-    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
-        $('#config-label').html(Whisker.configFileSelect.getName());
-    }
+    // if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
+    //     $('#config-label').html(Whisker.configFileSelect.getName());
+    // }
     if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }

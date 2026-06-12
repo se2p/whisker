@@ -307,9 +307,58 @@
         <div class="tab-pane tabBorder fade show active" id="contentProject" role="tabpanel"
             aria-labelledby="contact-tab">
             <div class="whisker-workspace-split">
-                <!-- Left: Config Panel (30%) — populated in next phase -->
+                <!-- Left: Config Panel (30%) -->
                 <div class="whisker-config-panel" id="whisker-config-panel">
                     <h2 class="whisker-config-title" data-i18n="config-title">Configuration</h2>
+
+                    <!-- Search-Based algorithms (default visible) -->
+                    <div id="whisker-search-config">
+                        <p class="whisker-algo-section-label">Algorithm</p>
+                        <div class="whisker-algo-cards">
+                            <button class="whisker-algo-card" onclick="_selectAlgorithm('config/mio.json', this)">
+                                <span class="whisker-algo-name">MIO</span>
+                                <span class="whisker-algo-desc">Many Independent Objectives</span>
+                            </button>
+                            <button class="whisker-algo-card" onclick="_selectAlgorithm('config/mosa.json', this)">
+                                <span class="whisker-algo-name">MOSA</span>
+                                <span class="whisker-algo-desc">Many-Objective Sorting Algorithm</span>
+                            </button>
+                            <button class="whisker-algo-card" onclick="_selectAlgorithm('config/random.json', this)">
+                                <span class="whisker-algo-name">Random</span>
+                                <span class="whisker-algo-desc">Baseline random event generation</span>
+                            </button>
+                            <button class="whisker-algo-card" onclick="_selectAlgorithm('config/oneplusone.json', this)">
+                                <span class="whisker-algo-name">One Plus One</span>
+                                <span class="whisker-algo-desc">Simple (1+1) evolutionary algorithm</span>
+                            </button>
+                            <button class="whisker-algo-card" onclick="_selectAlgorithm('config/randomSearch.json', this)">
+                                <span class="whisker-algo-name">Random Search</span>
+                                <span class="whisker-algo-desc">Many-objective random search</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Learning-Based algorithms (hidden until learning tab active) -->
+                    <div id="whisker-learning-config" style="display:none;">
+                        <p class="whisker-algo-section-label">Algorithm</p>
+                        <select class="whisker-algo-select" onchange="_selectAlgorithmFromDropdown(this)">
+                            <optgroup label="Neuroevolution">
+                                <option value="config/Neuroevolution/neatest.json">NEATEST</option>
+                                <option value="config/Neuroevolution/neatestBackprop.json">NEATEST + Backprop</option>
+                                <option value="config/Neuroevolution/mio.json">MIO NEATEST</option>
+                                <option value="config/Neuroevolution/mosa.json">MOSA NEATEST</option>
+                                <option value="config/Neuroevolution/cosineNovelty.json">Cosine Novelty</option>
+                                <option value="config/Neuroevolution/eventNovelty.json">Event Novelty</option>
+                                <option value="config/Neuroevolution/newsd.json">NEWSD</option>
+                                <option value="config/Neuroevolution/random.json">Random NEAT</option>
+                                <option value="config/Neuroevolution/score.json">NEAT Score</option>
+                                <option value="config/Neuroevolution/survive.json">NEAT Survive</option>
+                            </optgroup>
+                            <optgroup label="Reinforcement Learning">
+                                <option value="config/ReinforcementLearning/dql.json">DQL</option>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
                 <!-- Right: Main Panel (70%) -->
                 <div class="whisker-main-panel">
@@ -460,7 +509,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <!-- Config file upload -->
+                            <!-- Config file upload (commented out — replaced by algorithm cards in config panel)
                             <div class="col-lg-12">
                                 <div id="config-upload" class="form m-4 mr-5">
                                     <div class="row">
@@ -493,6 +542,7 @@
                                     </div>
                                 </div>
                             </div>
+                            -->
                         </div>
                     </div>
                 </div>
@@ -1402,6 +1452,20 @@
             document.getElementById('whisker-dashboard-view').style.display = mode === 'dashboard' ? '' : 'none';
         }
 
+        window._whiskerSelectedConfig = null;
+
+        function _selectAlgorithm(configPath, clickedCard) {
+            document.querySelectorAll('.whisker-algo-card').forEach(function (c) {
+                c.classList.remove('whisker-algo-card--active');
+            });
+            clickedCard.classList.add('whisker-algo-card--active');
+            window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
+        }
+
+        function _selectAlgorithmFromDropdown(select) {
+            window._whiskerSelectedConfig = window._whiskerConfigMap[select.value] || null;
+        }
+
         function _switchWhiskerTab(targetContentId, clickedBtn) {
             document.querySelectorAll('.whisker-tab').forEach(function (btn) {
                 btn.classList.remove('active');
@@ -1417,6 +1481,16 @@
             if (legacyId) {
                 var legacyTab = document.getElementById(legacyId);
                 if (legacyTab) legacyTab.click();
+            }
+            if (targetContentId === 'contentProject') {
+                var isLearning = clickedBtn.id === 'whisker-tab-learning';
+                var searchConfig = document.getElementById('whisker-search-config');
+                var learningConfig = document.getElementById('whisker-learning-config');
+                if (searchConfig) searchConfig.style.display = isLearning ? 'none' : '';
+                if (learningConfig) learningConfig.style.display = isLearning ? '' : 'none';
+                window._whiskerSelectedConfig = isLearning
+                    ? window._whiskerConfigMap['config/Neuroevolution/neatest.json']
+                    : window._whiskerConfigMap['config/mio.json'];
             }
         }
 

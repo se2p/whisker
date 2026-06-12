@@ -1821,3 +1821,72 @@ label {
 .whisker-config-title::after {
     display: none !important;
 }
+
+.whisker-algo-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.whisker-algo-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.whisker-algo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.whisker-algo-card:hover {
+    border-color: #93c5fd;
+}
+
+.whisker-algo-card--active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.whisker-algo-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.whisker-algo-card--active .whisker-algo-name {
+    color: #2563eb;
+}
+
+.whisker-algo-desc {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.whisker-algo-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.whisker-algo-select:focus {
+    outline: none;
+    border-color: #2563eb;
+}
