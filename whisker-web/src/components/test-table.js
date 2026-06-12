@@ -496,7 +496,8 @@ class TestTable {
             pagingType: 'simple',
 
             autoWidth: false,
-            dom: '<"row"<"col-sm-12 col-md-6"l><f>>' +
+            dom: '<"row"<"col-sm-12"f>>' +
+                 '<"row"<"col-sm-12"l>>' +
                  '<"row"<"col-sm-12"tr>>' +
                  '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
 

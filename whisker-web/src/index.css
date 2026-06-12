@@ -247,6 +247,25 @@ p {
     .banner {
         padding-top: 50px !important;
     }
+
+    #tests-header {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    #test-table>b {
+        display: block;
+        width: 100%;
+    }
+
+    .scrollTable {
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 
@@ -693,7 +712,7 @@ pre.prettyprint {
 }
 
 #scratch-stage {
-    width: 100%;
+    width: 100% !important;
     border: 1px solid gray;
 }
 
@@ -706,6 +725,8 @@ pre.prettyprint {
     height: 500px;
     overflow-x: hidden;
     overflow-y: scroll;
+    width: 100%;
+    min-width: 0;
 }
 
 input[type="search"] {
@@ -820,9 +841,18 @@ tr td:nth-child(5) {
 
 #tests-header {
     margin-top: 0;
-    margin-bottom: -25px;
+    margin-bottom: 10px;
+    display: block;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    width: 100%;
 }
 
+#test-table>b {
+    display: block;
+    width: 100%;
+}
 
 /* ===== DataTables Style ===== */
 
@@ -1681,6 +1711,7 @@ label {
 
 #whisker-tabbar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     background: #ffffff;
     border-bottom: 1px solid #e5e7eb;
@@ -1752,6 +1783,71 @@ label {
     border-right: 1px solid #e5e7eb;
     background: #ffffff;
     padding: 24px 20px;
+}
+
+@media (max-width: 1350px) {
+    .whisker-config-panel {
+        width: 35%;
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 1050px) {
+    .whisker-config-panel {
+        width: 30%;
+        max-width: 290px;
+        padding: 16px 12px;
+    }
+}
+
+@media (max-width: 1200px) {
+    #scratch-project .col-lg-6 {
+        flex: none;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #scratch-controls .row {
+        justify-content: center;
+        align-items: center;
+    }
+
+    #scratch-controls .col-lg-8,
+    #scratch-controls .col-lg-4 {
+        flex: 0 0 auto;
+        width: auto;
+        max-width: none;
+        text-align: left !important;
+    }
+
+    #scratch-controls .search-button {
+        margin-left: 0;
+    }
+
+    .slide-container {
+        padding-left: 4%;
+    }
+
+    .slide-container .row {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .whisker-workspace-split {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .whisker-config-panel {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        flex-shrink: 1;
+        padding: 24px 20px;
+    }
 }
 
 .whisker-main-panel {
