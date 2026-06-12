@@ -11,22 +11,22 @@ import JSZip from 'jszip';
 
 /* Algorithm config map — bundled at build time to avoid CORS issues with file:// */
 window._whiskerConfigMap = {
-    'config/mio.json':                              JSON.stringify(require('../../config/mio.json')),
-    'config/mosa.json':                             JSON.stringify(require('../../config/mosa.json')),
-    'config/random.json':                           JSON.stringify(require('../../config/random.json')),
-    'config/oneplusone.json':                       JSON.stringify(require('../../config/oneplusone.json')),
-    'config/randomSearch.json':                     JSON.stringify(require('../../config/randomSearch.json')),
-    'config/Neuroevolution/neatest.json':            JSON.stringify(require('../../config/Neuroevolution/neatest.json')),
-    'config/Neuroevolution/neatestBackprop.json':    JSON.stringify(require('../../config/Neuroevolution/neatestBackprop.json')),
-    'config/Neuroevolution/mio.json':               JSON.stringify(require('../../config/Neuroevolution/mio.json')),
-    'config/Neuroevolution/mosa.json':              JSON.stringify(require('../../config/Neuroevolution/mosa.json')),
-    'config/Neuroevolution/cosineNovelty.json':     JSON.stringify(require('../../config/Neuroevolution/cosineNovelty.json')),
-    'config/Neuroevolution/eventNovelty.json':      JSON.stringify(require('../../config/Neuroevolution/eventNovelty.json')),
-    'config/Neuroevolution/newsd.json':             JSON.stringify(require('../../config/Neuroevolution/newsd.json')),
-    'config/Neuroevolution/random.json':            JSON.stringify(require('../../config/Neuroevolution/random.json')),
-    'config/Neuroevolution/score.json':             JSON.stringify(require('../../config/Neuroevolution/score.json')),
-    'config/Neuroevolution/survive.json':           JSON.stringify(require('../../config/Neuroevolution/survive.json')),
-    'config/ReinforcementLearning/dql.json':        JSON.stringify(require('../../config/ReinforcementLearning/dql.json')),
+    'config/mio.json': JSON.stringify(require('../../config/mio.json')),
+    'config/mosa.json': JSON.stringify(require('../../config/mosa.json')),
+    'config/random.json': JSON.stringify(require('../../config/random.json')),
+    'config/oneplusone.json': JSON.stringify(require('../../config/oneplusone.json')),
+    'config/randomSearch.json': JSON.stringify(require('../../config/randomSearch.json')),
+    'config/Neuroevolution/neatest.json': JSON.stringify(require('../../config/Neuroevolution/neatest.json')),
+    'config/Neuroevolution/neatestBackprop.json': JSON.stringify(require('../../config/Neuroevolution/neatestBackprop.json')),
+    'config/Neuroevolution/mio.json': JSON.stringify(require('../../config/Neuroevolution/mio.json')),
+    'config/Neuroevolution/mosa.json': JSON.stringify(require('../../config/Neuroevolution/mosa.json')),
+    'config/Neuroevolution/cosineNovelty.json': JSON.stringify(require('../../config/Neuroevolution/cosineNovelty.json')),
+    'config/Neuroevolution/eventNovelty.json': JSON.stringify(require('../../config/Neuroevolution/eventNovelty.json')),
+    'config/Neuroevolution/newsd.json': JSON.stringify(require('../../config/Neuroevolution/newsd.json')),
+    'config/Neuroevolution/random.json': JSON.stringify(require('../../config/Neuroevolution/random.json')),
+    'config/Neuroevolution/score.json': JSON.stringify(require('../../config/Neuroevolution/score.json')),
+    'config/Neuroevolution/survive.json': JSON.stringify(require('../../config/Neuroevolution/survive.json')),
+    'config/ReinforcementLearning/dql.json': JSON.stringify(require('../../config/ReinforcementLearning/dql.json'))
 };
 
 /* Translation resources */
@@ -341,9 +341,9 @@ const runSearch = async function () {
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
-    const configName = window._whiskerSelectedConfig
-        ? (JSON.parse(window._whiskerSelectedConfig).algorithm || 'selected')
-        : 'mio.json';
+    const configName = window._whiskerSelectedConfig ?
+        (JSON.parse(window._whiskerSelectedConfig).algorithm || 'selected') :
+        'mio.json';
     logger.info(`loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
