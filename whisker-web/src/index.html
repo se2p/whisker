@@ -313,7 +313,7 @@
 
                     <!-- Search-Based algorithms (default visible) -->
                     <div id="whisker-search-config">
-                        <p class="whisker-algo-section-label">Algorithm</p>
+                        <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
                         <div class="whisker-algo-cards">
                             <button class="whisker-algo-card" onclick="_selectAlgorithm('config/mio.json', this)">
                                 <span class="whisker-algo-name">MIO</span>
@@ -336,11 +336,46 @@
                                 <span class="whisker-algo-desc">Many-objective random search</span>
                             </button>
                         </div>
+
+                        <!-- Global Settings -->
+                        <div class="whisker-global-settings">
+                            <div class="whisker-settings-row">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" for="cfg-time-budget" data-i18n="config-time-budget">Time Budget (s)</label>
+                                    <input type="number" class="whisker-setting-input" id="cfg-time-budget" value="600" min="1"
+                                        oninput="_updateGlobalSetting('timeBudget', this.value)">
+                                </div>
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" for="cfg-max-events" data-i18n="config-max-test-length">Max test length</label>
+                                    <input type="number" class="whisker-setting-input" id="cfg-max-events" value="20" min="1"
+                                        oninput="_updateGlobalSetting('maxEvents', this.value)">
+                                </div>
+                            </div>
+
+                            <hr class="whisker-settings-divider">
+
+                            <!-- Advanced Config collapsible -->
+                            <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                <span data-i18n="config-advanced">Advanced Config</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="whisker-advanced-body" style="display:none;">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" data-i18n="config-coverage-target">Coverage Target</label>
+                                    <div class="whisker-coverage-toggle">
+                                        <button class="whisker-coverage-btn whisker-coverage-btn--active" id="cfg-coverage-statement"
+                                            onclick="_updateGlobalSetting('coverageTarget', 'statement', this)" data-i18n="config-coverage-statement">Statement</button>
+                                        <button class="whisker-coverage-btn" id="cfg-coverage-branch"
+                                            onclick="_updateGlobalSetting('coverageTarget', 'branch', this)" data-i18n="config-coverage-branch">Branch</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Learning-Based algorithms (hidden until learning tab active) -->
                     <div id="whisker-learning-config" style="display:none;">
-                        <p class="whisker-algo-section-label">Algorithm</p>
+                        <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
                         <select class="whisker-algo-select" onchange="_selectAlgorithmFromDropdown(this)">
                             <optgroup label="Neuroevolution">
                                 <option value="config/Neuroevolution/neatest.json">NEATEST</option>
@@ -1454,12 +1489,63 @@
 
         window._whiskerSelectedConfig = null;
 
+        function _toggleAdvancedConfig(btn) {
+            var body = btn.nextElementSibling;
+            var isOpen = body.style.display !== 'none';
+            body.style.display = isOpen ? 'none' : '';
+            btn.classList.toggle('whisker-advanced-header--open', !isOpen);
+        }
+
+        function _updateGlobalSetting(key, value, btn) {
+            if (!window._whiskerSelectedConfig) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (key === 'timeBudget') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.stoppingCondition.conditions[0].duration = num * 1000;
+            } else if (key === 'maxEvents') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                if ('maxLength' in cfg.chromosome) cfg.chromosome.maxLength = num;
+                if ('maxSampleLength' in cfg.chromosome) cfg.chromosome.maxSampleLength = num;
+            } else if (key === 'coverageTarget') {
+                if (!cfg.fitnessFunction) cfg.fitnessFunction = {type: 'statement', targets: []};
+                cfg.fitnessFunction.type = value;
+                document.querySelectorAll('.whisker-coverage-btn').forEach(function (b) {
+                    b.classList.remove('whisker-coverage-btn--active');
+                });
+                btn.classList.add('whisker-coverage-btn--active');
+            }
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+        }
+
+        function _populateGlobalSettings(configStr) {
+            if (!configStr) return;
+            var cfg = JSON.parse(configStr);
+            var timeBudgetEl = document.getElementById('cfg-time-budget');
+            var maxEventsEl = document.getElementById('cfg-max-events');
+            if (cfg.stoppingCondition && cfg.stoppingCondition.conditions && cfg.stoppingCondition.conditions[0]) {
+                timeBudgetEl.value = cfg.stoppingCondition.conditions[0].duration / 1000;
+            }
+            if (cfg.chromosome) {
+                var maxEvents = cfg.chromosome.maxLength != null ? cfg.chromosome.maxLength : cfg.chromosome.maxSampleLength;
+                if (maxEvents != null) maxEventsEl.value = maxEvents;
+            }
+            var coverageType = cfg.fitnessFunction && cfg.fitnessFunction.type;
+            document.querySelectorAll('.whisker-coverage-btn').forEach(function (b) {
+                b.classList.remove('whisker-coverage-btn--active');
+            });
+            var activeBtn = document.getElementById('cfg-coverage-' + (coverageType || 'statement'));
+            if (activeBtn) activeBtn.classList.add('whisker-coverage-btn--active');
+        }
+
         function _selectAlgorithm(configPath, clickedCard) {
             document.querySelectorAll('.whisker-algo-card').forEach(function (c) {
                 c.classList.remove('whisker-algo-card--active');
             });
             clickedCard.classList.add('whisker-algo-card--active');
             window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
+            _populateGlobalSettings(window._whiskerSelectedConfig);
         }
 
         function _selectAlgorithmFromDropdown(select) {

@@ -154,5 +154,15 @@
     "topbar-run": "Run",
     "topbar-stop": "Stop",
     "tab-search": "Search-Based Testing",
-    "tab-learning": "Learning-Based Testing"
+    "tab-learning": "Learning-Based Testing",
+    "viewmode-game": "Game View",
+    "viewmode-dashboard": "Dashboard View",
+    "config-title": "Configuration",
+    "config-algo-label": "Algorithm",
+    "config-time-budget": "Time Budget (s)",
+    "config-max-test-length": "Max test length",
+    "config-advanced": "Advanced Config",
+    "config-coverage-target": "Coverage Target",
+    "config-coverage-statement": "Statement",
+    "config-coverage-branch": "Branch"
 }

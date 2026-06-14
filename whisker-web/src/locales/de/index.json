@@ -154,5 +154,15 @@
     "topbar-run": "Starten",
     "topbar-stop": "Stoppen",
     "tab-search": "Suchbasiertes Testen",
-    "tab-learning": "Lernbasiertes Testen"
+    "tab-learning": "Lernbasiertes Testen",
+    "viewmode-game": "Spielansicht",
+    "viewmode-dashboard": "Dashboard-Ansicht",
+    "config-title": "Konfiguration",
+    "config-algo-label": "Algorithmus",
+    "config-time-budget": "Zeitbudget (s)",
+    "config-max-test-length": "Maximale Testlänge",
+    "config-advanced": "Erweiterte Konfiguration",
+    "config-coverage-target": "Abdeckungsziel",
+    "config-coverage-statement": "Anweisung",
+    "config-coverage-branch": "Verzweigung"
 }

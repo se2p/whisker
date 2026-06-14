@@ -1798,6 +1798,11 @@ label {
         max-width: 290px;
         padding: 16px 12px;
     }
+
+    .whisker-settings-row {
+        flex-direction: column;
+        gap: 12px;
+    }
 }
 
 @media (max-width: 1200px) {
@@ -1834,6 +1839,11 @@ label {
 }
 
 @media (max-width: 768px) {
+    .whisker-settings-row {
+        flex-direction: row;
+        gap: 10px;
+    }
+
     .whisker-workspace-split {
         flex-direction: column;
         min-height: auto;
@@ -1928,8 +1938,8 @@ label {
 }
 
 .whisker-algo-cards {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
 }
 
@@ -1985,4 +1995,111 @@ label {
 .whisker-algo-select:focus {
     outline: none;
     border-color: #2563eb;
+}
+
+/* ===== Config Panel: Global Settings ===== */
+
+.whisker-global-settings {
+    margin-top: 20px;
+}
+
+.whisker-settings-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.whisker-setting-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.whisker-setting-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.whisker-setting-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.whisker-setting-input:focus {
+    border-color: #2563eb;
+}
+
+.whisker-settings-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 16px 0;
+}
+
+.whisker-advanced-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #374151;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.whisker-advanced-header svg,
+.whisker-advanced-header i {
+    transition: transform 0.2s;
+    transform: rotate(0deg);
+}
+
+.whisker-advanced-header--open svg,
+.whisker-advanced-header--open i {
+    transform: rotate(180deg);
+}
+
+.whisker-advanced-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.whisker-coverage-toggle {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.whisker-coverage-btn {
+    flex: 1;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    background: transparent;
+    cursor: pointer;
+}
+
+.whisker-coverage-btn--active {
+    background: #ffffff;
+    color: #111827;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
