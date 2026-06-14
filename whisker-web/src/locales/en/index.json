@@ -164,5 +164,11 @@
     "config-advanced": "Advanced Config",
     "config-coverage-target": "Coverage Target",
     "config-coverage-statement": "Statement",
-    "config-coverage-branch": "Branch"
+    "config-coverage-branch": "Branch",
+    "config-minimize": "Minimise test suite",
+    "config-assertions": "Generate assertions",
+    "config-minimize-assertions": "Minimise assertions",
+    "config-local-search-extension": "Extension local search",
+    "config-local-search-reduction": "Reduction local search",
+    "config-probability": "P ="
 }

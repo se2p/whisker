@@ -369,6 +369,59 @@
                                             onclick="_updateGlobalSetting('coverageTarget', 'branch', this)" data-i18n="config-coverage-branch">Branch</button>
                                     </div>
                                 </div>
+
+                                <!-- Algorithm-specific settings -->
+                                <div id="whisker-algo-settings" class="whisker-algo-settings">
+                                    <div id="cfg-row-minimize" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-minimize" onchange="_updateAlgoSetting('minimize', this.checked)">
+                                            <span data-i18n="config-minimize">Minimise test suite</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-assertions" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-assertions"
+                                                onchange="_updateAlgoSetting('assertions', this.checked); if (!this.checked) { _updateAlgoSetting('minimizeAssertions', false); document.getElementById('cfg-minimizeAssertions').checked = false; } document.getElementById('cfg-row-minimizeAssertions').classList.toggle('whisker-disabled', !this.checked); document.getElementById('cfg-minimizeAssertions').disabled = !this.checked;">
+                                            <span data-i18n="config-assertions">Generate assertions</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-minimizeAssertions" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-minimizeAssertions" onchange="_updateAlgoSetting('minimizeAssertions', this.checked)">
+                                            <span data-i18n="config-minimize-assertions">Minimise assertions</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-localSearchExtension" style="display:none;">
+                                        <div class="whisker-checkbox-prob-row">
+                                            <label class="whisker-checkbox-row">
+                                                <input type="checkbox" id="cfg-local-search-extension"
+                                                    onchange="_updateAlgoSetting('localSearchExtension', this.checked); document.getElementById('cfg-ls-ext-prob').classList.toggle('whisker-disabled', !this.checked); document.getElementById('cfg-ls-ext-prob-val').disabled = !this.checked;">
+                                                <span data-i18n="config-local-search-extension">Extension local search</span>
+                                            </label>
+                                            <div id="cfg-ls-ext-prob" class="whisker-prob-group whisker-disabled">
+                                                <span class="whisker-prob-label" data-i18n="config-probability">P =</span>
+                                                <input type="number" class="whisker-prob-input" id="cfg-ls-ext-prob-val"
+                                                    min="0" max="1" step="0.05" value="0.3"
+                                                    oninput="_updateAlgoSetting('localSearchExtensionProb', this.value)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="cfg-row-localSearchReduction" style="display:none;">
+                                        <div class="whisker-checkbox-prob-row">
+                                            <label class="whisker-checkbox-row">
+                                                <input type="checkbox" id="cfg-local-search-reduction"
+                                                    onchange="_updateAlgoSetting('localSearchReduction', this.checked); document.getElementById('cfg-ls-red-prob').classList.toggle('whisker-disabled', !this.checked); document.getElementById('cfg-ls-red-prob-val').disabled = !this.checked;">
+                                                <span data-i18n="config-local-search-reduction">Reduction local search</span>
+                                            </label>
+                                            <div id="cfg-ls-red-prob" class="whisker-prob-group whisker-disabled">
+                                                <span class="whisker-prob-label" data-i18n="config-probability">P =</span>
+                                                <input type="number" class="whisker-prob-input" id="cfg-ls-red-prob-val"
+                                                    min="0" max="1" step="0.05" value="0.3"
+                                                    oninput="_updateAlgoSetting('localSearchReductionProb', this.value)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1496,6 +1549,72 @@
             btn.classList.toggle('whisker-advanced-header--open', !isOpen);
         }
 
+        var _algoSettingsMap = {
+            'config/mio.json':          ['minimize', 'assertions', 'minimizeAssertions', 'localSearchExtension', 'localSearchReduction'],
+            'config/mosa.json':         ['minimize', 'assertions', 'minimizeAssertions', 'localSearchExtension', 'localSearchReduction'],
+            'config/random.json':       [],
+            'config/oneplusone.json':   ['minimize'],
+            'config/randomSearch.json': ['minimize', 'assertions', 'minimizeAssertions']
+        };
+
+        function _updateAlgoSetting(key, value) {
+            if (!window._whiskerSelectedConfig) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (key === 'minimize' || key === 'assertions' || key === 'minimizeAssertions') {
+                cfg[key] = value;
+            } else if (key === 'localSearchExtension') {
+                if (!cfg.localSearch) cfg.localSearch = [];
+                var extIdx = cfg.localSearch.findIndex(function(s) { return s.type === 'Extension'; });
+                if (value && extIdx === -1) cfg.localSearch.push({type: 'Extension', probability: 0.3, newEventProbability: 0.5});
+                if (!value && extIdx !== -1) cfg.localSearch.splice(extIdx, 1);
+            } else if (key === 'localSearchReduction') {
+                if (!cfg.localSearch) cfg.localSearch = [];
+                var redIdx = cfg.localSearch.findIndex(function(s) { return s.type === 'Reduction'; });
+                if (value && redIdx === -1) cfg.localSearch.push({type: 'Reduction', probability: 0.3});
+                if (!value && redIdx !== -1) cfg.localSearch.splice(redIdx, 1);
+            } else if (key === 'localSearchExtensionProb') {
+                var prob = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(prob) || !cfg.localSearch) return;
+                var extEntry = cfg.localSearch.find(function(s) { return s.type === 'Extension'; });
+                if (extEntry) extEntry.probability = prob;
+            } else if (key === 'localSearchReductionProb') {
+                var prob = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(prob) || !cfg.localSearch) return;
+                var redEntry = cfg.localSearch.find(function(s) { return s.type === 'Reduction'; });
+                if (redEntry) redEntry.probability = prob;
+            }
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+        }
+
+        function _populateAlgoSettings(configStr, configPath) {
+            var allSettings = ['minimize', 'assertions', 'minimizeAssertions', 'localSearchExtension', 'localSearchReduction'];
+            var active = _algoSettingsMap[configPath] || [];
+            allSettings.forEach(function(s) {
+                var row = document.getElementById('cfg-row-' + s);
+                if (row) row.style.display = active.indexOf(s) !== -1 ? '' : 'none';
+            });
+            if (!configStr) return;
+            var cfg = JSON.parse(configStr);
+            document.getElementById('cfg-minimize').checked = !!cfg.minimize;
+            var assertionsChecked = !!cfg.assertions;
+            document.getElementById('cfg-assertions').checked = assertionsChecked;
+            document.getElementById('cfg-minimizeAssertions').checked = !!cfg.minimizeAssertions;
+            document.getElementById('cfg-row-minimizeAssertions').classList.toggle('whisker-disabled', !assertionsChecked);
+            document.getElementById('cfg-minimizeAssertions').disabled = !assertionsChecked;
+            var extChecked = !!(cfg.localSearch && cfg.localSearch.some(function(s) { return s.type === 'Extension'; }));
+            document.getElementById('cfg-local-search-extension').checked = extChecked;
+            document.getElementById('cfg-ls-ext-prob').classList.toggle('whisker-disabled', !extChecked);
+            document.getElementById('cfg-ls-ext-prob-val').disabled = !extChecked;
+            var extEntry = cfg.localSearch && cfg.localSearch.find(function(s) { return s.type === 'Extension'; });
+            if (extEntry) document.getElementById('cfg-ls-ext-prob-val').value = extEntry.probability;
+            var redChecked = !!(cfg.localSearch && cfg.localSearch.some(function(s) { return s.type === 'Reduction'; }));
+            document.getElementById('cfg-local-search-reduction').checked = redChecked;
+            document.getElementById('cfg-ls-red-prob').classList.toggle('whisker-disabled', !redChecked);
+            document.getElementById('cfg-ls-red-prob-val').disabled = !redChecked;
+            var redEntry = cfg.localSearch && cfg.localSearch.find(function(s) { return s.type === 'Reduction'; });
+            if (redEntry) document.getElementById('cfg-ls-red-prob-val').value = redEntry.probability;
+        }
+
         function _updateGlobalSetting(key, value, btn) {
             if (!window._whiskerSelectedConfig) return;
             var cfg = JSON.parse(window._whiskerSelectedConfig);
@@ -1546,6 +1665,7 @@
             clickedCard.classList.add('whisker-algo-card--active');
             window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
             _populateGlobalSettings(window._whiskerSelectedConfig);
+            _populateAlgoSettings(window._whiskerSelectedConfig, configPath);
         }
 
         function _selectAlgorithmFromDropdown(select) {

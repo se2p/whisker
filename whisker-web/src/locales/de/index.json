@@ -164,5 +164,11 @@
     "config-advanced": "Erweiterte Konfiguration",
     "config-coverage-target": "Abdeckungsziel",
     "config-coverage-statement": "Anweisung",
-    "config-coverage-branch": "Verzweigung"
+    "config-coverage-branch": "Verzweigung",
+    "config-minimize": "Testsuite minimieren",
+    "config-assertions": "Assertions generieren",
+    "config-minimize-assertions": "Assertions minimieren",
+    "config-local-search-extension": "Erweiterungssuche",
+    "config-local-search-reduction": "Reduktionssuche",
+    "config-probability": "P ="
 }

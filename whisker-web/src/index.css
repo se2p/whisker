@@ -2038,6 +2038,32 @@ label {
     border-color: #2563eb;
 }
 
+.whisker-algo-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.whisker-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.whisker-checkbox-row input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
 .whisker-settings-divider {
     border: none;
     border-top: 1px solid #e5e7eb;
@@ -2102,4 +2128,44 @@ label {
     background: #ffffff;
     color: #111827;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.whisker-checkbox-prob-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.whisker-prob-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.whisker-prob-label {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.whisker-prob-input {
+    width: 52px;
+    padding: 4px 6px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+}
+
+.whisker-prob-input:focus {
+    border-color: #2563eb;
+}
+
+.whisker-disabled {
+    opacity: 0.4;
+    pointer-events: none;
 }
