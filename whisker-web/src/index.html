@@ -342,12 +342,12 @@
                             <div class="whisker-settings-row">
                                 <div class="whisker-setting-group">
                                     <label class="whisker-setting-label" for="cfg-time-budget" data-i18n="config-time-budget">Time Budget (s)</label>
-                                    <input type="number" class="whisker-setting-input" id="cfg-time-budget" value="600" min="1"
+                                    <input type="number" required class="whisker-setting-input" id="cfg-time-budget" value="600" min="1" step="1"
                                         oninput="_updateGlobalSetting('timeBudget', this.value)">
                                 </div>
                                 <div class="whisker-setting-group">
                                     <label class="whisker-setting-label" for="cfg-max-events" data-i18n="config-max-test-length">Max test length</label>
-                                    <input type="number" class="whisker-setting-input" id="cfg-max-events" value="20" min="1"
+                                    <input type="number" required class="whisker-setting-input" id="cfg-max-events" value="20" min="1" step="1"
                                         oninput="_updateGlobalSetting('maxEvents', this.value)">
                                 </div>
                             </div>
@@ -400,7 +400,7 @@
                                             </label>
                                             <div id="cfg-ls-ext-prob" class="whisker-prob-group whisker-disabled">
                                                 <span class="whisker-prob-label" data-i18n="config-probability">P =</span>
-                                                <input type="number" class="whisker-prob-input" id="cfg-ls-ext-prob-val"
+                                                <input type="number" required class="whisker-prob-input" id="cfg-ls-ext-prob-val"
                                                     min="0" max="1" step="0.05" value="0.3"
                                                     oninput="_updateAlgoSetting('localSearchExtensionProb', this.value)">
                                             </div>
@@ -415,7 +415,7 @@
                                             </label>
                                             <div id="cfg-ls-red-prob" class="whisker-prob-group whisker-disabled">
                                                 <span class="whisker-prob-label" data-i18n="config-probability">P =</span>
-                                                <input type="number" class="whisker-prob-input" id="cfg-ls-red-prob-val"
+                                                <input type="number" required class="whisker-prob-input" id="cfg-ls-red-prob-val"
                                                     min="0" max="1" step="0.05" value="0.3"
                                                     oninput="_updateAlgoSetting('localSearchReductionProb', this.value)">
                                             </div>
@@ -429,23 +429,122 @@
                     <!-- Learning-Based algorithms (hidden until learning tab active) -->
                     <div id="whisker-learning-config" style="display:none;">
                         <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
-                        <select class="whisker-algo-select" onchange="_selectAlgorithmFromDropdown(this)">
-                            <optgroup label="Neuroevolution">
+                        <select class="whisker-algo-select" onchange="_selectLearningAlgorithm(this)">
+                            <optgroup label="NEATEST">
                                 <option value="config/Neuroevolution/neatest.json">NEATEST</option>
                                 <option value="config/Neuroevolution/neatestBackprop.json">NEATEST + Backprop</option>
-                                <option value="config/Neuroevolution/mio.json">MIO NEATEST</option>
-                                <option value="config/Neuroevolution/mosa.json">MOSA NEATEST</option>
-                                <option value="config/Neuroevolution/cosineNovelty.json">Cosine Novelty</option>
-                                <option value="config/Neuroevolution/eventNovelty.json">Event Novelty</option>
-                                <option value="config/Neuroevolution/newsd.json">NEWSD</option>
-                                <option value="config/Neuroevolution/random.json">Random NEAT</option>
-                                <option value="config/Neuroevolution/score.json">NEAT Score</option>
-                                <option value="config/Neuroevolution/survive.json">NEAT Survive</option>
+                                <option value="config/Neuroevolution/cosineNovelty.json">NEATEST — Cosine Novelty</option>
+                                <option value="config/Neuroevolution/eventNovelty.json">NEATEST — Event Novelty</option>
+                                <option value="config/Neuroevolution/random.json">NEATEST — Random</option>
+                            </optgroup>
+                            <optgroup label="Many-Objective NEATEST">
+                                <option value="config/Neuroevolution/mio.json">MioNeatest</option>
+                                <option value="config/Neuroevolution/mosa.json">MosaNeatest</option>
+                                <option value="config/Neuroevolution/newsd.json">NewsdNeatest</option>
+                            </optgroup>
+                            <optgroup label="NEAT">
+                                <option value="config/Neuroevolution/score.json">NEAT — Score</option>
+                                <option value="config/Neuroevolution/survive.json">NEAT — Survive</option>
                             </optgroup>
                             <optgroup label="Reinforcement Learning">
                                 <option value="config/ReinforcementLearning/dql.json">DQL</option>
                             </optgroup>
                         </select>
+
+                        <div class="whisker-global-settings">
+                            <div class="whisker-settings-grid">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" data-i18n="config-time-budget">Time Budget (s)</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-learning-timeBudget" value="7200" min="1" step="1"
+                                        oninput="_updateLearningSetting('timeBudget', this.value)">
+                                </div>
+                                <div class="whisker-setting-group" id="cfg-learning-populationSize-group">
+                                    <label class="whisker-setting-label" data-i18n="config-population-size">Population Size</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-learning-populationSize" value="150" min="1" step="1"
+                                        oninput="_updateLearningSetting('populationSize', this.value)">
+                                </div>
+                            </div>
+
+                            <hr class="whisker-settings-divider">
+
+                            <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                <span data-i18n="config-advanced">Advanced Config</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="whisker-advanced-body" style="display:none;">
+                                <div class="whisker-settings-grid">
+                                    <div class="whisker-setting-group whisker-settings-full" id="cfg-learning-coverageTarget-group">
+                                        <label class="whisker-setting-label" data-i18n="config-coverage-target">Coverage Target</label>
+                                        <div class="whisker-coverage-toggle">
+                                            <button class="whisker-coverage-btn whisker-coverage-btn--active" id="cfg-learning-coverage-statement"
+                                                onclick="_updateLearningSetting('coverageTarget', 'statement', this)" data-i18n="config-coverage-statement">Statement</button>
+                                            <button class="whisker-coverage-btn" id="cfg-learning-coverage-branch"
+                                                onclick="_updateLearningSetting('coverageTarget', 'branch', this)" data-i18n="config-coverage-branch">Branch</button>
+                                        </div>
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-numberOfSpecies-group">
+                                        <label class="whisker-setting-label" data-i18n="config-num-species">Number of Species</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-numberOfSpecies" value="5" min="1" step="1"
+                                            oninput="_updateLearningSetting('numberOfSpecies', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-distanceThreshold-group">
+                                        <label class="whisker-setting-label" data-i18n="config-dist-threshold">Distance Threshold</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-distanceThreshold" value="1.0" min="0" step="0.1"
+                                            oninput="_updateLearningSetting('distanceThreshold', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-penalizingAge-group">
+                                        <label class="whisker-setting-label" data-i18n="config-penalizing-age">Penalizing Age</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-penalizingAge" value="20" min="1" step="1"
+                                            oninput="_updateLearningSetting('penalizingAge', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-switchObjectiveCount-group">
+                                        <label class="whisker-setting-label" data-i18n="config-switch-objective-count">Switch Objective Count</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-switchObjectiveCount" value="10" min="1" step="1"
+                                            oninput="_updateLearningSetting('switchObjectiveCount', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-maxArchiveSize-group">
+                                        <label class="whisker-setting-label" data-i18n="config-max-archive-size">Max Archive Size</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-maxArchiveSize" value="20" min="1" step="1"
+                                            oninput="_updateLearningSetting('maxArchiveSize', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-randomSelectionProbability-group">
+                                        <label class="whisker-setting-label" data-i18n="config-random-selection-prob">Random Selection Prob.</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-randomSelectionProbability" value="0.9" min="0" max="1" step="0.05"
+                                            oninput="_updateLearningSetting('randomSelectionProbability', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-learningRate-group">
+                                        <label class="whisker-setting-label" data-i18n="config-learning-rate">Learning Rate</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-learningRate" value="0.001" min="0" step="0.0001"
+                                            oninput="_updateLearningSetting('learningRate', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-batchSize-group">
+                                        <label class="whisker-setting-label" data-i18n="config-batch-size">Batch Size</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-batchSize" value="16" min="1" step="1"
+                                            oninput="_updateLearningSetting('batchSize', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-gamma-group">
+                                        <label class="whisker-setting-label" data-i18n="config-gamma">Discount Factor (γ)</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-gamma" value="0.99" min="0" max="1" step="0.01"
+                                            oninput="_updateLearningSetting('gamma', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-epsilonEnd-group">
+                                        <label class="whisker-setting-label" data-i18n="config-epsilon-end">Epsilon End</label>
+                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-epsilonEnd" value="0.05" min="0" max="1" step="0.01"
+                                            oninput="_updateLearningSetting('epsilonEnd', this.value)">
+                                    </div>
+                                    <div class="whisker-setting-group whisker-settings-full" id="cfg-learning-activationFunction-group">
+                                        <label class="whisker-setting-label" data-i18n="config-activation-function">Activation Function</label>
+                                        <select class="whisker-setting-select" id="cfg-learning-activationFunction"
+                                            onchange="_updateLearningSetting('activationFunction', this.value)">
+                                            <option value="SIGMOID">Sigmoid</option>
+                                            <option value="RELU">ReLU</option>
+                                            <option value="TANH">Tanh</option>
+                                            <option value="SOFTMAX">Softmax</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <!-- Right: Main Panel (70%) -->
@@ -1672,6 +1771,140 @@
             window._whiskerSelectedConfig = window._whiskerConfigMap[select.value] || null;
         }
 
+        var _dqlPath = 'config/ReinforcementLearning/dql.json';
+        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget'];
+        var _learningSettingsMap = {
+            'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/mio.json':             ['activationFunction', 'numberOfSpecies', 'distanceThreshold', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget'],
+            'config/Neuroevolution/mosa.json':            ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'coverageTarget'],
+            'config/Neuroevolution/newsd.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/score.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget'],
+            'config/Neuroevolution/survive.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget'],
+            'config/ReinforcementLearning/dql.json':      ['learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget']
+        };
+
+        function _selectLearningAlgorithm(select) {
+            var configPath = select.value;
+            window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
+            _populateLearningSettings(window._whiskerSelectedConfig, configPath);
+        }
+
+        function _populateLearningSettings(configStr, configPath) {
+            var active = _learningSettingsMap[configPath] || [];
+            _allLearningSettings.forEach(function(key) {
+                var group = document.getElementById('cfg-learning-' + key + '-group');
+                if (group) group.style.display = active.indexOf(key) !== -1 ? '' : 'none';
+            });
+            if (!configStr) return;
+            var cfg = JSON.parse(configStr);
+            var isDql = configPath === _dqlPath;
+            var durationMs = isDql
+                ? cfg.stoppingCondition.duration
+                : cfg.stoppingCondition.conditions[1].duration;
+            document.getElementById('cfg-learning-timeBudget').value = durationMs / 1000;
+            if (cfg.populationSize != null) document.getElementById('cfg-learning-populationSize').value = cfg.populationSize;
+            if (cfg.chromosome && cfg.chromosome.activationFunction) document.getElementById('cfg-learning-activationFunction').value = cfg.chromosome.activationFunction;
+            if (cfg.numberOfSpecies != null) document.getElementById('cfg-learning-numberOfSpecies').value = cfg.numberOfSpecies;
+            if (cfg.compatibility && cfg.compatibility.distanceThreshold != null) document.getElementById('cfg-learning-distanceThreshold').value = cfg.compatibility.distanceThreshold;
+            if (cfg.penalizingAge != null) document.getElementById('cfg-learning-penalizingAge').value = cfg.penalizingAge;
+            if (cfg.switchObjectiveCount != null) document.getElementById('cfg-learning-switchObjectiveCount').value = cfg.switchObjectiveCount;
+            if (cfg.maxArchiveSize != null) document.getElementById('cfg-learning-maxArchiveSize').value = cfg.maxArchiveSize;
+            if (cfg.randomSelectionProbability != null) document.getElementById('cfg-learning-randomSelectionProbability').value = cfg.randomSelectionProbability;
+            if (cfg.training && cfg.training.learningRate != null) document.getElementById('cfg-learning-learningRate').value = cfg.training.learningRate;
+            if (cfg.training && cfg.training.batchSize != null) document.getElementById('cfg-learning-batchSize').value = cfg.training.batchSize;
+            if (cfg.reward && cfg.reward.gamma != null) document.getElementById('cfg-learning-gamma').value = cfg.reward.gamma;
+            if (cfg.epsilonGreedy && cfg.epsilonGreedy.epsilonEnd != null) document.getElementById('cfg-learning-epsilonEnd').value = cfg.epsilonGreedy.epsilonEnd;
+            var coverageType = isDql
+                ? (cfg.coverageObjective && cfg.coverageObjective.type)
+                : (cfg.fitnessFunction && cfg.fitnessFunction.type);
+            if (coverageType) {
+                document.getElementById('cfg-learning-coverage-statement').classList.toggle('whisker-coverage-btn--active', coverageType === 'statement');
+                document.getElementById('cfg-learning-coverage-branch').classList.toggle('whisker-coverage-btn--active', coverageType === 'branch');
+            }
+        }
+
+        function _updateLearningSetting(key, value) {
+            if (!window._whiskerSelectedConfig) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (key === 'timeBudget') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                var isDql = !cfg.stoppingCondition.conditions;
+                if (isDql) {
+                    cfg.stoppingCondition.duration = num * 1000;
+                } else {
+                    cfg.stoppingCondition.conditions[1].duration = num * 1000;
+                }
+            } else if (key === 'populationSize') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.populationSize = num;
+            } else if (key === 'activationFunction') {
+                if (cfg.chromosome) cfg.chromosome.activationFunction = value;
+            } else if (key === 'numberOfSpecies') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.numberOfSpecies = num;
+            } else if (key === 'distanceThreshold') {
+                var num = Number(value);
+                if (isNaN(num) || num < 0) return;
+                if (!cfg.compatibility) cfg.compatibility = {};
+                cfg.compatibility.distanceThreshold = num;
+            } else if (key === 'penalizingAge') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.penalizingAge = num;
+            } else if (key === 'switchObjectiveCount') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.switchObjectiveCount = num;
+            } else if (key === 'maxArchiveSize') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.maxArchiveSize = num;
+            } else if (key === 'randomSelectionProbability') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                cfg.randomSelectionProbability = num;
+            } else if (key === 'learningRate') {
+                var num = Number(value);
+                if (isNaN(num) || num <= 0) return;
+                if (!cfg.training) cfg.training = {};
+                cfg.training.learningRate = num;
+            } else if (key === 'batchSize') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                if (!cfg.training) cfg.training = {};
+                cfg.training.batchSize = num;
+            } else if (key === 'gamma') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                if (!cfg.reward) cfg.reward = {};
+                cfg.reward.gamma = num;
+            } else if (key === 'epsilonEnd') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                if (!cfg.epsilonGreedy) cfg.epsilonGreedy = {};
+                cfg.epsilonGreedy.epsilonEnd = num;
+            } else if (key === 'coverageTarget') {
+                var isDql = !cfg.stoppingCondition.conditions;
+                if (isDql) {
+                    if (!cfg.coverageObjective) cfg.coverageObjective = {};
+                    cfg.coverageObjective.type = value;
+                } else {
+                    if (!cfg.fitnessFunction) cfg.fitnessFunction = {};
+                    cfg.fitnessFunction.type = value;
+                }
+                document.getElementById('cfg-learning-coverage-statement').classList.toggle('whisker-coverage-btn--active', value === 'statement');
+                document.getElementById('cfg-learning-coverage-branch').classList.toggle('whisker-coverage-btn--active', value === 'branch');
+            }
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+        }
+
         function _switchWhiskerTab(targetContentId, clickedBtn) {
             document.querySelectorAll('.whisker-tab').forEach(function (btn) {
                 btn.classList.remove('active');
@@ -1694,9 +1927,9 @@
                 var learningConfig = document.getElementById('whisker-learning-config');
                 if (searchConfig) searchConfig.style.display = isLearning ? 'none' : '';
                 if (learningConfig) learningConfig.style.display = isLearning ? '' : 'none';
-                window._whiskerSelectedConfig = isLearning
-                    ? window._whiskerConfigMap['config/Neuroevolution/neatest.json']
-                    : window._whiskerConfigMap['config/mio.json'];
+                var defaultPath = isLearning ? 'config/Neuroevolution/neatest.json' : 'config/mio.json';
+                window._whiskerSelectedConfig = window._whiskerConfigMap[defaultPath] || null;
+                if (isLearning) _populateLearningSettings(window._whiskerSelectedConfig, defaultPath);
             }
         }
 

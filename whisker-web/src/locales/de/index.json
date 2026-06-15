@@ -170,5 +170,17 @@
     "config-minimize-assertions": "Assertions minimieren",
     "config-local-search-extension": "Erweiterungssuche",
     "config-local-search-reduction": "Reduktionssuche",
-    "config-probability": "P ="
+    "config-probability": "P =",
+    "config-population-size": "Populationsgröße",
+    "config-activation-function": "Aktivierungsfunktion",
+    "config-num-species": "Anzahl Spezies",
+    "config-dist-threshold": "Distanzschwelle",
+    "config-penalizing-age": "Strafendes Alter",
+    "config-switch-objective-count": "Zielwechselanzahl",
+    "config-max-archive-size": "Max. Archivgröße",
+    "config-random-selection-prob": "Zufallsauswahlwkeit.",
+    "config-learning-rate": "Lernrate",
+    "config-batch-size": "Stapelgröße",
+    "config-gamma": "Diskontfaktor (γ)",
+    "config-epsilon-end": "Epsilon Ende"
 }

@@ -1803,6 +1803,14 @@ label {
         flex-direction: column;
         gap: 12px;
     }
+
+    .whisker-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .whisker-settings-full {
+        grid-column: 1;
+    }
 }
 
 @media (max-width: 1200px) {
@@ -2009,6 +2017,16 @@ label {
     margin-bottom: 12px;
 }
 
+.whisker-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.whisker-settings-full {
+    grid-column: 1 / -1;
+}
+
 .whisker-setting-group {
     flex: 1;
     display: flex;
@@ -2036,6 +2054,42 @@ label {
 
 .whisker-setting-input:focus {
     border-color: #2563eb;
+}
+
+.whisker-setting-input:invalid {
+    border-color: #ef4444;
+}
+
+.whisker-setting-input:invalid:focus {
+    border-color: #ef4444;
+}
+
+.whisker-setting-select {
+    width: 100%;
+    padding: 8px 32px 8px 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.whisker-setting-select:hover {
+    border-color: #d1d5db;
+    background-color: #f9fafb;
+}
+
+.whisker-setting-select:focus {
+    border-color: #2563eb;
+    background-color: #ffffff;
 }
 
 .whisker-algo-settings {
@@ -2163,6 +2217,10 @@ label {
 
 .whisker-prob-input:focus {
     border-color: #2563eb;
+}
+
+.whisker-prob-input:invalid {
+    border-color: #ef4444;
 }
 
 .whisker-disabled {
