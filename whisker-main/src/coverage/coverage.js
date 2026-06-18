@@ -188,7 +188,7 @@ class CoverageGenerator {
      * @param {VirtualMachine} vm .
      * @returns {boolean} .
      */
-    static isCoverageEnabled (vm) {
+    static isCoverageEnabled(vm) {
         return vm.runtime.onBlockCoveredCallback !== null;
     }
 
@@ -275,18 +275,25 @@ class CoverageGenerator {
             return new Coverage(new Map(), new Map());
         }
 
+
         const coveredBlockIdsPerSprite = new Map();
         const blockIdsPerSprite = new Map(coverages[0].blockIdsPerSprite);
 
         for (const spriteName of coverages[0].coveredBlockIdsPerSprite.keys()) {
-            const coveredIdsLists = coverages.map(cov => Array.from(cov.coveredBlockIdsPerSprite.get(spriteName)));
+            const coveredIdsLists = coverages.map(cov => {
+                if (cov.coveredBlockIdsPerSprite.has(spriteName)) {
+                    return Array.from(cov.coveredBlockIdsPerSprite.get(spriteName));
+                } else {
+                    return [];
+                }
+            });
             coveredBlockIdsPerSprite.set(spriteName, new Set([].concat(...coveredIdsLists)));
         }
 
         return new Coverage(coveredBlockIdsPerSprite, blockIdsPerSprite);
     }
 
-    static traceExecution (thread) {
+    static traceExecution(thread) {
         const target = thread.target;
         const block = target.blocks.getBlock(thread.peekStack());
         const opcode = target.blocks.getOpcode(block);
