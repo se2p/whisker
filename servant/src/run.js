@@ -158,15 +158,16 @@ async function runTests(whisker, targetProject) {
 }
 
 function processResults(results) {
-    const summaries = results.map(({summary}) => summary);
-    const coverages = results.map(({coverage}) => coverage);
-    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
+    const validResults = results.filter((result) => result !== undefined);
+    const summaries = validResults.map(({summary}) => summary);
+    const coverages = validResults.map(({coverage}) => coverage);
+    const modelCoverage = validResults.map(({modelCoverage}) => modelCoverage);
 
     if (summaries[0] !== undefined) {
         printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
             modelCoverage[0]);
     }
-    return results.map(({csv}) => csv);
+    return results.map((result) => result === undefined ? undefined : result.csv);
 }
 
 // Entry point for the "run" command.
