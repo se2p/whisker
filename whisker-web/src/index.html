@@ -467,6 +467,19 @@
 
                             <hr class="whisker-settings-divider">
 
+                            <div id="cfg-learning-groundTruth-group" style="display:none;">
+                                <p class="whisker-algo-section-label" data-i18n="config-ground-truth">Ground Truth</p>
+                                <div class="whisker-ground-truth-upload">
+                                    <input type="file" id="fileselect-ground-truth"
+                                        accept=".json" name="ground-truth-file" />
+                                    <label for="fileselect-ground-truth" class="whisker-ground-truth-btn">
+                                        <i class="fas fa-file-upload"></i>
+                                        <span id="ground-truth-filename" data-i18n="ground-truth-select">Select recording file...</span>
+                                    </label>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
                             <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
                                 <span data-i18n="config-advanced">Advanced Config</span>
                                 <i class="fas fa-chevron-down"></i>
@@ -1770,10 +1783,10 @@
         }
 
         var _dqlPath = 'config/ReinforcementLearning/dql.json';
-        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget'];
+        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget', 'groundTruth'];
         var _learningSettingsMap = {
             'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
+            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'groundTruth'],
             'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
             'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
             'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],

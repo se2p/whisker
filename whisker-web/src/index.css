@@ -2158,6 +2158,44 @@ label {
     gap: 12px;
 }
 
+.whisker-ground-truth-upload input[type="file"] {
+    display: none;
+}
+
+.whisker-ground-truth-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #6b7280;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    margin: 0;
+}
+
+.whisker-ground-truth-btn:hover {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    color: #374151;
+}
+
+.whisker-ground-truth-btn i {
+    color: #f59e0b;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.whisker-ground-truth-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .whisker-coverage-toggle {
     display: flex;
     background: #f3f4f6;

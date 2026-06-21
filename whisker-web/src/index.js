@@ -1014,6 +1014,13 @@ const initComponents = function () {
             window._applyUploadedConfig(str, fileSelect.getName());
         });
 
+    Whisker.groundTruthFileSelect = new FileSelect($('#fileselect-ground-truth')[0],
+        async fileSelect => {
+            document.querySelector('#container').groundTruth = await fileSelect.loadAsString();
+            const span = document.getElementById('ground-truth-filename');
+            if (span) span.textContent = fileSelect.getName();
+        });
+
 
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
 

@@ -182,5 +182,7 @@
     "config-learning-rate": "Lernrate",
     "config-batch-size": "Stapelgröße",
     "config-gamma": "Diskontfaktor (γ)",
-    "config-epsilon-end": "Epsilon Ende"
+    "config-epsilon-end": "Epsilon Ende",
+    "config-ground-truth": "Ground Truth",
+    "ground-truth-select": "Aufnahmedatei auswählen..."
 }
