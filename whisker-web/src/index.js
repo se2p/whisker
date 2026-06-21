@@ -1008,8 +1008,11 @@ const initComponents = function () {
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
-    // Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
-    //     fileSelect => fileSelect.loadAsArrayBuffer());
+    Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
+        async fileSelect => {
+            const str = await fileSelect.loadAsString();
+            window._applyUploadedConfig(str, fileSelect.getName());
+        });
 
 
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
@@ -1043,14 +1046,14 @@ const _showTooltipIfTooLong = function (label, event) {
 };
 
 const _addFileListeners = function () {
-    // $('#fileselect-config').on('change', event => {
-    //     const fileName = Whisker.configFileSelect.getName();
-    //     $(event.target).parent()
-    //         .removeAttr('data-i18n')
-    //         .attr('title', fileName);
-    //     const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
-    //     _showTooltipIfTooLong(label, event);
-    // });
+    $('#fileselect-config').on('change', event => {
+        const fileName = Whisker.configFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+    });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent()
