@@ -2223,6 +2223,74 @@ label {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
+.whisker-hidden-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.whisker-hidden-layer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.whisker-layer-label {
+    font-size: 11px;
+    color: #6b7280;
+    min-width: 48px;
+    flex-shrink: 0;
+}
+
+.whisker-hidden-layer-row .whisker-setting-input {
+    flex: 1;
+    margin: 0;
+}
+
+.whisker-layer-remove-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    color: #9ca3af;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.whisker-layer-remove-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #ef4444;
+}
+
+.whisker-add-layer-btn {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: #6b7280;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.whisker-add-layer-btn:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
 .whisker-checkbox-prob-row {
     display: flex;
     align-items: center;

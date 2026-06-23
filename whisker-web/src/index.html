@@ -463,6 +463,16 @@
                                     <input type="number" required class="whisker-setting-input" id="cfg-learning-populationSize" value="150" min="1" step="1"
                                         oninput="_updateLearningSetting('populationSize', this.value)">
                                 </div>
+                                <div class="whisker-setting-group" id="cfg-learning-maxArchiveSize-group">
+                                    <label class="whisker-setting-label" data-i18n="config-max-archive-size">Max Archive Size</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-learning-maxArchiveSize" value="20" min="1" step="1"
+                                        oninput="_updateLearningSetting('maxArchiveSize', this.value)">
+                                </div>
+                                <div class="whisker-setting-group" id="cfg-learning-randomSelectionProbability-group">
+                                    <label class="whisker-setting-label" data-i18n="config-random-selection-prob">Random Selection Prob.</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-learning-randomSelectionProbability" value="0.9" min="0" max="1" step="0.05"
+                                        oninput="_updateLearningSetting('randomSelectionProbability', this.value)">
+                                </div>
                             </div>
 
                             <hr class="whisker-settings-divider">
@@ -476,6 +486,73 @@
                                         <i class="fas fa-file-upload"></i>
                                         <span id="ground-truth-filename" data-i18n="ground-truth-select">Select recording file...</span>
                                     </label>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
+                            <div id="cfg-learning-dqlTraining-group" style="display:none;">
+                                <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                    <span data-i18n="config-dql-training">Training</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-learning-rate">Learning Rate</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-learningRate" value="0.001" min="0" step="0.0001"
+                                                oninput="_updateLearningSetting('learningRate', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-batch-size">Batch Size</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-batchSize" value="16" min="1" step="1"
+                                                oninput="_updateLearningSetting('batchSize', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-training-epochs">Epochs</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-trainingEpochs" value="1" min="1" step="1"
+                                                oninput="_updateLearningSetting('trainingEpochs', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-training-frequency">Training Frequency</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-trainingFrequency" value="4" min="1" step="1"
+                                                oninput="_updateLearningSetting('trainingFrequency', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-gamma">Discount Factor (γ)</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-gamma" value="0.99" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('gamma', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-epsilon-end">Epsilon End</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-epsilonEnd" value="0.05" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('epsilonEnd', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group whisker-settings-full">
+                                            <label class="whisker-setting-label" data-i18n="config-training-optimizer">Optimizer</label>
+                                            <select class="whisker-setting-select" id="cfg-learning-trainingOptimizer"
+                                                onchange="_updateLearningSetting('trainingOptimizer', this.value)">
+                                                <option value="adam">Adam</option>
+                                                <option value="rmsprop">RMSProp</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
+                            <div id="cfg-learning-hiddenLayers-group" style="display:none;">
+                                <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                    <span data-i18n="config-hidden-layers">Hidden Layers</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-hidden-layers">
+                                        <div id="cfg-learning-hiddenLayers-container"></div>
+                                        <button type="button" class="whisker-add-layer-btn" onclick="_addHiddenLayer()">
+                                            <i class="fas fa-plus"></i>
+                                            <span data-i18n="config-add-layer">Add Layer</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <hr class="whisker-settings-divider">
                             </div>
@@ -528,6 +605,63 @@
                                 <hr class="whisker-settings-divider">
                             </div>
 
+                            <div id="cfg-learning-speciation-group" style="display:none;">
+                                <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                    <span data-i18n="config-speciation">Speciation</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-num-species">Number of Species</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-numberOfSpecies" value="5" min="1" step="1"
+                                                oninput="_updateLearningSetting('numberOfSpecies', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-dist-threshold">Distance Threshold</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-distanceThreshold" value="1.0" min="0" step="0.1"
+                                                oninput="_updateLearningSetting('distanceThreshold', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-dist-modifier">Distance Modifier</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-distanceModifier" value="0.2" min="0" step="0.01"
+                                                oninput="_updateLearningSetting('distanceModifier', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-disjoint-coeff">Disjoint Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-disjointCoefficient" value="3" min="0" step="0.1"
+                                                oninput="_updateLearningSetting('disjointCoefficient', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-excess-coeff">Excess Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-excessCoefficient" value="3" min="0" step="0.1"
+                                                oninput="_updateLearningSetting('excessCoefficient', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-weight-coeff">Weight Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-weightCoefficient" value="0.4" min="0" step="0.01"
+                                                oninput="_updateLearningSetting('weightCoefficient', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-parents-per-species">Parents per Species</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-parentsPerSpecies" value="0.3" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('parentsPerSpecies', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-age-significance">Age Significance</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-ageSignificance" value="1.0" min="0" step="0.1"
+                                                oninput="_updateLearningSetting('ageSignificance', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group" id="cfg-learning-penalizingAge-group">
+                                            <label class="whisker-setting-label" data-i18n="config-penalizing-age">Penalizing Age</label>
+                                            <input type="number" required class="whisker-setting-input" id="cfg-learning-penalizingAge" value="20" min="1" step="1"
+                                                oninput="_updateLearningSetting('penalizingAge', this.value)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
                             <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
                                 <span data-i18n="config-advanced">Advanced Config</span>
                                 <i class="fas fa-chevron-down"></i>
@@ -543,55 +677,10 @@
                                                 onclick="_updateLearningSetting('coverageTarget', 'branch', this)" data-i18n="config-coverage-branch">Branch</button>
                                         </div>
                                     </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-numberOfSpecies-group">
-                                        <label class="whisker-setting-label" data-i18n="config-num-species">Number of Species</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-numberOfSpecies" value="5" min="1" step="1"
-                                            oninput="_updateLearningSetting('numberOfSpecies', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-distanceThreshold-group">
-                                        <label class="whisker-setting-label" data-i18n="config-dist-threshold">Distance Threshold</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-distanceThreshold" value="1.0" min="0" step="0.1"
-                                            oninput="_updateLearningSetting('distanceThreshold', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-penalizingAge-group">
-                                        <label class="whisker-setting-label" data-i18n="config-penalizing-age">Penalizing Age</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-penalizingAge" value="20" min="1" step="1"
-                                            oninput="_updateLearningSetting('penalizingAge', this.value)">
-                                    </div>
                                     <div class="whisker-setting-group" id="cfg-learning-switchObjectiveCount-group">
                                         <label class="whisker-setting-label" data-i18n="config-switch-objective-count">Switch Objective Count</label>
                                         <input type="number" required class="whisker-setting-input" id="cfg-learning-switchObjectiveCount" value="10" min="1" step="1"
                                             oninput="_updateLearningSetting('switchObjectiveCount', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-maxArchiveSize-group">
-                                        <label class="whisker-setting-label" data-i18n="config-max-archive-size">Max Archive Size</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-maxArchiveSize" value="20" min="1" step="1"
-                                            oninput="_updateLearningSetting('maxArchiveSize', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-randomSelectionProbability-group">
-                                        <label class="whisker-setting-label" data-i18n="config-random-selection-prob">Random Selection Prob.</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-randomSelectionProbability" value="0.9" min="0" max="1" step="0.05"
-                                            oninput="_updateLearningSetting('randomSelectionProbability', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-learningRate-group">
-                                        <label class="whisker-setting-label" data-i18n="config-learning-rate">Learning Rate</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-learningRate" value="0.001" min="0" step="0.0001"
-                                            oninput="_updateLearningSetting('learningRate', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-batchSize-group">
-                                        <label class="whisker-setting-label" data-i18n="config-batch-size">Batch Size</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-batchSize" value="16" min="1" step="1"
-                                            oninput="_updateLearningSetting('batchSize', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-gamma-group">
-                                        <label class="whisker-setting-label" data-i18n="config-gamma">Discount Factor (γ)</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-gamma" value="0.99" min="0" max="1" step="0.01"
-                                            oninput="_updateLearningSetting('gamma', this.value)">
-                                    </div>
-                                    <div class="whisker-setting-group" id="cfg-learning-epsilonEnd-group">
-                                        <label class="whisker-setting-label" data-i18n="config-epsilon-end">Epsilon End</label>
-                                        <input type="number" required class="whisker-setting-input" id="cfg-learning-epsilonEnd" value="0.05" min="0" max="1" step="0.01"
-                                            oninput="_updateLearningSetting('epsilonEnd', this.value)">
                                     </div>
                                     <div class="whisker-setting-group whisker-settings-full" id="cfg-learning-activationFunction-group">
                                         <label class="whisker-setting-label" data-i18n="config-activation-function">Activation Function</label>
@@ -1831,19 +1920,19 @@
         }
 
         var _dqlPath = 'config/ReinforcementLearning/dql.json';
-        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget', 'groundTruth', 'searchOperators'];
+        var _allLearningSettings = ['populationSize', 'activationFunction', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget', 'groundTruth', 'searchOperators', 'speciation', 'dqlTraining', 'hiddenLayers'];
         var _learningSettingsMap = {
-            'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'groundTruth', 'searchOperators'],
-            'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/mio.json':             ['activationFunction', 'numberOfSpecies', 'distanceThreshold', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/mosa.json':            ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/newsd.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/score.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget', 'searchOperators'],
-            'config/Neuroevolution/survive.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget', 'searchOperators'],
-            'config/ReinforcementLearning/dql.json':      ['learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget']
+            'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'groundTruth', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/mio.json':             ['activationFunction', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget', 'searchOperators', 'speciation'],
+            'config/Neuroevolution/mosa.json':            ['populationSize', 'activationFunction', 'coverageTarget', 'searchOperators', 'speciation'],
+            'config/Neuroevolution/newsd.json':           ['populationSize', 'activationFunction', 'switchObjectiveCount', 'coverageTarget', 'searchOperators', 'speciation'],
+            'config/Neuroevolution/score.json':           ['populationSize', 'activationFunction', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/Neuroevolution/survive.json':         ['populationSize', 'activationFunction', 'coverageTarget', 'searchOperators', 'speciation', 'penalizingAge'],
+            'config/ReinforcementLearning/dql.json':      ['coverageTarget', 'dqlTraining', 'hiddenLayers']
         };
 
         function _selectLearningAlgorithm(select) {
@@ -1892,6 +1981,70 @@
             }
         }
 
+        function _renderHiddenLayers(layers) {
+            var container = document.getElementById('cfg-learning-hiddenLayers-container');
+            if (!container) return;
+            container.innerHTML = '';
+            layers.forEach(function(size, i) {
+                var row = document.createElement('div');
+                row.className = 'whisker-hidden-layer-row';
+                var label = document.createElement('span');
+                label.className = 'whisker-layer-label';
+                label.textContent = 'Layer ' + (i + 1);
+                var input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'whisker-setting-input';
+                input.value = size;
+                input.min = 1;
+                input.step = 1;
+                input.setAttribute('oninput', '_updateHiddenLayer(' + i + ', this.value)');
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'whisker-layer-remove-btn';
+                removeBtn.innerHTML = '<i class="fas fa-minus"></i>';
+                removeBtn.setAttribute('onclick', '_removeHiddenLayer(' + i + ')');
+                if (layers.length === 1) {
+                    removeBtn.disabled = true;
+                    removeBtn.style.opacity = '0.3';
+                    removeBtn.style.cursor = 'not-allowed';
+                }
+                row.appendChild(label);
+                row.appendChild(input);
+                row.appendChild(removeBtn);
+                container.appendChild(row);
+            });
+        }
+
+        function _addHiddenLayer() {
+            if (!window._whiskerSelectedConfig) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (!cfg.network) cfg.network = {};
+            if (!cfg.network.hiddenLayers) cfg.network.hiddenLayers = [];
+            cfg.network.hiddenLayers.push(64);
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+            _renderHiddenLayers(cfg.network.hiddenLayers);
+        }
+
+        function _removeHiddenLayer(index) {
+            if (!window._whiskerSelectedConfig) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (!cfg.network || !cfg.network.hiddenLayers) return;
+            if (cfg.network.hiddenLayers.length <= 1) return;
+            cfg.network.hiddenLayers.splice(index, 1);
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+            _renderHiddenLayers(cfg.network.hiddenLayers);
+        }
+
+        function _updateHiddenLayer(index, value) {
+            if (!window._whiskerSelectedConfig) return;
+            var num = Number(value);
+            if (isNaN(num) || num < 1) return;
+            var cfg = JSON.parse(window._whiskerSelectedConfig);
+            if (!cfg.network || !cfg.network.hiddenLayers) return;
+            cfg.network.hiddenLayers[index] = num;
+            window._whiskerSelectedConfig = JSON.stringify(cfg);
+        }
+
         function _populateLearningSettings(configStr, configPath) {
             var active = _learningSettingsMap[configPath] || [];
             _allLearningSettings.forEach(function(key) {
@@ -1907,14 +2060,17 @@
             document.getElementById('cfg-learning-timeBudget').value = durationMs / 1000;
             if (cfg.populationSize != null) document.getElementById('cfg-learning-populationSize').value = cfg.populationSize;
             if (cfg.chromosome && cfg.chromosome.activationFunction) document.getElementById('cfg-learning-activationFunction').value = cfg.chromosome.activationFunction;
-            if (cfg.numberOfSpecies != null) document.getElementById('cfg-learning-numberOfSpecies').value = cfg.numberOfSpecies;
-            if (cfg.compatibility && cfg.compatibility.distanceThreshold != null) document.getElementById('cfg-learning-distanceThreshold').value = cfg.compatibility.distanceThreshold;
-            if (cfg.penalizingAge != null) document.getElementById('cfg-learning-penalizingAge').value = cfg.penalizingAge;
             if (cfg.switchObjectiveCount != null) document.getElementById('cfg-learning-switchObjectiveCount').value = cfg.switchObjectiveCount;
             if (cfg.maxArchiveSize != null) document.getElementById('cfg-learning-maxArchiveSize').value = cfg.maxArchiveSize;
             if (cfg.randomSelectionProbability != null) document.getElementById('cfg-learning-randomSelectionProbability').value = cfg.randomSelectionProbability;
-            if (cfg.training && cfg.training.learningRate != null) document.getElementById('cfg-learning-learningRate').value = cfg.training.learningRate;
-            if (cfg.training && cfg.training.batchSize != null) document.getElementById('cfg-learning-batchSize').value = cfg.training.batchSize;
+            if (cfg.training) {
+                if (cfg.training.learningRate != null) document.getElementById('cfg-learning-learningRate').value = cfg.training.learningRate;
+                if (cfg.training.batchSize != null) document.getElementById('cfg-learning-batchSize').value = cfg.training.batchSize;
+                if (cfg.training.epochs != null) document.getElementById('cfg-learning-trainingEpochs').value = cfg.training.epochs;
+                if (cfg.training.frequency != null) document.getElementById('cfg-learning-trainingFrequency').value = cfg.training.frequency;
+                if (cfg.training.optimizer) document.getElementById('cfg-learning-trainingOptimizer').value = cfg.training.optimizer;
+            }
+            if (cfg.network && cfg.network.hiddenLayers) _renderHiddenLayers(cfg.network.hiddenLayers);
             if (cfg.reward && cfg.reward.gamma != null) document.getElementById('cfg-learning-gamma').value = cfg.reward.gamma;
             if (cfg.epsilonGreedy && cfg.epsilonGreedy.epsilonEnd != null) document.getElementById('cfg-learning-epsilonEnd').value = cfg.epsilonGreedy.epsilonEnd;
             if (cfg.mutation) {
@@ -1925,6 +2081,17 @@
                 if (cfg.mutation.mutateToggleEnableConnection != null) document.getElementById('cfg-learning-mutateToggleEnableConnection').value = cfg.mutation.mutateToggleEnableConnection;
             }
             if (cfg.crossover && cfg.crossover.crossoverWithoutMutation != null) document.getElementById('cfg-learning-crossoverWithoutMutation').value = cfg.crossover.crossoverWithoutMutation;
+            if (cfg.numberOfSpecies != null) document.getElementById('cfg-learning-numberOfSpecies').value = cfg.numberOfSpecies;
+            if (cfg.parentsPerSpecies != null) document.getElementById('cfg-learning-parentsPerSpecies').value = cfg.parentsPerSpecies;
+            if (cfg.ageSignificance != null) document.getElementById('cfg-learning-ageSignificance').value = cfg.ageSignificance;
+            if (cfg.penalizingAge != null) document.getElementById('cfg-learning-penalizingAge').value = cfg.penalizingAge;
+            if (cfg.compatibility) {
+                if (cfg.compatibility.distanceThreshold != null) document.getElementById('cfg-learning-distanceThreshold').value = cfg.compatibility.distanceThreshold;
+                if (cfg.compatibility.distanceModifier != null) document.getElementById('cfg-learning-distanceModifier').value = cfg.compatibility.distanceModifier;
+                if (cfg.compatibility.disjointCoefficient != null) document.getElementById('cfg-learning-disjointCoefficient').value = cfg.compatibility.disjointCoefficient;
+                if (cfg.compatibility.excessCoefficient != null) document.getElementById('cfg-learning-excessCoefficient').value = cfg.compatibility.excessCoefficient;
+                if (cfg.compatibility.weightCoefficient != null) document.getElementById('cfg-learning-weightCoefficient').value = cfg.compatibility.weightCoefficient;
+            }
             var coverageType = isDql
                 ? (cfg.coverageObjective && cfg.coverageObjective.type)
                 : (cfg.fitnessFunction && cfg.fitnessFunction.type);
@@ -1997,6 +2164,34 @@
                 if (isNaN(num)) return;
                 if (!cfg.epsilonGreedy) cfg.epsilonGreedy = {};
                 cfg.epsilonGreedy.epsilonEnd = num;
+            } else if (key === 'parentsPerSpecies') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                cfg.parentsPerSpecies = num;
+            } else if (key === 'ageSignificance') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                cfg.ageSignificance = num;
+            } else if (key === 'distanceModifier') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                if (!cfg.compatibility) cfg.compatibility = {};
+                cfg.compatibility.distanceModifier = num;
+            } else if (key === 'disjointCoefficient') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                if (!cfg.compatibility) cfg.compatibility = {};
+                cfg.compatibility.disjointCoefficient = num;
+            } else if (key === 'excessCoefficient') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                if (!cfg.compatibility) cfg.compatibility = {};
+                cfg.compatibility.excessCoefficient = num;
+            } else if (key === 'weightCoefficient') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                if (!cfg.compatibility) cfg.compatibility = {};
+                cfg.compatibility.weightCoefficient = num;
             } else if (key === 'mutationAddConnection' || key === 'mutationAddNode' || key === 'mutateWeights' || key === 'mutateToggleEnableConnection') {
                 var num = Math.min(1, Math.max(0, Number(value)));
                 if (isNaN(num)) return;
@@ -2012,6 +2207,19 @@
                 if (isNaN(num)) return;
                 if (!cfg.crossover) cfg.crossover = {};
                 cfg.crossover.crossoverWithoutMutation = num;
+            } else if (key === 'trainingEpochs') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                if (!cfg.training) cfg.training = {};
+                cfg.training.epochs = num;
+            } else if (key === 'trainingFrequency') {
+                var num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                if (!cfg.training) cfg.training = {};
+                cfg.training.frequency = num;
+            } else if (key === 'trainingOptimizer') {
+                if (!cfg.training) cfg.training = {};
+                cfg.training.optimizer = value;
             } else if (key === 'coverageTarget') {
                 var isDql = !cfg.stoppingCondition.conditions;
                 if (isDql) {
