@@ -480,6 +480,54 @@
                                 <hr class="whisker-settings-divider">
                             </div>
 
+                            <div id="cfg-learning-searchOperators-group" style="display:none;">
+                                <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
+                                    <span data-i18n="config-search-operators">Search Operators</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-mutation-add-connection">Add Connection</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-mutationAddConnection"
+                                                value="0.1" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('mutationAddConnection', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-mutation-add-node">Add Node</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-mutationAddNode"
+                                                value="0.05" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('mutationAddNode', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-mutate-weights">Mutate Weights</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-mutateWeights"
+                                                value="0.8" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('mutateWeights', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-perturbation-power">Perturbation Power</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-perturbationPower"
+                                                value="0.5" min="0" step="0.01"
+                                                oninput="_updateLearningSetting('perturbationPower', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-mutate-toggle-enable">Toggle Enable</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-mutateToggleEnableConnection"
+                                                value="0.05" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('mutateToggleEnableConnection', this.value)">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-crossover-without-mutation">Crossover w/o Mutation</label>
+                                            <input type="number" class="whisker-setting-input" id="cfg-learning-crossoverWithoutMutation"
+                                                value="0.25" min="0" max="1" step="0.01"
+                                                oninput="_updateLearningSetting('crossoverWithoutMutation', this.value)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
                             <button class="whisker-advanced-header" onclick="_toggleAdvancedConfig(this)">
                                 <span data-i18n="config-advanced">Advanced Config</span>
                                 <i class="fas fa-chevron-down"></i>
@@ -1783,18 +1831,18 @@
         }
 
         var _dqlPath = 'config/ReinforcementLearning/dql.json';
-        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget', 'groundTruth'];
+        var _allLearningSettings = ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'maxArchiveSize', 'randomSelectionProbability', 'learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget', 'groundTruth', 'searchOperators'];
         var _learningSettingsMap = {
-            'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'groundTruth'],
-            'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/mio.json':             ['activationFunction', 'numberOfSpecies', 'distanceThreshold', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget'],
-            'config/Neuroevolution/mosa.json':            ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'coverageTarget'],
-            'config/Neuroevolution/newsd.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'switchObjectiveCount', 'coverageTarget'],
-            'config/Neuroevolution/score.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget'],
-            'config/Neuroevolution/survive.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget'],
+            'config/Neuroevolution/neatest.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/neatestBackprop.json': ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'groundTruth', 'searchOperators'],
+            'config/Neuroevolution/cosineNovelty.json':   ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/eventNovelty.json':    ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/random.json':          ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/mio.json':             ['activationFunction', 'numberOfSpecies', 'distanceThreshold', 'maxArchiveSize', 'randomSelectionProbability', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/mosa.json':            ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/newsd.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'switchObjectiveCount', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/score.json':           ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget', 'searchOperators'],
+            'config/Neuroevolution/survive.json':         ['populationSize', 'activationFunction', 'numberOfSpecies', 'distanceThreshold', 'penalizingAge', 'coverageTarget', 'searchOperators'],
             'config/ReinforcementLearning/dql.json':      ['learningRate', 'batchSize', 'gamma', 'epsilonEnd', 'coverageTarget']
         };
 
@@ -1869,6 +1917,14 @@
             if (cfg.training && cfg.training.batchSize != null) document.getElementById('cfg-learning-batchSize').value = cfg.training.batchSize;
             if (cfg.reward && cfg.reward.gamma != null) document.getElementById('cfg-learning-gamma').value = cfg.reward.gamma;
             if (cfg.epsilonGreedy && cfg.epsilonGreedy.epsilonEnd != null) document.getElementById('cfg-learning-epsilonEnd').value = cfg.epsilonGreedy.epsilonEnd;
+            if (cfg.mutation) {
+                if (cfg.mutation.mutationAddConnection != null) document.getElementById('cfg-learning-mutationAddConnection').value = cfg.mutation.mutationAddConnection;
+                if (cfg.mutation.mutationAddNode != null) document.getElementById('cfg-learning-mutationAddNode').value = cfg.mutation.mutationAddNode;
+                if (cfg.mutation.mutateWeights != null) document.getElementById('cfg-learning-mutateWeights').value = cfg.mutation.mutateWeights;
+                if (cfg.mutation.perturbationPower != null) document.getElementById('cfg-learning-perturbationPower').value = cfg.mutation.perturbationPower;
+                if (cfg.mutation.mutateToggleEnableConnection != null) document.getElementById('cfg-learning-mutateToggleEnableConnection').value = cfg.mutation.mutateToggleEnableConnection;
+            }
+            if (cfg.crossover && cfg.crossover.crossoverWithoutMutation != null) document.getElementById('cfg-learning-crossoverWithoutMutation').value = cfg.crossover.crossoverWithoutMutation;
             var coverageType = isDql
                 ? (cfg.coverageObjective && cfg.coverageObjective.type)
                 : (cfg.fitnessFunction && cfg.fitnessFunction.type);
@@ -1941,6 +1997,21 @@
                 if (isNaN(num)) return;
                 if (!cfg.epsilonGreedy) cfg.epsilonGreedy = {};
                 cfg.epsilonGreedy.epsilonEnd = num;
+            } else if (key === 'mutationAddConnection' || key === 'mutationAddNode' || key === 'mutateWeights' || key === 'mutateToggleEnableConnection') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                if (!cfg.mutation) cfg.mutation = {};
+                cfg.mutation[key] = num;
+            } else if (key === 'perturbationPower') {
+                var num = Math.max(0, Number(value));
+                if (isNaN(num)) return;
+                if (!cfg.mutation) cfg.mutation = {};
+                cfg.mutation.perturbationPower = num;
+            } else if (key === 'crossoverWithoutMutation') {
+                var num = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(num)) return;
+                if (!cfg.crossover) cfg.crossover = {};
+                cfg.crossover.crossoverWithoutMutation = num;
             } else if (key === 'coverageTarget') {
                 var isDql = !cfg.stoppingCondition.conditions;
                 if (isDql) {

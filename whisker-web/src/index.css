@@ -2032,6 +2032,7 @@ label {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    justify-content: space-between;
 }
 
 .whisker-setting-label {

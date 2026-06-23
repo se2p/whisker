@@ -184,5 +184,12 @@
     "config-gamma": "Discount Factor (γ)",
     "config-epsilon-end": "Epsilon End",
     "config-ground-truth": "Ground Truth",
-    "ground-truth-select": "Select recording file..."
+    "ground-truth-select": "Select recording file...",
+    "config-search-operators": "Search Operators",
+    "config-mutation-add-connection": "Add Connection",
+    "config-mutation-add-node": "Add Node",
+    "config-mutate-weights": "Mutate Weights",
+    "config-perturbation-power": "Perturbation Power",
+    "config-mutate-toggle-enable": "Toggle Enable",
+    "config-crossover-without-mutation": "Crossover w/o Mutation"
 }
