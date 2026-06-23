@@ -519,7 +519,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         mutantDownload: mutantDownload,
         log: true,
         headless,
-        useSaveStates: $('#use-save-states').is(':checked'),
+        useSaveStates: false,
         ...tracerSettings
     };
 
@@ -1414,7 +1414,6 @@ const loadFooter = function () {
 
 $(document)
     .ready(() => {
-        $('#scratch-controls').hide();
         loadHeader();
         loadFooter();
         initScratch();

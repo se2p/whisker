@@ -1650,19 +1650,6 @@ label {
     background-color: #b91c1c;
 }
 
-.whisker-advanced-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #6b7280;
-    margin-left: 8px;
-}
-
-.whisker-advanced-toggle span {
-    color: #6b7280;
-}
-
 /* ===== NEW SHELL: Topbar Responsive ===== */
 
 @media (max-width: 1100px) {
@@ -1682,9 +1669,6 @@ label {
         font-size: 13px;
     }
 
-    .whisker-advanced-toggle span {
-        display: none;
-    }
 }
 
 @media (max-width: 800px) {

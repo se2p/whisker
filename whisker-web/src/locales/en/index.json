@@ -75,7 +75,6 @@
     "title-console": "Console-Log",
     "title-editor": "Test Editor",
     "title-model": "Model Editor",
-    "extended-view": "Extended View",
     "upload-tooltip": "Click the button 'Browse' and choose a Scratch-Project from your hard drive.",
     "upload-helptext01": "Click the button 'Browse'.",
     "upload-helptext02": "Choose a *.sb3-file from your hard drive. You can download a Scratch project from the Web-GUI.",

@@ -97,13 +97,6 @@
                 onclick="document.getElementById('run-all-tests').click()">
                 <i class="fas fa-stop"></i> <span data-i18n="topbar-stop">Stop</span>
             </button>
-            <div class="whisker-advanced-toggle">
-                <span data-i18n="extended-view">Advanced View</span>
-                <label class="switch">
-                    <input type="checkbox" id="extendedView" onchange="_updateExtendedView()">
-                    <span class="slider round"></span>
-                </label>
-            </div>
         </div>
     </header>
     <!-- NEW TAB BAR -->
@@ -763,11 +756,6 @@
                                     <div id="acceleration-value"></div>
                                     <label id="seedLabel" data-i18n="[title]t-seed;seed" for="seed"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"></label>
-                                </div>
-                                <div class="row">
-                                    <input id="use-save-states" type="checkbox" autocomplete="off">
-                                    <label id="use-save-states-label" data-i18n="use-save-states"
-                                        for="use-save-states"></label>
                                 </div>
                             </div>
                         </div>
@@ -1734,31 +1722,6 @@
             'autoDimensions': true,
             'width:': '70%'
         });
-        document.getElementById("extendedView").checked = false;
-        function _updateExtendedView() {
-            if (document.getElementById("extendedView").checked) {
-                document.getElementById("scratch-controls").style.display = "block";
-                document.getElementById("tabModelEditor").parentElement.style.display = "list-item";
-                document.getElementById("tabLogs").parentElement.style.display = "list-item";
-                document.getElementById("seed").style.display = "block";
-                document.getElementById("seedLabel").style.display = "block";
-                document.getElementById("green-flag").style.display = "block";
-                document.getElementById("stop-scratch").style.display = "block";
-                document.getElementById("use-save-states").style.display = "block";
-                document.getElementById("use-save-states-label").style.display = "block";
-            }
-            else {
-                document.getElementById("scratch-controls").style.display = "none";
-                document.getElementById("tabModelEditor").parentElement.style.display = "none";
-                document.getElementById("tabLogs").parentElement.style.display = "none";
-                document.getElementById("seed").style.display = "none";
-                document.getElementById("seedLabel").style.display = "none";
-                document.getElementById("green-flag").style.display = "none";
-                document.getElementById("stop-scratch").style.display = "none";
-                document.getElementById("use-save-states").style.display = "none";
-                document.getElementById("use-save-states-label").style.display = "none";
-            }
-        }
         function _addTestClass() {
             document.getElementById("applyChanges").classList.add("applyChangesClass");
         }
@@ -1776,7 +1739,6 @@
                 document.getElementById("snippet" + i).style.display = "none";
             }
         }
-        _updateExtendedView();
 
         function _switchViewMode(mode, clickedBtn) {
             document.querySelectorAll('.whisker-view-btn').forEach(function(btn) {
