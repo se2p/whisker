@@ -88,16 +88,6 @@
                 <span data-i18n="topbar-upload-tests">Upload Tests</span>
             </label>
         </div>
-        <div class="whisker-topbar-right">
-            <button class="whisker-btn-run vm-related" type="button"
-                onclick="document.getElementById('run-all-tests').click()">
-                <i class="fas fa-play"></i> <span data-i18n="topbar-run">Run</span>
-            </button>
-            <button class="whisker-btn-stop vm-related" type="button"
-                onclick="document.getElementById('run-all-tests').click()">
-                <i class="fas fa-stop"></i> <span data-i18n="topbar-stop">Stop</span>
-            </button>
-        </div>
     </header>
     <!-- NEW TAB BAR -->
     <nav id="whisker-tabbar">
@@ -790,9 +780,15 @@
                         </div>
                         <div class="row">
                             <div class="col-lg-8" style="text-align: right;">
-                                <button id="run-search" type="button"
-                                    class="btn btn-main btn-sm search-button vm-related" data-toggle="tooltip"
-                                    data-placement="top" data-animation="false" data-i18n="search"></button>
+                                <div style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
+                                    <button id="run-search" type="button"
+                                        class="btn btn-main btn-sm vm-related" data-toggle="tooltip"
+                                        data-placement="top" data-animation="false" data-i18n="search"></button>
+                                    <button id="stop-search" type="button" style="display:none;"
+                                        class="btn btn-danger btn-sm">
+                                        <i class="fas fa-stop"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-lg-4">
                                 <div class="help-tooltip">
@@ -810,9 +806,6 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <button id="search-running" type="button" style="display:none;"
-                                    class="btn btn-main btn-sm search-button" disabled>
-                                    <i class="fas fa-circle-notch fa-spin result-spinner"></i></button>
                             </div>
                         </div>
                         <div class="row">

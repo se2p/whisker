@@ -150,8 +150,6 @@
     "CONDITION_IS_TRUE": "Condition is true",
     "topbar-upload-project": "Upload .sb3 Project",
     "topbar-upload-tests": "Upload Tests",
-    "topbar-run": "Run",
-    "topbar-stop": "Stop",
     "tab-search": "Search-Based Testing",
     "tab-learning": "Learning-Based Testing",
     "viewmode-game": "Game View",

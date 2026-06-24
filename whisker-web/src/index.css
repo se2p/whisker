@@ -1612,43 +1612,6 @@ label {
     gap: 12px;
 }
 
-.whisker-btn-run {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    background-color: #2563eb;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.whisker-btn-run:hover {
-    background-color: #1d4ed8;
-}
-
-.whisker-btn-stop {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    background-color: #dc2626;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.whisker-btn-stop:hover {
-    background-color: #b91c1c;
-}
 
 /* ===== NEW SHELL: Topbar Responsive ===== */
 
@@ -1660,12 +1623,6 @@ label {
 
     .whisker-upload-btn {
         padding: 6px 10px;
-        font-size: 13px;
-    }
-
-    .whisker-btn-run,
-    .whisker-btn-stop {
-        padding: 6px 12px;
         font-size: 13px;
     }
 
@@ -1682,12 +1639,6 @@ label {
         font-size: 12px;
         gap: 4px;
         white-space: nowrap;
-    }
-
-    .whisker-btn-run,
-    .whisker-btn-stop {
-        padding: 5px 10px;
-        font-size: 12px;
     }
 }
 

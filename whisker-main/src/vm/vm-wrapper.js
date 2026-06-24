@@ -544,8 +544,6 @@ class VMWrapper {
         this.vm.greenFlag();
         this.prepareModelForNextRun();
         this.vm.runtime.virtualSound = -1;
-
-        this.aborted = false;
     }
 
     /**

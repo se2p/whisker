@@ -1266,30 +1266,59 @@ const initEvents = function () {
     useBBTToggle.on('change', () => {
         useBBTAddCommentToggleRow.toggle(useBBTToggle.is(':checked'));
     });
+    let _searchActive = false;
+
+    const _resetSearchButton = () => {
+        _searchActive = false;
+        $('#stop-search').hide();
+        $('#run-search').prop('disabled', false)
+            .text(i18next.t('search'));
+        accSlider.slider('enable');
+        _enableVMRelatedButtons();
+    };
+
+    const _resetProjectView = () => {
+        Whisker.testTable.setTests([]);
+        if (Whisker.projectFileSelect && Whisker.projectFileSelect.length() > 0) {
+            Whisker.projectFileSelect.loadAsArrayBuffer().then(project =>
+                Whisker.scratch.loadProject(project)
+            );
+        }
+    };
+
+    $('#stop-search').on('click', () => {
+        if (Container.vmWrapper) {
+            Container.vmWrapper.abort();
+        }
+        _resetSearchButton();
+        _resetProjectView();
+    });
+
     $('#run-search')
         .click('click', () => {
             if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t('test-generation'), i18next.t('no-project'));
             } else {
-                $('#run-search').hide();
-                $('#search-running').show();
+                _searchActive = true;
+                $('#run-search').prop('disabled', true)
+                    .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
+                $('#stop-search').show();
                 const tests = runSearch();
-                tests.then(
-                    result => {
-                        if ('agentTests' in result){
-                            Whisker.testEditor.setAgentTests(result.agentTests);
-                        } else {
-                            loadTestsFromString(result.javaScriptText).then();
-                        }
-                        _jumpTo('#test-table');
-                        $('#run-search').show();
-                        $('#search-running').hide();
+                tests.then(result => {
+                    if (!_searchActive) return;
+                    if ('agentTests' in result) {
+                        Whisker.testEditor.setAgentTests(result.agentTests);
+                    } else {
+                        loadTestsFromString(result.javaScriptText).then();
                     }
-                );
+                    _jumpTo('#test-table');
+                    _resetSearchButton();
+                }).catch(() => {
+                    _resetSearchButton();
+                });
             }
         })
         .show();
-    $('#search-running').hide();
     useBBTAddCommentToggleRow.hide();
     _addFileListeners();
 };

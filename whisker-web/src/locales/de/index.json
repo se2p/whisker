@@ -150,8 +150,6 @@
     "CONDITION_IS_TRUE": "Bedingung ist wahr",
     "topbar-upload-project": ".sb3 Projekt hochladen",
     "topbar-upload-tests": "Tests hochladen",
-    "topbar-run": "Starten",
-    "topbar-stop": "Stoppen",
     "tab-search": "Suchbasiertes Testen",
     "tab-learning": "Lernbasiertes Testen",
     "viewmode-game": "Spielansicht",
