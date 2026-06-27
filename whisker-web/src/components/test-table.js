@@ -24,7 +24,8 @@ class TestTable {
 
         $(this.div).on('click', '#test-table-collapse-btn', event => {
             this._collapsed = !this._collapsed;
-            $(this.div).find('.test-table-rows-wrapper').toggle(!this._collapsed);
+            $(this.div).find('.test-table-rows-wrapper')
+                .toggle(!this._collapsed);
             $(event.currentTarget).html(
                 `<i class="fas ${this._collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>`
             );
@@ -521,7 +522,8 @@ class TestTable {
                 emptyTable: '-'
             },
             initComplete: () => {
-                $(this.div).find('.test-table-rows-wrapper').toggle(!this._collapsed);
+                $(this.div).find('.test-table-rows-wrapper')
+                    .toggle(!this._collapsed);
                 const icon = this._collapsed ? 'fa-chevron-down' : 'fa-chevron-up';
                 $('#test-table-collapse-btn').html(`<i class="fas ${icon}"></i>`);
             }
