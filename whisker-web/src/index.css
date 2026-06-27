@@ -43,9 +43,6 @@ body {
     color: var(--subheadingColor) !important;
 }
 
-#DataTables_Table_0_wrapper {
-    margin-top: -27px;
-}
 
 ul {
     list-style-type: none;
@@ -257,10 +254,6 @@ p {
         white-space: normal;
     }
 
-    #test-table>b {
-        display: block;
-        width: 100%;
-    }
 
     .scrollTable {
         width: 100%;
@@ -849,9 +842,39 @@ tr td:nth-child(5) {
     width: 100%;
 }
 
-#test-table>b {
-    display: block;
-    width: 100%;
+
+/* ===== Test Table Header ===== */
+
+#test-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    white-space: nowrap;
+}
+
+#test-table-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#test-table-toolbar b {
+    flex-shrink: 0;
+}
+
+#test-table-search-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#test-table-search {
+    width: 210px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 2px 6px;
+    font-size: 0.85rem;
 }
 
 /* ===== DataTables Style ===== */

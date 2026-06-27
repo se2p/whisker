@@ -33,27 +33,7 @@
 
     <!-- Main functionality buttons -->
     <div id="main-functionality">
-        <!-- Run all tests button -->
-        <button id="run-all-tests" class="btn btn-main vm-related" type="button" data-toggle="tooltip"
-            data-placement="top" data-animation="false" data-i18n="[title]t-tests">
-            <i id="run-tests-icon" class="fas fa-play"></i>
-            <i id="stop-tests-icon" class="fas fa-stop hide"></i>
-        </button>
-        <!-- Reset program button -->
-        <button id="reset" class="btn btn-main vm-related" type="button" data-toggle="tooltip" data-placement="top"
-            data-animation="false" data-i18n="[title]t-reset;">
-            <i class="fas fa-undo"></i>
-        </button>
-        <!-- Load tests button -->
-        <button id="applyChanges" class="editor-apply btn btn-main" type="button" data-toggle="tooltip"
-            data-placement="top" data-animation="false" onclick="_removeTestClass()" data-i18n="[title]t-load">
-            <i class="fas fa-sync"></i>
-        </button>
-        <!-- Download tests button -->
-        <button class="editor-save btn btn-main" type="button" data-toggle="tooltip" data-placement="top"
-            data-animation="false" data-i18n="[title]t-save">
-            <i class="fas fa-download"></i>
-        </button>
+        <!--
         <div class="help-tooltip" style="text-align:center;">
             <a href="#controls-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help" /></a>
             <span class="help-text" data-i18n="controls-tooltip"></span>
@@ -68,6 +48,7 @@
                 </ol>
             </div>
         </div>
+        -->
     </div>
 
     <!-- Header (preserved for JS) -->
@@ -740,6 +721,11 @@
                                         class="btn btn-danger but2 vm-related record-related" data-toggle="tooltip"
                                         data-placement="top" data-animation="false" data-i18n="[title]stop">
                                         <i class="fas fa-stop"></i></button>
+                                    <button id="reset" class="btn btn-main but2 vm-related" type="button"
+                                        data-toggle="tooltip" data-placement="top" data-animation="false"
+                                        data-i18n="[title]t-reset;">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
                                 </div>
                                 <div class="row" style="padding-top:20px;">
                                     <label for="acceleration-factor" id="acceleration" data-i18n="acceleration"></label>
@@ -884,22 +870,50 @@
                         </div>
                     </div>
                     <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
-                        <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                        <div id="test-table-toolbar">
+                            <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                            <div id="test-table-toolbar-right">
+                                <button id="run-all-tests" class="btn btn-sm btn-main vm-related" type="button"
+                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                    data-i18n="[title]t-tests">
+                                    <i id="run-tests-icon" class="fas fa-play"></i>
+                                    <i id="stop-tests-icon" class="fas fa-stop hide"></i>
+                                </button>
+                                <button id="applyChanges" class="editor-apply btn btn-sm btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                    onclick="_removeTestClass()" data-i18n="[title]t-load">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                                <button class="editor-save btn btn-sm btn-main" type="button" data-toggle="tooltip"
+                                    data-placement="top" data-animation="false" data-i18n="[title]t-save">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <div id="test-table-search-box">
+                                    <span>&#x1F50E;</span>
+                                    <input id="test-table-search" type="search">
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" id="test-table-collapse-btn">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                        <table class="display table table-sm mt-4">
-                            <thead class="thead-white">
-                                <tr>
-                                    <th></th>
-                                    <th>#</th>
-                                    <th data-i18n="table-name"></th>
-                                    <th data-i18n="table-categories"></th>
-                                    <th data-i18n="table-test-result" class="result text-center"></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                        <div id="test-table-content">
+                            <table class="display table table-sm mt-4">
+                                <thead class="thead-white">
+                                    <tr>
+                                        <th></th>
+                                        <th>#</th>
+                                        <th data-i18n="table-name"></th>
+                                        <th data-i18n="table-categories"></th>
+                                        <th data-i18n="table-test-result" class="result text-center"></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

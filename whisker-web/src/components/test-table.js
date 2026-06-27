@@ -20,6 +20,21 @@ class TestTable {
         this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
+        this._collapsed = false;
+
+        $(this.div).on('click', '#test-table-collapse-btn', event => {
+            this._collapsed = !this._collapsed;
+            $(this.div).find('.test-table-rows-wrapper').toggle(!this._collapsed);
+            $(event.currentTarget).html(
+                `<i class="fas ${this._collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>`
+            );
+        });
+
+        $(this.div).on('input', '#test-table-search', event => {
+            if (this.dataTable) {
+                this.dataTable.search($(event.currentTarget).val()).draw();
+            }
+        });
 
         this.testRunner = testRunner;
 
@@ -496,17 +511,19 @@ class TestTable {
             pagingType: 'simple',
 
             autoWidth: false,
-            dom: '<"row"<"col-sm-12"f>>' +
-                 '<"row"<"col-sm-12"l>>' +
-                 '<"row"<"col-sm-12"tr>>' +
+            dom: '<"row test-table-rows-wrapper"<"col-sm-12"tr>>' +
                  '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
 
             search: {
                 smart: true
             },
             language: {
-                search: '&#x1F50E;',
                 emptyTable: '-'
+            },
+            initComplete: () => {
+                $(this.div).find('.test-table-rows-wrapper').toggle(!this._collapsed);
+                const icon = this._collapsed ? 'fa-chevron-down' : 'fa-chevron-up';
+                $('#test-table-collapse-btn').html(`<i class="fas ${icon}"></i>`);
             }
 
         });
