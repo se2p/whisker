@@ -1351,6 +1351,8 @@ const _updateLang = () => {
     if (Whisker.testTable) {
         Whisker.testTable.hideTestDetails();
     }
+    $('.lang-btn').removeClass('lang-btn-active');
+    $(`.lang-btn[data-lng="${i18next.language}"]`).addClass('lang-btn-active');
 };
 
 const _initLangSelect = function () {
@@ -1514,6 +1516,14 @@ $('#form-lang').on('change', () => {
     params.set(LANGUAGE_OPTION, lng);
     window.history.pushState('', '', `?${params.toString()}`);
     i18next.changeLanguage(lng).then(_updateLang());
+});
+
+$(document).on('click', '.lang-btn', event => {
+    const lng = $(event.currentTarget).data('lng');
+    $('#lang-select').val(lng);
+    $('#form-lang').trigger('change');
+    $('.lang-btn').removeClass('lang-btn-active');
+    $(event.currentTarget).addClass('lang-btn-active');
 });
 
 const _updateFilenameLabels = () => {

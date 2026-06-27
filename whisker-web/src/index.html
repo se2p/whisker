@@ -69,6 +69,10 @@
                 <span data-i18n="topbar-upload-tests">Upload Tests</span>
             </label>
         </div>
+        <div class="whisker-topbar-right">
+            <button class="lang-btn" data-lng="de" title="Deutsch">DE</button>
+            <button class="lang-btn" data-lng="en" title="English">EN</button>
+        </div>
     </header>
     <!-- NEW TAB BAR -->
     <nav id="whisker-tabbar">
@@ -275,6 +279,25 @@
                 <div class="whisker-config-panel" id="whisker-config-panel">
                     <h2 class="whisker-config-title" data-i18n="config-title">Configuration</h2>
 
+                    <div id="config-upload">
+                        <div class="config-upload-header">
+                            <p class="whisker-algo-section-label" data-i18n="config-upload-label">Upload algorithm config</p>
+                            <div class="help-tooltip">
+                                <a class="help-icon"><img src="assets/help.png" alt="help" /></a>
+                                <span class="help-text help-text--up" data-i18n="generation-config-tooltip"></span>
+                            </div>
+                        </div>
+                        <div class="whisker-file-upload">
+                            <input type="file" class="vm-related" id="fileselect-config"
+                                accept=".json" name="config-file" title="" />
+                            <label for="fileselect-config" class="whisker-file-upload-btn">
+                                <i class="fas fa-file-upload"></i>
+                                <span id="config-label" data-i18n="mio-config">Select config file...</span>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="config-or-divider" data-i18n="config-or-choose">or choose</p>
+
                     <!-- Search-Based algorithms (default visible) -->
                     <div id="whisker-search-config">
                         <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
@@ -443,10 +466,10 @@
 
                             <div id="cfg-learning-groundTruth-group" style="display:none;">
                                 <p class="whisker-algo-section-label" data-i18n="config-ground-truth">Ground Truth</p>
-                                <div class="whisker-ground-truth-upload">
+                                <div class="whisker-file-upload">
                                     <input type="file" id="fileselect-ground-truth"
                                         accept=".json" name="ground-truth-file" />
-                                    <label for="fileselect-ground-truth" class="whisker-ground-truth-btn">
+                                    <label for="fileselect-ground-truth" class="whisker-file-upload-btn">
                                         <i class="fas fa-file-upload"></i>
                                         <span id="ground-truth-filename" data-i18n="ground-truth-select">Select recording file...</span>
                                     </label>
@@ -810,40 +833,6 @@
                                     <input type="checkbox" id="use-bbt-tests-add-comment">
                                     <span class="slider round"></span>
                                 </label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div id="config-upload" class="form m-4 mr-5">
-                                    <div class="row">
-                                        <div class="col-lg-9 label-padding">
-                                            <b><label id="fileselect-config-label" for="fileselect-config"
-                                                    data-i18n="configuration"></label></b>
-                                            <div class="help-tooltip">
-                                                <a class="help-icon"><img src="assets/help.png" alt="help" /></a>
-                                                <span class="help-text" data-i18n="generation-config-tooltip"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <img class="img" src="assets/json.png" alt="json" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div class="upload-btn-wrapper">
-                                                <button class="btnr" data-i18n="browse"></button>
-                                                <input type="file" class="vm-related" id="fileselect-config"
-                                                    accept=".json" name="config-file" title="" />
-                                                <label id="config-label" class="filename-label" for="fileselect-config"
-                                                    data-i18n="mio-config"></label>
-                                            </div>
-                                            <div class="form-group">
-                                                <small id="help-text3" class="form-text text-muted"
-                                                    data-i18n="choose-file"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

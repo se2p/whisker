@@ -1202,19 +1202,6 @@ img {
 
 #whiskerTabContent {
     margin-bottom: 50px;
-    padding-left: calc(6vw + 75px);
-}
-
-@media only screen and (max-width: 1300px) {
-    #whiskerTabContent {
-        padding-left: 80px;
-    }
-}
-
-@media only screen and (max-width: 1000px) {
-    #whiskerTabContent {
-        padding-left: 70px;
-    }
 }
 
 .scrolled {
@@ -1532,30 +1519,6 @@ label {
     margin-bottom: 0.2rem !important;
 }
 
-#main-functionality {
-    position: fixed;
-    z-index: 1000;
-    top: 30%;
-    display: grid;
-    left: 6vw;
-}
-
-#main-functionality .btn-main {
-    margin: 10px;
-    border-width: medium;
-}
-
-@media only screen and (max-width: 1300px) {
-    #main-functionality {
-        left: 10px;
-    }
-}
-
-@media only screen and (max-width: 1000px) {
-    #main-functionality {
-        left: 0;
-    }
-}
 
 /* ===== NEW SHELL: Top Bar ===== */
 
@@ -1632,7 +1595,28 @@ label {
 .whisker-topbar-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+}
+
+.lang-btn {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 3px 7px;
+    color: #6b7280;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.lang-btn:hover {
+    color: var(--subheadingColor);
+}
+
+.lang-btn.lang-btn-active {
+    color: var(--subheadingColor);
+    border-color: var(--mainColor);
 }
 
 
@@ -2117,11 +2101,11 @@ label {
     gap: 12px;
 }
 
-.whisker-ground-truth-upload input[type="file"] {
+.whisker-file-upload input[type="file"] {
     display: none;
 }
 
-.whisker-ground-truth-btn {
+.whisker-file-upload-btn {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2137,22 +2121,50 @@ label {
     margin: 0;
 }
 
-.whisker-ground-truth-btn:hover {
+.whisker-file-upload-btn:hover {
     border-color: #f59e0b;
     background: #fffbeb;
     color: #374151;
 }
 
-.whisker-ground-truth-btn i {
+.whisker-file-upload-btn i {
     color: #f59e0b;
     font-size: 15px;
     flex-shrink: 0;
 }
 
-.whisker-ground-truth-btn span {
+.whisker-file-upload-btn span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+
+.config-upload-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.config-upload-header p {
+    margin-bottom: 0;
+}
+
+.help-text--up {
+    margin-left: 0 !important;
+    top: auto;
+    bottom: 100%;
+    left: auto;
+    right: 0;
+    z-index: 10;
+}
+
+.config-or-divider {
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 10px 0 6px;
 }
 
 .whisker-coverage-toggle {

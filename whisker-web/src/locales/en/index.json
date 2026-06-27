@@ -180,6 +180,8 @@
     "config-batch-size": "Batch Size",
     "config-gamma": "Discount Factor (γ)",
     "config-epsilon-end": "Epsilon End",
+    "config-upload-label": "Upload algorithm config",
+    "config-or-choose": "or choose",
     "config-ground-truth": "Ground Truth",
     "ground-truth-select": "Select recording file...",
     "config-speciation": "Speciation",
