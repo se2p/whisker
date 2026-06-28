@@ -1093,7 +1093,7 @@ const _addFileListeners = function () {
     });
 };
 
-const _formatAcceleration = val => val >= 100 ? '∞' : val;
+const _formatAcceleration = val => (val >= 100 ? '∞' : val);
 
 const initEvents = function () {
 
