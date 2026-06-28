@@ -2304,3 +2304,17 @@ label {
     opacity: 0.4;
     pointer-events: none;
 }
+
+#whisker-config-panel input:disabled,
+#whisker-config-panel button:disabled,
+#whisker-config-panel select:disabled,
+#run-all-tests:disabled,
+#applyChanges:disabled,
+.editor-save:disabled,
+#bbt-toggles input:disabled,
+#seed:disabled,
+input[type="file"]:disabled + label,
+.slider-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

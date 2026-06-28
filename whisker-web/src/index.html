@@ -817,22 +817,24 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-8 text-right">
-                                <span data-i18n="use-bbt-tests"></span>
-                                <label class="switch">
-                                    <input type="checkbox" id="use-bbt-tests">
-                                    <span class="slider round"></span>
-                                </label>
+                        <div id="bbt-toggles">
+                            <div class="row">
+                                <div class="col-lg-8 text-right">
+                                    <span data-i18n="use-bbt-tests"></span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="use-bbt-tests">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row" id="use-bbt-tests-add-comment-row">
-                            <div class="col-lg-8 text-right">
-                                <span data-i18n="use-bbt-tests-add-comment"></span>
-                                <label class="switch">
-                                    <input type="checkbox" id="use-bbt-tests-add-comment">
-                                    <span class="slider round"></span>
-                                </label>
+                            <div class="row" id="use-bbt-tests-add-comment-row">
+                                <div class="col-lg-8 text-right">
+                                    <span data-i18n="use-bbt-tests-add-comment"></span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="use-bbt-tests-add-comment">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2215,6 +2217,8 @@
                 var learningConfig = document.getElementById('whisker-learning-config');
                 if (searchConfig) searchConfig.style.display = isLearning ? 'none' : '';
                 if (learningConfig) learningConfig.style.display = isLearning ? '' : 'none';
+                var bbtToggles = document.getElementById('bbt-toggles');
+                if (bbtToggles) bbtToggles.style.display = isLearning ? 'none' : '';
                 var defaultPath = isLearning ? 'config/Neuroevolution/neatest.json' : 'config/mio.json';
                 window._whiskerSelectedConfig = window._whiskerConfigMap[defaultPath] || null;
                 if (isLearning) {

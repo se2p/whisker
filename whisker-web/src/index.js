@@ -336,8 +336,11 @@ const _disableVMRelatedButtons = function (exception) {
     $(`.vm-related:not(${exception})`).prop('disabled', true);
 };
 
+const _algoRelated = '#whisker-config-panel input, #whisker-config-panel button, #whisker-config-panel select, #run-all-tests, #applyChanges, .editor-save, #bbt-toggles input, #seed';
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
+    $(_algoRelated).prop('disabled', true);
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -1090,13 +1093,16 @@ const _addFileListeners = function () {
     });
 };
 
+const _formatAcceleration = val => val >= 100 ? '∞' : val;
+
 const initEvents = function () {
+
     $('#acceleration-factor')
         .on('slide', slideEvt => {
-            $('#acceleration-value').text(slideEvt.value);
+            $('#acceleration-value').text(_formatAcceleration(slideEvt.value));
         })
         .on('change', clickEvt => {
-            $('#acceleration-value').text(clickEvt.value.newValue);
+            $('#acceleration-value').text(_formatAcceleration(clickEvt.value.newValue));
         });
     $('#green-flag').on('click', () => {
         if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
@@ -1275,6 +1281,7 @@ const initEvents = function () {
             .text(i18next.t('search'));
         accSlider.slider('enable');
         _enableVMRelatedButtons();
+        $(_algoRelated).prop('disabled', false);
     };
 
     const _resetProjectView = () => {
@@ -1331,7 +1338,7 @@ const toggleComponents = function () {
             if (input) $('#toggle-input').click();
             if (accelerationFactor) {
                 accSlider.slider('setValue', accelerationFactor);
-                $('#acceleration-value').text(accelerationFactor);
+                $('#acceleration-value').text(_formatAcceleration(accelerationFactor));
             }
         }
     }
