@@ -66,6 +66,7 @@ const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
 require('./components/footer'); // attaches an event listener as side effect
 require('./components/header'); // attaches an event listener as side effect
+const ConfigPanel = require('./components/config-panel');
 const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
@@ -999,6 +1000,7 @@ const initComponents = function () {
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => logger.error(result.error));
 
+    Whisker.configPanel = new ConfigPanel(document.getElementById('whisker-config-panel'));
     Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
@@ -1014,7 +1016,7 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         async fileSelect => {
             const str = await fileSelect.loadAsString();
-            window._applyUploadedConfig(str, fileSelect.getName());
+            Whisker.configPanel.applyUploadedConfig(str, fileSelect.getName());
         });
 
     Whisker.groundTruthFileSelect = new FileSelect($('#fileselect-ground-truth')[0],
