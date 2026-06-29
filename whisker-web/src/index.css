@@ -1865,6 +1865,119 @@ label {
     padding: 16px;
 }
 
+.network-topology-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.network-topology-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.network-topology-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+.network-topology-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.network-topology-generation {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    background: #e5e7eb;
+    border-radius: 999px;
+    padding: 2px 9px;
+}
+
+.network-topology-expand-hint {
+    margin-left: auto;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.network-topology-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.network-topology-modal--open {
+    display: flex;
+}
+
+.network-topology-modal-box {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 80vw;
+    max-width: 1100px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.network-topology-modal-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+.network-topology-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+.network-topology-modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.network-topology-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+#network-topology-modal-canvas {
+    display: block;
+    width: 100%;
+}
+
+#network-topology-canvas {
+    display: block;
+    max-width: 100%;
+    height: 300px;
+}
+
 .whisker-config-title {
     font-size: 18px !important;
     font-weight: 600 !important;

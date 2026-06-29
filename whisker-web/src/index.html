@@ -750,15 +750,15 @@
                     <!-- View Toggle Bar -->
                     <div class="whisker-view-toggle-bar">
                         <div class="whisker-view-toggle">
-                            <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-game-btn"
-                                onclick="_switchViewMode('game', this)">
-                                <i class="fas fa-gamepad"></i>
-                                <span data-i18n="viewmode-game">Game View</span>
+                            <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-results-btn"
+                                onclick="_switchViewMode('results', this)">
+                                <i class="fas fa-list"></i>
+                                <span data-i18n="viewmode-results">Results</span>
                             </button>
-                            <button class="whisker-view-btn" id="whisker-view-dashboard-btn"
-                                onclick="_switchViewMode('dashboard', this)">
+                            <button class="whisker-view-btn" id="whisker-view-statistics-btn"
+                                onclick="_switchViewMode('statistics', this)">
                                 <i class="fas fa-chart-bar"></i>
-                                <span data-i18n="viewmode-dashboard">Dashboard View</span>
+                                <span data-i18n="viewmode-statistics">Statistics</span>
                             </button>
                         </div>
                     </div>
@@ -907,9 +907,10 @@
                             </div>
 
 
-                            <!-- Tests table -->
+                            <!-- Tests table / Statistics (toggled) -->
 
                             <div class="col-lg-6">
+                                <div id="whisker-results-view">
                                 <div class="help-tooltip">
                                     <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
                                             alt="help" /></a>
@@ -975,11 +976,11 @@
                                         </table>
                                     </div>
                                 </div>
+                                </div>
+                                <div id="whisker-dashboard-view" style="display:none;"></div>
                             </div>
                         </div>
                     </div>
-                    <!-- Dashboard View (empty placeholder) -->
-                    <div id="whisker-dashboard-view" class="whisker-view-content" style="display:none;"></div>
                 </div>
             </div>
         </div>
@@ -1812,8 +1813,11 @@
                 btn.classList.remove('whisker-view-btn--active');
             });
             clickedBtn.classList.add('whisker-view-btn--active');
-            document.getElementById('whisker-game-view').style.display = mode === 'game' ? '' : 'none';
-            document.getElementById('whisker-dashboard-view').style.display = mode === 'dashboard' ? '' : 'none';
+            document.getElementById('whisker-results-view').style.display = mode === 'results' ? '' : 'none';
+            document.getElementById('whisker-dashboard-view').style.display = mode === 'statistics' ? '' : 'none';
+            if (mode === 'statistics' && window.Whisker && window.Whisker.networkTopology) {
+                window.Whisker.networkTopology.refresh();
+            }
         }
 
         function _switchWhiskerTab(targetContentId, clickedBtn) {
@@ -1835,6 +1839,10 @@
             if (targetContentId === 'contentProject' && window.Whisker && window.Whisker.configPanel) {
                 var isLearning = clickedBtn.id === 'whisker-tab-learning';
                 window.Whisker.configPanel.switchToMode(isLearning);
+                if (window.Whisker.networkTopology) {
+                    var card = document.querySelector('.network-topology-card');
+                    if (card) card.style.display = isLearning ? '' : 'none';
+                }
             }
         }
 

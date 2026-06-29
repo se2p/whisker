@@ -152,8 +152,8 @@
     "topbar-upload-tests": "Tests hochladen",
     "tab-search": "Suchbasiertes Testen",
     "tab-learning": "Lernbasiertes Testen",
-    "viewmode-game": "Spielansicht",
-    "viewmode-dashboard": "Dashboard-Ansicht",
+    "viewmode-results": "Ergebnisse",
+    "viewmode-statistics": "Statistiken",
     "config-title": "Konfiguration",
     "config-algo-label": "Algorithmus",
     "config-time-budget": "Zeitbudget (s)",
@@ -203,5 +203,8 @@
     "config-training-frequency": "Training Frequency",
     "config-training-optimizer": "Optimizer",
     "config-hidden-layers": "Hidden Layers",
-    "config-add-layer": "Add Layer"
+    "config-add-layer": "Add Layer",
+    "network-topology-title": "Netzwerktopologie",
+    "network-topology-generation": "Generation",
+    "network-topology-expand": "Zum Vergrößern klicken"
 }
