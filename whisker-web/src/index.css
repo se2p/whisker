@@ -1972,6 +1972,106 @@ label {
     width: 100%;
 }
 
+/* ── Console Log Component ───────────────────────────────────────────────── */
+.console-log-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+}
+
+.console-log-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.console-log-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+
+.console-log-collapse-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #6b7280;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.console-log-filter-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.console-log-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.console-log-filter-btn:hover {
+    background: #f3f4f6;
+}
+
+.console-log-filter-btn--active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.console-log-filter-btn--active:hover {
+    background: #1d4ed8;
+}
+
+.console-log-output {
+    background: #0d1117;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    padding: 12px 16px;
+    max-height: 240px;
+    overflow-y: auto;
+    color: #c9d1d9;
+}
+
+.console-log-line {
+    display: flex;
+    align-items: baseline;
+    padding: 2px 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.console-log-type {
+    flex-shrink: 0;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.console-log-type--info  { color: #58a6ff; }
+.console-log-type--warn  { color: #d29922; }
+.console-log-type--error { color: #f85149; }
+
 #network-topology-canvas {
     display: block;
     max-width: 100%;

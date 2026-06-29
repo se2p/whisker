@@ -204,6 +204,11 @@
     "config-training-optimizer": "Optimizer",
     "config-hidden-layers": "Hidden Layers",
     "config-add-layer": "Add Layer",
+    "console-log-title": "Console Logs",
+    "console-log-all": "All",
+    "console-log-info": "Info",
+    "console-log-error": "Error",
+    "console-log-warn": "Warn",
     "network-topology-title": "Network Topology",
     "network-topology-generation": "Generation",
     "network-topology-expand": "Click to expand"

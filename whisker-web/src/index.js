@@ -69,6 +69,7 @@ require('./components/header'); // attaches an event listener as side effect
 const ConfigPanel = require('./components/config-panel');
 const ModelEditor = require('./components/model-editor');
 const NetworkTopology = require('./components/network-topology');
+const ConsoleLog = require('./components/console-log');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -1004,6 +1005,13 @@ const initComponents = function () {
 
     Whisker.configPanel = new ConfigPanel(document.getElementById('whisker-config-panel'));
     Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
+    Whisker.consoleLog = new ConsoleLog(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('console-log-title'),
+        all: i18next.t('console-log-all'),
+        info: i18next.t('console-log-info'),
+        error: i18next.t('console-log-error'),
+        warn: i18next.t('console-log-warn')
+    });
     Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('network-topology-title'),
         generation: i18next.t('network-topology-generation'),
@@ -1316,6 +1324,7 @@ const initEvents = function () {
                 showModal(i18next.t('test-generation'), i18next.t('no-project'));
             } else {
                 _searchActive = true;
+                if (Whisker.consoleLog) Whisker.consoleLog.clear();
                 if (Whisker.networkTopology) Whisker.networkTopology.reset();
                 $('#run-search').prop('disabled', true)
                     .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
@@ -1367,6 +1376,15 @@ const _updateLang = () => {
     $('[data-toggle="tooltip"]').tooltip();
     if (Whisker.testTable) {
         Whisker.testTable.hideTestDetails();
+    }
+    if (Whisker.consoleLog) {
+        Whisker.consoleLog.updateI18n({
+            title: i18next.t('console-log-title'),
+            all: i18next.t('console-log-all'),
+            info: i18next.t('console-log-info'),
+            error: i18next.t('console-log-error'),
+            warn: i18next.t('console-log-warn')
+        });
     }
     if (Whisker.networkTopology) {
         Whisker.networkTopology.updateI18n({
