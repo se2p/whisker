@@ -9,6 +9,7 @@ import Arrays from "../../../utils/Arrays";
 import {NeatChromosome} from "../networks/NeatChromosome";
 import logger from '../../../../util/logger';
 import {NeatParameter} from "../hyperparameter/NeatParameter";
+import {Container} from "../../../utils/Container";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -98,6 +99,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().bestTestSuiteSize = this.getCurrentSolution().length;
         StatisticsCollector.getInstance().incrementIterationCount();
         this.updateCoverageTimeLine();
+        this._emitNetworkTopology();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -105,6 +107,23 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                 (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+    }
+
+    protected _emitNetworkTopology(): void {
+        if (!Container.vm) return;
+        // NEAT stores the overall best at _fitnessFunctions.size+1; Neatest only stores per-objective networks.
+        let best = this._archive.get(this._fitnessFunctions.size + 1);
+        if (!best) {
+            for (const chr of this._archive.values()) {
+                if (!best || chr.fitness > best.fitness) best = chr;
+            }
+        }
+        if (!best) return;
+        const nodes = best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const connections = best.connections
+            .filter(c => c.isEnabled)
+            .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
+        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._iterations, nodes, connections});
     }
 
     /**

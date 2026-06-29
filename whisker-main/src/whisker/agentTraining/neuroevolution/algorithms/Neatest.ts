@@ -299,6 +299,7 @@ export class Neatest extends NEAT {
         StatisticsCollector.getInstance().iterationCount = this._iterations;
 
         this.updateCoverageTimeLine();
+        this._emitNetworkTopology();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
