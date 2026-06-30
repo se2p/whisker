@@ -26,7 +26,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {Randomness} from "../utils/Randomness";
-import {Container} from "../utils/Container";
+import {Container, emitCoverageUpdate} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
@@ -145,6 +145,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         StatisticsCollector.getInstance().updateCoverageTimeLine();
+        emitCoverageUpdate(this._iterations, this._archive, this._fitnessFunctions);
     }
 
     getCurrentSolution(): TestChromosome[] {

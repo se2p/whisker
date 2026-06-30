@@ -70,6 +70,7 @@ const ConfigPanel = require('./components/config-panel');
 const ModelEditor = require('./components/model-editor');
 const NetworkTopology = require('./components/network-topology');
 const ConsoleLog = require('./components/console-log');
+const CoverageCurve = require('./components/coverage-curve');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -917,6 +918,7 @@ const injectTestsFromTestStore = function () {
 const handleOnLoadProjectFile = async function (fileSelect) {
     const project = await fileSelect.loadAsArrayBuffer();
     if (Whisker.networkTopology) Whisker.networkTopology.reset();
+    if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
     await Whisker.scratch.loadProject(project);
 
     // BBTs contained in _project_ files are not respected!
@@ -1016,6 +1018,11 @@ const initComponents = function () {
         title: i18next.t('network-topology-title'),
         generation: i18next.t('network-topology-generation'),
         expand: i18next.t('network-topology-expand')
+    });
+    Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('coverage-curve-title'),
+        generation: i18next.t('coverage-curve-generation'),
+        coverage: i18next.t('coverage-curve-coverage')
     });
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
@@ -1326,6 +1333,7 @@ const initEvents = function () {
                 _searchActive = true;
                 if (Whisker.consoleLog) Whisker.consoleLog.clear();
                 if (Whisker.networkTopology) Whisker.networkTopology.reset();
+                if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
                 $('#run-search').prop('disabled', true)
                     .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
                 $('#stop-search').show();
@@ -1391,6 +1399,13 @@ const _updateLang = () => {
             title: i18next.t('network-topology-title'),
             generation: i18next.t('network-topology-generation'),
             expand: i18next.t('network-topology-expand')
+        });
+    }
+    if (Whisker.coverageCurve) {
+        Whisker.coverageCurve.updateI18n({
+            title: i18next.t('coverage-curve-title'),
+            generation: i18next.t('coverage-curve-generation'),
+            coverage: i18next.t('coverage-curve-coverage')
         });
     }
     $('.lang-btn').removeClass('lang-btn-active');

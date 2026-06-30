@@ -209,6 +209,9 @@
     "console-log-info": "Info",
     "console-log-error": "Fehler",
     "console-log-warn": "Warnung",
+    "coverage-curve-title": "Branch Coverage",
+    "coverage-curve-generation": "Generation",
+    "coverage-curve-coverage": "Coverage",
     "network-topology-title": "Netzwerktopologie",
     "network-topology-generation": "Generation",
     "network-topology-expand": "Zum Vergrößern klicken"

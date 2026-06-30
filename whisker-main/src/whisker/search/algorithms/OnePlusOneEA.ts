@@ -90,6 +90,7 @@ ${bestIndividual.toString()}`);
             }
             this._iterations++;
             this.updateCoverageTimeLine();
+            this._emitCoverageUpdate();
             StatisticsCollector.getInstance().incrementIterationCount();
         }
         logger.debug("1+1 EA completed at " + Date.now());

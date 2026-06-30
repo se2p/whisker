@@ -247,6 +247,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 mutationCounter = 0;
             }
             this.updateCoverageTimeLine();
+            this._emitCoverageUpdate();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
@@ -429,6 +430,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
+        this._archive.set(fitnessFunctionKey, chromosome);
         this._bestIndividuals = Arrays.distinct(this._archiveCovered.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         this._samplingCounter.set(fitnessFunctionKey, 0);

@@ -317,6 +317,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
+        this._emitCoverageUpdate();
     }
 
     setFitnessFunction(): void {

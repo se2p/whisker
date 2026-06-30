@@ -7,6 +7,15 @@ import {GradientDescent} from "../agentTraining/neuroevolution/misc/GradientDesc
 import {ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis';
 
 
+export function emitCoverageUpdate(iteration: number, archive: Map<unknown, unknown>, fitnessFunctions: Map<unknown, unknown>): void {
+    if (!Container.vm) return;
+    const total = fitnessFunctions ? fitnessFunctions.size : 0;
+    Container.vm.emit('COVERAGE_UPDATE', {
+        iteration,
+        coverage: total > 0 ? archive.size / total : 0,
+    });
+}
+
 export class Container {
     static config: WhiskerSearchConfiguration;
     static vm: VirtualMachine

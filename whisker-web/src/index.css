@@ -1865,6 +1865,40 @@ label {
     padding: 16px;
 }
 
+/* ── Coverage Curve Component ────────────────────────────────────────────── */
+.coverage-curve-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    padding-bottom: 8px;
+}
+
+.coverage-curve-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 4px;
+}
+
+.coverage-curve-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+}
+
+.coverage-curve-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.coverage-curve-canvas {
+    display: block;
+    width: 100%;
+}
+
 .network-topology-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;

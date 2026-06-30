@@ -29,6 +29,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {StoppingCondition} from "../StoppingCondition";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
+import {emitCoverageUpdate} from "../../utils/Container";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -176,4 +177,9 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     protected updateCoverageTimeLine():void {
         StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
+
+    protected _emitCoverageUpdate(): void {
+        emitCoverageUpdate(this._iterations, this._archive, this._fitnessFunctions);
+    }
+
 }
