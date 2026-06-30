@@ -7,7 +7,8 @@ class CoverageCurve {
         this._i18n = {
             title: i18n.title || 'Branch Coverage',
             generation: i18n.generation || 'Generation',
-            coverage: i18n.coverage || 'Coverage'
+            coverage: i18n.coverage || 'Coverage',
+            emptyMessage: i18n.emptyMessage || 'Start a search to see coverage over time'
         };
         this._data = [];
         this._buildUI(container);
@@ -16,12 +17,23 @@ class CoverageCurve {
 
     reset() {
         this._data = [];
+        this._emptyEl.style.display = '';
+        this._canvas.style.display = 'none';
+        this._valueEl.textContent = '';
+    }
+
+    startEmpty() {
+        this._data = [];
+        this._valueEl.textContent = '';
+        this._emptyEl.style.display = 'none';
+        this._canvas.style.display = '';
         this._redraw();
     }
 
     updateI18n(i18n) {
         this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
+        this._emptyEl.textContent = this._i18n.emptyMessage;
     }
 
     _buildUI(container) {
@@ -32,21 +44,25 @@ class CoverageCurve {
                 <span class="coverage-curve-title"></span>
                 <span class="coverage-curve-value"></span>
             </div>
-            <canvas class="coverage-curve-canvas"></canvas>`;
+            <div class="coverage-curve-empty"></div>
+            <canvas class="coverage-curve-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
 
         this._card = card;
         this._titleEl = card.querySelector('.coverage-curve-title');
         this._valueEl = card.querySelector('.coverage-curve-value');
+        this._emptyEl = card.querySelector('.coverage-curve-empty');
         this._canvas = card.querySelector('.coverage-curve-canvas');
         this._ctx = this._canvas.getContext('2d');
 
         this._titleEl.textContent = this._i18n.title;
-        this._redraw();
+        this._emptyEl.textContent = this._i18n.emptyMessage;
     }
 
     _update(data) {
         this._data.push(data);
+        this._emptyEl.style.display = 'none';
+        this._canvas.style.display = '';
         this._redraw();
     }
 
@@ -89,10 +105,7 @@ class CoverageCurve {
         ctx.lineTo(chartX + chartW, chartY + chartH);
         ctx.stroke();
 
-        if (!this._data.length) {
-            this._valueEl.textContent = '';
-            return;
-        }
+        if (!this._data.length) return;
 
         // Coverage line — X scaled by index so even few points spread across full width
         const lastIdx = Math.max(this._data.length - 1, 1);

@@ -16,6 +16,7 @@
     "explain-recording" : "Inputs such as \"key pressed\" can be recorded and transformed to code automatically so that you don't have to type inputs out manually. Note that existing tests will be discarded.",
     "acceleration" : "Test Acceleration:",
     "search" : "Start Test Generation",
+    "search-placeholder" : "Search...",
     "use-bbt-tests" : "Generate Block-Based Tests",
     "use-bbt-tests-add-comment": "Add test description as comment block",
     "t-tests" : "Run all tests",
@@ -212,6 +213,8 @@
     "coverage-curve-title": "Branch Coverage",
     "coverage-curve-generation": "Generation",
     "coverage-curve-coverage": "Coverage",
+    "network-topology-empty": "Start a learning algorithm to see the network topology",
+    "coverage-curve-empty": "Start a search to see the coverage over time",
     "network-topology-title": "Network Topology",
     "network-topology-generation": "Generation",
     "network-topology-expand": "Click to expand"

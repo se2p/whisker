@@ -17,7 +17,8 @@ class NetworkTopology {
         this._i18n = {
             title: i18n.title || 'Network Topology',
             generation: i18n.generation || 'Generation',
-            expand: i18n.expand || 'Click to expand'
+            expand: i18n.expand || 'Click to expand',
+            emptyMessage: i18n.emptyMessage || 'Start a learning algorithm to see the network topology'
         };
         this._lastData = null;
         this._buildUI();
@@ -35,6 +36,7 @@ class NetworkTopology {
         this.modal.querySelectorAll('.network-topology-title').forEach(el => {
             el.textContent = this._i18n.title;
         });
+        if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
     }
 
     refresh() {
@@ -45,6 +47,17 @@ class NetworkTopology {
         this._lastData = null;
         this.genLabel.textContent = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this._emptyEl.style.display = '';
+        this.canvas.style.display = 'none';
+        this._closeModal();
+    }
+
+    startEmpty() {
+        this._lastData = null;
+        this.genLabel.textContent = '';
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this._emptyEl.style.display = 'none';
+        this.canvas.style.display = '';
         this._closeModal();
     }
 
@@ -59,11 +72,14 @@ class NetworkTopology {
                 <p class="network-topology-title">${this._i18n.title}</p>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
-            <canvas id="network-topology-canvas"></canvas>`;
+            <div class="network-topology-empty"></div>
+            <canvas id="network-topology-canvas" style="display:none;"></canvas>`;
         this.container.appendChild(card);
         this.canvas = card.querySelector('#network-topology-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.genLabel = card.querySelector('#nt-generation');
+        this._emptyEl = card.querySelector('.network-topology-empty');
+        this._emptyEl.textContent = this._i18n.emptyMessage;
 
         // Modal
         this.modal = document.createElement('div');
@@ -109,6 +125,8 @@ class NetworkTopology {
 
     _render(data) {
         this._lastData = data;
+        this._emptyEl.style.display = 'none';
+        this.canvas.style.display = '';
         const W = this.container.clientWidth - 32;
         if (W <= 0) return; // hidden — refresh() will draw at correct size when visible
         const maxColHeight = this._maxColHeight(data.nodes);

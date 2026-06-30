@@ -16,6 +16,7 @@
     "explain-recording" : "Du kannst Eingaben wie \"Taste gedrückt\" aufzeichnen und in Code umwandeln lassen, statt den Code selbst zu schreiben. Beachte, dass dabei deine bisherigen Tests verloren gehen.",
     "acceleration" : "Testbeschleunigung:",
     "search" : "Generiere automatisch Tests",
+    "search-placeholder" : "Suchen...",
     "use-bbt-tests" : "Blockbasierte Tests generieren",
     "use-bbt-tests-add-comment": "Testbeschreibung als Kommentar-Block hinzufügen",
     "t-tests" : "Starte alle Tests",
@@ -212,6 +213,8 @@
     "coverage-curve-title": "Branch Coverage",
     "coverage-curve-generation": "Generation",
     "coverage-curve-coverage": "Coverage",
+    "network-topology-empty": "Starte einen Lernalgorithmus, um die Netzwerktopologie zu sehen",
+    "coverage-curve-empty": "Starte eine Suche, um den Coverage-Verlauf zu sehen",
     "network-topology-title": "Netzwerktopologie",
     "network-topology-generation": "Generation",
     "network-topology-expand": "Zum Vergrößern klicken"

@@ -786,6 +786,7 @@
                                 <!-- Stage -->
                                 <!-- Use tabindex to make the canvas focusable. -->
                                 <div id="viewer">
+                                    <div id="scratch-placeholder"></div>
                                     <canvas id="scratch-stage" tabindex="1"></canvas>
                                 </div>
                                 <!-- Acceleration slider, seed, scratch controls -->
@@ -812,7 +813,7 @@
                                                     <i class="fas fa-undo"></i>
                                                 </button>
                                             </div>
-                                            <div class="row" style="padding-top:20px;">
+                                            <div class="row" style="padding-top:28px;">
                                                 <label for="acceleration-factor" id="acceleration"
                                                     data-i18n="acceleration"></label>
                                                 <div id="acceleration-value"></div>
@@ -825,9 +826,7 @@
                                 </div>
                                 <div id="scratch-controls">
                                     <div class="row spacer20 p-0 mt-4">
-                                        <!-- Record inputs -->
                                         <div class="col-lg-8" style="text-align: right;">
-                                            <!-- Record inputs button -->
                                             <button id="record" type="button"
                                                 class="btn btn-main btn-sm search-button vm-related record-related"
                                                 data-toggle="tooltip" data-placement="top" data-animation="false"
@@ -839,7 +838,6 @@
                                                         src="assets/help.png" alt="help" /></a>
                                                 <span class="help-text" data-i18n="record-tooltip"></span>
                                             </div>
-
                                             <div style="display:none">
                                                 <div id="record-tooltip">
                                                     <ul>
@@ -853,8 +851,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-lg-8" style="text-align: right;">
-                                            <div
-                                                style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
+                                            <div style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
                                                 <button id="run-search" type="button"
                                                     class="btn btn-main btn-sm vm-related" data-toggle="tooltip"
                                                     data-placement="top" data-animation="false"
@@ -871,7 +868,6 @@
                                                         src="assets/help.png" alt="help" /></a>
                                                 <span class="help-text" data-i18n="generation-tooltip"></span>
                                             </div>
-
                                             <div style="display:none">
                                                 <div id="generation-tooltip">
                                                     <ul>
@@ -911,12 +907,6 @@
 
                             <div class="col-lg-6">
                                 <div id="whisker-results-view">
-                                <div class="help-tooltip">
-                                    <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                            alt="help" /></a>
-                                    <span class="help-text" data-i18n="testtable-tooltip"></span>
-                                </div>
-
                                 <div style="display:none">
                                     <div id="testtable-tooltip">
                                         <ul>
@@ -929,30 +919,37 @@
                                 </div>
                                 <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
                                     <div id="test-table-toolbar">
-                                        <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                                        <div id="test-table-toolbar-left">
+                                            <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                                            <div class="help-tooltip">
+                                                <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
+                                                        alt="help" /></a>
+                                                <span class="help-text" data-i18n="testtable-tooltip"></span>
+                                            </div>
+                                        </div>
                                         <div id="test-table-toolbar-right">
-                                            <button id="run-all-tests" class="btn btn-sm btn-main vm-related"
+                                            <button id="run-all-tests" class="btn btn-sm btn-table-action vm-related"
                                                 type="button" data-toggle="tooltip" data-placement="top"
                                                 data-animation="false" data-i18n="[title]t-tests">
                                                 <i id="run-tests-icon" class="fas fa-play"></i>
                                                 <i id="stop-tests-icon" class="fas fa-stop hide"></i>
                                             </button>
-                                            <button id="applyChanges" class="editor-apply btn btn-sm btn-main"
+                                            <button id="applyChanges" class="editor-apply btn btn-sm btn-table-action"
                                                 type="button" data-toggle="tooltip" data-placement="top"
                                                 data-animation="false" onclick="_removeTestClass()"
                                                 data-i18n="[title]t-load">
                                                 <i class="fas fa-sync"></i>
                                             </button>
-                                            <button class="editor-save btn btn-sm btn-main" type="button"
+                                            <button class="editor-save btn btn-sm btn-table-action" type="button"
                                                 data-toggle="tooltip" data-placement="top" data-animation="false"
                                                 data-i18n="[title]t-save">
                                                 <i class="fas fa-download"></i>
                                             </button>
                                             <div id="test-table-search-box">
-                                                <span>&#x1F50E;</span>
-                                                <input id="test-table-search" type="search">
+                                                <i class="fas fa-search"></i>
+                                                <input id="test-table-search" type="search" data-i18n="[placeholder]search-placeholder">
                                             </div>
-                                            <button class="btn btn-sm btn-outline-secondary"
+                                            <button class="btn btn-sm btn-table-action"
                                                 id="test-table-collapse-btn">
                                                 <i class="fas fa-chevron-up"></i>
                                             </button>

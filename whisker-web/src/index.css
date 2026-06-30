@@ -408,10 +408,22 @@ p {
 
 #viewer {
     position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+#scratch-placeholder {
+    position: absolute;
+    inset: 0;
+    background: #111827;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .slide-container {
-    padding-top: 8px;
+    padding-top: 16px;
     padding-left: 8%;
     width: 100%;
 }
@@ -439,6 +451,58 @@ pre.prettyprint {
 
 .but2 {
     margin-left: 1%;
+}
+
+/* ===== Scratch stage controls ===== */
+#seed {
+    width: 80px;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+#green-flag,
+#stop-scratch,
+#reset {
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+#scratch-controls {
+    margin-top: 20px;
+}
+
+#scratch-controls .row {
+    margin-bottom: 8px;
+}
+
+#record,
+#run-search {
+    white-space: nowrap;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+#bbt-toggles .row {
+    margin-bottom: 6px;
+    align-items: center;
+}
+
+#bbt-toggles span {
+    font-size: 0.875rem;
+    color: var(--subheadingColor);
 }
 
 .slider {
@@ -706,7 +770,8 @@ pre.prettyprint {
 
 #scratch-stage {
     width: 100% !important;
-    border: 1px solid gray;
+    border: none;
+    display: block;
 }
 
 .dataTable {
@@ -843,38 +908,203 @@ tr td:nth-child(5) {
 }
 
 
-/* ===== Test Table Header ===== */
+/* ===== Test Table Card ===== */
 
+#test-table {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+#test-table.spacer50 {
+    margin-bottom: 0;
+}
+
+/* Header bar — gray background, edge-to-edge */
 #test-table-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 25px;
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
     white-space: nowrap;
+}
+
+#test-table-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#test-table-toolbar b {
+    flex-shrink: 0;
+    color: #1f2937;
 }
 
 #test-table-toolbar-right {
     display: flex;
     align-items: center;
-    gap: 8px;
-}
-
-#test-table-toolbar b {
-    flex-shrink: 0;
-}
-
-#test-table-search-box {
-    display: flex;
-    align-items: center;
     gap: 4px;
 }
 
-#test-table-search {
-    width: 210px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 2px 6px;
+/* Compact icon action buttons — yellow border matching btn-main */
+.btn-table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--mainColor);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--subheadingColor);
     font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.btn-table-action:hover {
+    background: var(--mainColorAlpha2);
+    border-color: var(--mainColorHover);
+}
+
+/* Search input with icon inside */
+#test-table-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#test-table-search-box .fa-search {
+    position: absolute;
+    left: 9px;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+#test-table-search {
+    width: 160px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: 5px 8px 5px 28px;
+    font-size: 0.875rem;
+    background: #fff;
+    color: #374151;
+    height: 32px;
+}
+
+#test-table-search:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+
+#test-table-collapse-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+/* Table content — no extra margin, override DataTables defaults */
+#test-table-content,
+#test-table-content > *,
+#test-table-content .dataTables_wrapper {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+#test-table table.display,
+#test-table table.dataTable {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Table header row — gray background matching header bar */
+#test-table thead.thead-white th {
+    background: #f9fafb;
+    border-top: none;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    padding: 6px 8px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Table body rows — compact like prototype */
+#test-table tbody tr td {
+    font-size: 0.9rem;
+    padding: 5px 8px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+#test-table tbody tr:hover td {
+    background: #f9fafb;
+}
+
+#test-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Row action buttons — small, square, icon-only */
+#test-table .toggle-details,
+#test-table .run-test {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--subColor);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--subColor);
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: background 0.12s;
+}
+
+#test-table .toggle-details:hover,
+#test-table .run-test:hover {
+    background: rgba(69, 188, 228, 0.1);
+}
+
+#test-table .debug-test {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    background: #fff;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+#test-table .debug-test:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #ef4444;
 }
 
 /* ===== DataTables Style ===== */
@@ -1762,23 +1992,6 @@ label {
         max-width: 100%;
     }
 
-    #scratch-controls .row {
-        justify-content: center;
-        align-items: center;
-    }
-
-    #scratch-controls .col-lg-8,
-    #scratch-controls .col-lg-4 {
-        flex: 0 0 auto;
-        width: auto;
-        max-width: none;
-        text-align: left !important;
-    }
-
-    #scratch-controls .search-button {
-        margin-left: 0;
-    }
-
     .slide-container {
         padding-left: 4%;
     }
@@ -1879,7 +2092,10 @@ label {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px 4px;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 10px 10px 0 0;
 }
 
 .coverage-curve-title {
@@ -1897,6 +2113,14 @@ label {
 .coverage-curve-canvas {
     display: block;
     width: 100%;
+}
+
+.network-topology-empty,
+.coverage-curve-empty {
+    padding: 48px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #d1d5db;
 }
 
 .network-topology-card {
@@ -2102,9 +2326,17 @@ label {
     margin-right: 4px;
 }
 
-.console-log-type--info  { color: #58a6ff; }
-.console-log-type--warn  { color: #d29922; }
-.console-log-type--error { color: #f85149; }
+.console-log-type--info {
+    color: #58a6ff;
+}
+
+.console-log-type--warn {
+    color: #d29922;
+}
+
+.console-log-type--error {
+    color: #f85149;
+}
 
 #network-topology-canvas {
     display: block;
@@ -2560,7 +2792,7 @@ label {
 .editor-save:disabled,
 #bbt-toggles input:disabled,
 #seed:disabled,
-input[type="file"]:disabled + label,
+input[type="file"]:disabled+label,
 .slider-disabled {
     opacity: 0.4;
     cursor: not-allowed;

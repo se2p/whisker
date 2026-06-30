@@ -920,6 +920,8 @@ const handleOnLoadProjectFile = async function (fileSelect) {
     if (Whisker.networkTopology) Whisker.networkTopology.reset();
     if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
     await Whisker.scratch.loadProject(project);
+    const placeholder = document.getElementById('scratch-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
 
     // BBTs contained in _project_ files are not respected!
     const numberOfContainedBBTs = removeAllBBTTestsFromCurrentProject();
@@ -1017,12 +1019,14 @@ const initComponents = function () {
     Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('network-topology-title'),
         generation: i18next.t('network-topology-generation'),
-        expand: i18next.t('network-topology-expand')
+        expand: i18next.t('network-topology-expand'),
+        emptyMessage: i18next.t('network-topology-empty')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('coverage-curve-title'),
         generation: i18next.t('coverage-curve-generation'),
-        coverage: i18next.t('coverage-curve-coverage')
+        coverage: i18next.t('coverage-curve-coverage'),
+        emptyMessage: i18next.t('coverage-curve-empty')
     });
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
@@ -1332,8 +1336,8 @@ const initEvents = function () {
             } else {
                 _searchActive = true;
                 if (Whisker.consoleLog) Whisker.consoleLog.clear();
-                if (Whisker.networkTopology) Whisker.networkTopology.reset();
-                if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
+                if (Whisker.networkTopology) Whisker.networkTopology.startEmpty();
+                if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
                 $('#run-search').prop('disabled', true)
                     .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
                 $('#stop-search').show();
@@ -1398,14 +1402,16 @@ const _updateLang = () => {
         Whisker.networkTopology.updateI18n({
             title: i18next.t('network-topology-title'),
             generation: i18next.t('network-topology-generation'),
-            expand: i18next.t('network-topology-expand')
+            expand: i18next.t('network-topology-expand'),
+            emptyMessage: i18next.t('network-topology-empty')
         });
     }
     if (Whisker.coverageCurve) {
         Whisker.coverageCurve.updateI18n({
             title: i18next.t('coverage-curve-title'),
             generation: i18next.t('coverage-curve-generation'),
-            coverage: i18next.t('coverage-curve-coverage')
+            coverage: i18next.t('coverage-curve-coverage'),
+            emptyMessage: i18next.t('coverage-curve-empty')
         });
     }
     $('.lang-btn').removeClass('lang-btn-active');
