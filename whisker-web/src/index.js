@@ -1023,7 +1023,7 @@ const initComponents = function () {
         emptyMessage: i18next.t('network-topology-empty')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
-        title: i18next.t('coverage-curve-title'),
+        title: i18next.t('coverage-curve-title-statement'),
         generation: i18next.t('coverage-curve-generation'),
         coverage: i18next.t('coverage-curve-coverage'),
         emptyMessage: i18next.t('coverage-curve-empty')
@@ -1329,6 +1329,13 @@ const initEvents = function () {
         _resetProjectView();
     });
 
+    $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', function () {
+        if (!Whisker.coverageCurve) return;
+        const type = this.dataset.coverageValue;
+        const titleKey = type === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
+        Whisker.coverageCurve.updateI18n({title: i18next.t(titleKey)});
+    });
+
     $('#run-search')
         .click('click', () => {
             if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
@@ -1407,8 +1414,12 @@ const _updateLang = () => {
         });
     }
     if (Whisker.coverageCurve) {
+        const _activeBtn = document.querySelector('.whisker-coverage-btn--active[data-coverage-value]');
+        const _coverageTitleKey = (_activeBtn && _activeBtn.dataset.coverageValue === 'branch')
+            ? 'coverage-curve-title'
+            : 'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({
-            title: i18next.t('coverage-curve-title'),
+            title: i18next.t(_coverageTitleKey),
             generation: i18next.t('coverage-curve-generation'),
             coverage: i18next.t('coverage-curve-coverage'),
             emptyMessage: i18next.t('coverage-curve-empty')

@@ -211,6 +211,7 @@
     "console-log-error": "Error",
     "console-log-warn": "Warn",
     "coverage-curve-title": "Branch Coverage",
+    "coverage-curve-title-statement": "Statement Coverage",
     "coverage-curve-generation": "Generation",
     "coverage-curve-coverage": "Coverage",
     "network-topology-empty": "Start a learning algorithm to see the network topology",
