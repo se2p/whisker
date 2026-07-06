@@ -1329,9 +1329,9 @@ const initEvents = function () {
         _resetProjectView();
     });
 
-    $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', function () {
+    $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', e => {
         if (!Whisker.coverageCurve) return;
-        const type = this.dataset.coverageValue;
+        const type = e.currentTarget.dataset.coverageValue;
         const titleKey = type === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({title: i18next.t(titleKey)});
     });
@@ -1415,9 +1415,9 @@ const _updateLang = () => {
     }
     if (Whisker.coverageCurve) {
         const _activeBtn = document.querySelector('.whisker-coverage-btn--active[data-coverage-value]');
-        const _coverageTitleKey = (_activeBtn && _activeBtn.dataset.coverageValue === 'branch')
-            ? 'coverage-curve-title'
-            : 'coverage-curve-title-statement';
+        const _coverageTitleKey = (_activeBtn && _activeBtn.dataset.coverageValue === 'branch') ?
+            'coverage-curve-title' :
+            'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({
             title: i18next.t(_coverageTitleKey),
             generation: i18next.t('coverage-curve-generation'),

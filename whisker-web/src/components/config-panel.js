@@ -1,4 +1,4 @@
-const { $ } = require('../web-libs');
+const {$} = require('../web-libs');
 
 const _algoSettingsMap = {
     'config/mio.json': [
@@ -271,7 +271,7 @@ class ConfigPanel {
             if ('maxLength' in cfg.chromosome) cfg.chromosome.maxLength = num;
             if ('maxSampleLength' in cfg.chromosome) cfg.chromosome.maxSampleLength = num;
         } else if (key === 'coverageTarget') {
-            if (!cfg.fitnessFunction) cfg.fitnessFunction = { type: 'statement', targets: [] };
+            if (!cfg.fitnessFunction) cfg.fitnessFunction = {type: 'statement', targets: []};
             cfg.fitnessFunction.type = value;
             this.el.querySelectorAll('.whisker-coverage-btn').forEach(b => b.classList.remove('whisker-coverage-btn--active'));
             if (btn) btn.classList.add('whisker-coverage-btn--active');
@@ -328,7 +328,7 @@ class ConfigPanel {
             if (!cfg.localSearch) cfg.localSearch = [];
             const redIdx = cfg.localSearch.findIndex(s => s.type === 'Reduction');
             if (value && redIdx === -1) {
-                cfg.localSearch.push({ type: 'Reduction', probability: 0.3 });
+                cfg.localSearch.push({type: 'Reduction', probability: 0.3});
             }
             if (!value && redIdx !== -1) cfg.localSearch.splice(redIdx, 1);
         } else if (key === 'localSearchExtensionProb') {
