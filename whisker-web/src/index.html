@@ -1840,6 +1840,10 @@
                     var card = document.querySelector('.network-topology-card');
                     if (card) card.style.display = isLearning ? '' : 'none';
                 }
+                if (window.Whisker.speciesNetworks) {
+                    var snCard = document.querySelector('.species-networks-card');
+                    if (snCard) snCard.style.display = isLearning ? '' : 'none';
+                }
             }
         }
 

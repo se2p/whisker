@@ -1908,6 +1908,12 @@ label {
     color: #111827;
 }
 
+.whisker-tab:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .whisker-tab.active {
     color: #2563eb;
 }
@@ -2230,6 +2236,92 @@ label {
     width: 100%;
 }
 
+#sn-modal-canvas {
+    display: block;
+    width: 100%;
+}
+
+/* ── Species Networks Component ──────────────────────────────────────────── */
+.species-networks-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.species-networks-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+.species-networks-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.species-networks-generation {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    background: #e5e7eb;
+    border-radius: 999px;
+    padding: 2px 9px;
+}
+
+.species-networks-empty {
+    padding: 48px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #d1d5db;
+}
+
+.species-networks-list {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.species-networks-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.species-networks-row:last-child {
+    border-bottom: none;
+}
+
+.species-networks-row:hover {
+    background: #f9fafb;
+}
+
+.species-networks-row-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.species-networks-row-members {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.species-networks-expand-hint {
+    margin-left: auto;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
 /* ── Console Log Component ───────────────────────────────────────────────── */
 .console-log-card {
     background: #ffffff;
@@ -2263,6 +2355,37 @@ label {
     color: #6b7280;
     padding: 0 4px;
     line-height: 1;
+}
+
+.console-log-expand-hint {
+    font-size: 14px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0 2px;
+    margin-left: 8px;
+}
+
+.console-log-expand-hint:hover {
+    color: #374151;
+}
+
+.console-log-modal .network-topology-modal-box {
+    height: 80vh;
+}
+
+.console-log-modal .network-topology-modal-body {
+    background: #0d1117;
+}
+
+.console-log-modal .console-log-output {
+    max-height: none;
+    overflow: hidden;
+}
+
+.console-log-modal-filter-bar {
+    padding: 8px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
 }
 
 .console-log-filter-bar {

@@ -255,6 +255,11 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         }
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
+        this._emitSpeciesTopologies(this._population);
+    }
+
+    protected override _getTopologyGeneration(): number {
+        return this._population.generation;
     }
 
     /**

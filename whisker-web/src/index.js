@@ -69,6 +69,7 @@ require('./components/header'); // attaches an event listener as side effect
 const ConfigPanel = require('./components/config-panel');
 const ModelEditor = require('./components/model-editor');
 const NetworkTopology = require('./components/network-topology');
+const SpeciesNetworks = require('./components/species-networks');
 const ConsoleLog = require('./components/console-log');
 const CoverageCurve = require('./components/coverage-curve');
 
@@ -76,6 +77,7 @@ const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
 const Whisker = window.Whisker = {};
 window.$ = $;
+let _coverageType = 'statement';
 
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
@@ -918,6 +920,7 @@ const injectTestsFromTestStore = function () {
 const handleOnLoadProjectFile = async function (fileSelect) {
     const project = await fileSelect.loadAsArrayBuffer();
     if (Whisker.networkTopology) Whisker.networkTopology.reset();
+    if (Whisker.speciesNetworks) Whisker.speciesNetworks.reset();
     if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
     await Whisker.scratch.loadProject(project);
     const placeholder = document.getElementById('scratch-placeholder');
@@ -1021,6 +1024,15 @@ const initComponents = function () {
         generation: i18next.t('network-topology-generation'),
         expand: i18next.t('network-topology-expand'),
         emptyMessage: i18next.t('network-topology-empty')
+    });
+    Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('species-networks-title'),
+        generation: i18next.t('species-networks-generation'),
+        species: i18next.t('species-networks-species'),
+        members: i18next.t('species-networks-members'),
+        bestNetwork: i18next.t('species-networks-best-network'),
+        expand: i18next.t('species-networks-expand'),
+        emptyMessage: i18next.t('species-networks-empty')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('coverage-curve-title-statement'),
@@ -1310,6 +1322,8 @@ const initEvents = function () {
         accSlider.slider('enable');
         _enableVMRelatedButtons();
         $(_algoRelated).prop('disabled', false);
+        document.getElementById('whisker-tab-search').disabled = false;
+        document.getElementById('whisker-tab-learning').disabled = false;
     };
 
     const _resetProjectView = () => {
@@ -1331,8 +1345,8 @@ const initEvents = function () {
 
     $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', e => {
         if (!Whisker.coverageCurve) return;
-        const type = e.currentTarget.dataset.coverageValue;
-        const titleKey = type === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
+        _coverageType = e.currentTarget.dataset.coverageValue;
+        const titleKey = _coverageType === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({title: i18next.t(titleKey)});
     });
 
@@ -1344,7 +1358,10 @@ const initEvents = function () {
                 _searchActive = true;
                 if (Whisker.consoleLog) Whisker.consoleLog.clear();
                 if (Whisker.networkTopology) Whisker.networkTopology.startEmpty();
+                if (Whisker.speciesNetworks) Whisker.speciesNetworks.startEmpty();
                 if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
+                const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
+                document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 $('#run-search').prop('disabled', true)
                     .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
                 $('#stop-search').show();
@@ -1413,11 +1430,19 @@ const _updateLang = () => {
             emptyMessage: i18next.t('network-topology-empty')
         });
     }
+    if (Whisker.speciesNetworks) {
+        Whisker.speciesNetworks.updateI18n({
+            title: i18next.t('species-networks-title'),
+            generation: i18next.t('species-networks-generation'),
+            species: i18next.t('species-networks-species'),
+            members: i18next.t('species-networks-members'),
+            bestNetwork: i18next.t('species-networks-best-network'),
+            expand: i18next.t('species-networks-expand'),
+            emptyMessage: i18next.t('species-networks-empty')
+        });
+    }
     if (Whisker.coverageCurve) {
-        const _activeBtn = document.querySelector('.whisker-coverage-btn--active[data-coverage-value]');
-        const _coverageTitleKey = (_activeBtn && _activeBtn.dataset.coverageValue === 'branch') ?
-            'coverage-curve-title' :
-            'coverage-curve-title-statement';
+        const _coverageTitleKey = _coverageType === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({
             title: i18next.t(_coverageTitleKey),
             generation: i18next.t('coverage-curve-generation'),

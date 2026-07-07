@@ -110,6 +110,10 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         }
     }
 
+    protected _getTopologyGeneration(): number {
+        return this._iterations;
+    }
+
     protected _emitNetworkTopology(): void {
         if (!Container.vm) return;
         // NEAT stores the overall best at _fitnessFunctions.size+1; Neatest only stores per-objective networks.
@@ -124,7 +128,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
-        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._iterations, nodes, connections});
+        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), nodes, connections});
     }
 
     /**
@@ -155,6 +159,28 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             logger.debug(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`);
         }
         logger.debug("-----------------------------------------------------");
+        this._emitSpeciesTopologies(population);
+    }
+
+    protected _emitSpeciesTopologies(population: NeatPopulation): void {
+        if (!Container.vm || population.networks.length === 0) return;
+        const species = population.species
+            .map(s => {
+                const best = s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]);
+                if (!best) return null;
+                return {
+                    speciesId: s.uID,
+                    memberCount: s.networks.length,
+                    averageFitness: Number(s.averageFitness.toFixed(4)),
+                    nodes: best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                    connections: best.connections
+                        .filter(c => c.isEnabled)
+                        .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+                };
+            })
+            .filter(s => s !== null);
+        if (species.length === 0) return;
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), species});
     }
 
     getStartTime(): number {

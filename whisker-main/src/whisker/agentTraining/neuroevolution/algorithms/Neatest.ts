@@ -289,6 +289,7 @@ export class Neatest extends NEAT {
         logger.debug(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
+        this._emitSpeciesTopologies(this._population);
     }
 
     /**
