@@ -68,7 +68,7 @@ WORKDIR /whisker/servant/
 EXPOSE 8091
 
 ENTRYPOINT ["/whisker/servant/whisker-container.sh"]
-CMD ["api", "--headless", "--acceleration", "infinity", "--port", "8091", "--number-of-jobs", "1"]
+CMD ["api", "--headless", "--acceleration", "Infinity", "--port", "8091", "--number-of-jobs", "1"]
 
 ################################################################################
 
