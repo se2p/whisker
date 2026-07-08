@@ -1,3 +1,5 @@
+const {weightToColor} = require('./network-colors');
+
 // Mirrors the backend NodeType enum: INPUT=0, BIAS=1, HIDDEN=2, OUTPUT=3
 const NODE_COLORS = {
     0: '#5b8dd9',
@@ -176,6 +178,7 @@ class NetworkTopology {
         });
 
         // Connections
+        ctx.globalAlpha = 0.8;
         connections.forEach(({source, target, weight}) => {
             const src = nodePos.get(source);
             const tgt = nodePos.get(target);
@@ -183,10 +186,11 @@ class NetworkTopology {
             ctx.beginPath();
             ctx.moveTo(src.x, src.y);
             ctx.lineTo(tgt.x, tgt.y);
-            ctx.strokeStyle = `rgba(160, 160, 180, ${Math.min(0.85, 0.2 + Math.abs(weight) * 0.35)})`;
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = weightToColor(weight);
+            ctx.lineWidth = Math.max(1.5, Math.min(4, Math.abs(weight) * 0.8));
             ctx.stroke();
         });
+        ctx.globalAlpha = 1;
 
         // Nodes
         nodePos.forEach(({x, y, type}) => {

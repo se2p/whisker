@@ -1,3 +1,5 @@
+const {weightToColor} = require('./network-colors');
+
 const NODE_COLORS = {0: '#5b8dd9', 1: '#5b8dd9', 2: '#7c5cbf', 3: '#27ae60'};
 const NODE_RADIUS = 10;
 const COL_SPACING = 55;
@@ -166,6 +168,7 @@ class SpeciesNetworks {
             });
         });
 
+        this._modalCtx.globalAlpha = 0.8;
         connections.forEach(({source, target, weight}) => {
             const src = nodePos.get(source);
             const tgt = nodePos.get(target);
@@ -173,10 +176,11 @@ class SpeciesNetworks {
             this._modalCtx.beginPath();
             this._modalCtx.moveTo(src.x, src.y);
             this._modalCtx.lineTo(tgt.x, tgt.y);
-            this._modalCtx.strokeStyle = `rgba(160, 160, 180, ${Math.min(0.85, 0.2 + Math.abs(weight) * 0.35)})`;
-            this._modalCtx.lineWidth = 1;
+            this._modalCtx.strokeStyle = weightToColor(weight);
+            this._modalCtx.lineWidth = Math.max(1.5, Math.min(4, Math.abs(weight) * 0.8));
             this._modalCtx.stroke();
         });
+        this._modalCtx.globalAlpha = 1;
 
         nodePos.forEach(({x, y, type}) => {
             this._modalCtx.beginPath();

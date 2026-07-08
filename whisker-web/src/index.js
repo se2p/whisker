@@ -82,7 +82,7 @@ let _coverageType = 'statement';
 
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const accSlider = $('#acceleration-factor').slider();
+const accSlider = $('#acceleration-factor').slider({formatter: val => (val >= 100 ? '∞' : val)});
 
 const useBBTToggle = $('#use-bbt-tests');
 const useBBTAddCommentToggleRow = $('#use-bbt-tests-add-comment-row');
