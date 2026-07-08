@@ -1844,6 +1844,10 @@
                     var snCard = document.querySelector('.species-networks-card');
                     if (snCard) snCard.style.display = isLearning ? '' : 'none';
                 }
+                if (window.Whisker.fitnessChart) {
+                    var fcCard = document.querySelector('.fitness-chart-card');
+                    if (fcCard) fcCard.style.display = isLearning ? '' : 'none';
+                }
             }
         }
 

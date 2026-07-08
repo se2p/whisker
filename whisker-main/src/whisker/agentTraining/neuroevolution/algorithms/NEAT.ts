@@ -162,6 +162,17 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         this._emitSpeciesTopologies(population);
     }
 
+    protected _emitFitnessUpdate(best: number, average?: number, label?: string): void {
+        if (!Container.vm) return;
+        const data: {generation: number; best: number; average?: number; label?: string} = {
+            generation: this._getTopologyGeneration(),
+            best: Number(best.toFixed(4))
+        };
+        if (average !== undefined) data.average = Number(average.toFixed(4));
+        if (label !== undefined) data.label = label;
+        Container.vm.emit('FITNESS_UPDATE', data);
+    }
+
     protected _emitSpeciesTopologies(population: NeatPopulation): void {
         if (!Container.vm || population.networks.length === 0) return;
         const species = population.species

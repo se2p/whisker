@@ -20,6 +20,7 @@ import {CoverageReward} from "../rewards/CoverageReward";
 import {TargetObjectiveSelection} from "../../neuroevolution/misc/TargetObjectiveSelection";
 import Arrays from "../../../utils/Arrays";
 import {NonExhaustiveCaseDistinction} from "../../../core/exceptions/NonExhaustiveCaseDistinction";
+import {Container} from "../../../utils/Container";
 
 export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implements RLAlgorithm<A> {
 
@@ -193,6 +194,13 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
         this._overallMaxReward = Math.max(this._overallMaxReward, this._maxReward);
         this._averageReward /= this._coverageObjectiveParameter.stableCount;
         this._evaluations++;
+        if (Container.vm) {
+            Container.vm.emit('FITNESS_UPDATE', {
+                generation: this._observedEpisodes,
+                best: Number(this._overallMaxReward.toFixed(4)),
+                average: Number(this._averageReward.toFixed(4))
+            });
+        }
 
         this._updateArchive(agent);
 

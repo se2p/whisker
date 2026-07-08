@@ -72,6 +72,7 @@ const NetworkTopology = require('./components/network-topology');
 const SpeciesNetworks = require('./components/species-networks');
 const ConsoleLog = require('./components/console-log');
 const CoverageCurve = require('./components/coverage-curve');
+const FitnessChart = require('./components/fitness-chart');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -922,6 +923,7 @@ const handleOnLoadProjectFile = async function (fileSelect) {
     if (Whisker.networkTopology) Whisker.networkTopology.reset();
     if (Whisker.speciesNetworks) Whisker.speciesNetworks.reset();
     if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
+    if (Whisker.fitnessChart) Whisker.fitnessChart.reset();
     await Whisker.scratch.loadProject(project);
     const placeholder = document.getElementById('scratch-placeholder');
     if (placeholder) placeholder.style.display = 'none';
@@ -1039,6 +1041,13 @@ const initComponents = function () {
         generation: i18next.t('coverage-curve-generation'),
         coverage: i18next.t('coverage-curve-coverage'),
         emptyMessage: i18next.t('coverage-curve-empty')
+    });
+    Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('fitness-chart-title'),
+        best: i18next.t('fitness-chart-best'),
+        average: i18next.t('fitness-chart-average'),
+        emptyMessage: i18next.t('fitness-chart-empty'),
+        labelNeatest: i18next.t('fitness-chart-label-neatest')
     });
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
@@ -1360,6 +1369,7 @@ const initEvents = function () {
                 if (Whisker.networkTopology) Whisker.networkTopology.startEmpty();
                 if (Whisker.speciesNetworks) Whisker.speciesNetworks.startEmpty();
                 if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
+                if (Whisker.fitnessChart) Whisker.fitnessChart.startEmpty();
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 $('#run-search').prop('disabled', true)
@@ -1448,6 +1458,15 @@ const _updateLang = () => {
             generation: i18next.t('coverage-curve-generation'),
             coverage: i18next.t('coverage-curve-coverage'),
             emptyMessage: i18next.t('coverage-curve-empty')
+        });
+    }
+    if (Whisker.fitnessChart) {
+        Whisker.fitnessChart.updateI18n({
+            title: i18next.t('fitness-chart-title'),
+            best: i18next.t('fitness-chart-best'),
+            average: i18next.t('fitness-chart-average'),
+            emptyMessage: i18next.t('fitness-chart-empty'),
+            labelNeatest: i18next.t('fitness-chart-label-neatest')
         });
     }
     $('.lang-btn').removeClass('lang-btn-active');

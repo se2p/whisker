@@ -48,6 +48,7 @@ export class Neatest extends NEAT {
     private _switchedObjectives = new Set<StatementFitnessFunction>();
 
 
+
     /**
      * Searches for a suite of networks that are able to cover all objectives of a given Scratch program reliably.
      * @returns Mapping of an objective's key to the network capable of reaching the given objective reliably.
@@ -290,6 +291,7 @@ export class Neatest extends NEAT {
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
         this._emitSpeciesTopologies(this._population);
+        this._emitFitnessUpdate(this._population.bestFitness, this._population.averageFitness, 'neatest');
     }
 
     /**

@@ -2084,6 +2084,61 @@ label {
     padding: 16px;
 }
 
+/* ── Fitness Chart Component ─────────────────────────────────────────────── */
+.fitness-chart-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    padding-bottom: 8px;
+}
+
+.fitness-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 10px 10px 0 0;
+}
+
+.fitness-chart-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.fitness-chart-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+}
+
+.fitness-chart-subtitle {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.fitness-chart-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.fitness-chart-empty {
+    padding: 48px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #d1d5db;
+}
+
+.fitness-chart-canvas {
+    display: block;
+    width: 100%;
+}
+
 /* ── Coverage Curve Component ────────────────────────────────────────────── */
 .coverage-curve-card {
     background: #ffffff;
