@@ -116,7 +116,7 @@ function processFileOrDirPathExists(path, optAllowedExtensions) {
 }
 
 function processPositiveInt(value, allowInfinity = false) {
-    if (allowInfinity && Number(value) === Infinity) {
+    if (allowInfinity && (value === "infinity" || Number(value) === Infinity)) {
         return Infinity;
     }
 
