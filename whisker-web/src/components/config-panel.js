@@ -380,6 +380,9 @@ class ConfigPanel {
         const configPath = select.value;
         window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
         this._populateLearningSettings(window._whiskerSelectedConfig, configPath);
+        const cfg = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
+        const ntCard = document.querySelector('.network-topology-card');
+        if (ntCard) ntCard.style.display = cfg.testGenerator === 'reinforcementLearning' ? 'none' : '';
     }
 
     _updateLearningSetting(key, value) {

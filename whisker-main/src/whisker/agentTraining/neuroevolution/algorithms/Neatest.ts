@@ -202,6 +202,9 @@ export class Neatest extends NEAT {
                 logger.debug(`Covered Objective ${fitnessFunctionKey}:${fitnessFunction}`);
                 coveredNewObjective = true;
                 this._archive.set(fitnessFunctionKey, network);
+                if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
+                    this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
+                }
                 this.updateBestIndividualAndStatistics();
             }
         }
@@ -292,6 +295,23 @@ export class Neatest extends NEAT {
         logger.debug("\n-----------------------------------------------------\n");
         this._emitSpeciesTopologies(this._population);
         this._emitFitnessUpdate(this._population.bestFitness, this._population.averageFitness, 'neatest');
+    }
+
+    protected _shouldRecordCoveredTopology(key: number): boolean {
+        return key === this._targetKey;
+    }
+
+    protected override _emitNetworkTopology(): void {
+        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+        const best = this._population.networks.reduce(
+            (a, b) => b.fitness > a.fitness ? b : a,
+            this._population.networks[0]
+        );
+        const nodes = best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const connections = best.connections
+            .filter(c => c.isEnabled)
+            .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
+        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), nodes, connections});
     }
 
     /**

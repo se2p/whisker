@@ -20,12 +20,15 @@ class NetworkTopology {
             title: i18n.title || 'Network Topology',
             generation: i18n.generation || 'Generation',
             expand: i18n.expand || 'Click to expand',
-            emptyMessage: i18n.emptyMessage || 'Start a learning algorithm to see the network topology'
+            emptyMessage: i18n.emptyMessage || 'Start a learning algorithm to see the network topology',
+            currentTarget: i18n.currentTarget || 'Current Target'
         };
         this._lastData = null;
+        this._history = [];
+        this._selectedKey = 'current';
         this._buildUI();
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY', data => this._render(data));
-
+        window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onCovered(data));
     }
 
     updateI18n(i18n) {
@@ -39,6 +42,7 @@ class NetworkTopology {
             el.textContent = this._i18n.title;
         });
         if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
+        if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
     }
 
     refresh() {
@@ -47,6 +51,12 @@ class NetworkTopology {
 
     reset() {
         this._lastData = null;
+        this._history = [];
+        this._selectedKey = 'current';
+        while (this._historySelect.options.length > 1) {
+            this._historySelect.remove(1);
+        }
+        this._historySelect.value = 'current';
         this.genLabel.textContent = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = '';
@@ -56,6 +66,12 @@ class NetworkTopology {
 
     startEmpty() {
         this._lastData = null;
+        this._history = [];
+        this._selectedKey = 'current';
+        while (this._historySelect.options.length > 1) {
+            this._historySelect.remove(1);
+        }
+        this._historySelect.value = 'current';
         this.genLabel.textContent = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = 'none';
@@ -77,6 +93,7 @@ class NetworkTopology {
             <div class="network-topology-empty"></div>
             <canvas id="network-topology-canvas" style="display:none;"></canvas>`;
         this.container.appendChild(card);
+        this._card = card;
         this.canvas = card.querySelector('#network-topology-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.genLabel = card.querySelector('#nt-generation');
@@ -91,6 +108,9 @@ class NetworkTopology {
                 <div class="network-topology-modal-header">
                     <span class="network-topology-generation" id="nt-modal-generation"></span>
                     <p class="network-topology-title">${this._i18n.title}</p>
+                    <select class="network-topology-history-select" id="nt-history-select">
+                        <option value="current">${this._i18n.currentTarget}</option>
+                    </select>
                     <button class="network-topology-modal-close" id="nt-modal-close">✕</button>
                 </div>
                 <div class="network-topology-modal-body">
@@ -101,6 +121,25 @@ class NetworkTopology {
         this.modalCanvas = this.modal.querySelector('#network-topology-modal-canvas');
         this.modalCtx = this.modalCanvas.getContext('2d');
         this.modalGenLabel = this.modal.querySelector('#nt-modal-generation');
+        this._historySelect = this.modal.querySelector('#nt-history-select');
+        this._historySelect.addEventListener('change', () => {
+            this._selectedKey = this._historySelect.value;
+            if (this._selectedKey !== 'current') {
+                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+                if (entry) {
+                    const modalW = this.modalCanvas.parentElement.clientWidth - 32;
+                    this._renderToCanvas(
+                        {generation: '', nodes: entry.nodes, connections: entry.connections},
+                        this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+                    );
+                    this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
+                }
+            } else if (this._lastData) {
+                const modalW = this.modalCanvas.parentElement.clientWidth - 32;
+                this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
+                    modalW, COL_SPACING, NODE_RADIUS);
+            }
+        });
 
         card.addEventListener('click', () => this._openModal());
         this.modal.addEventListener('click', e => {
@@ -115,10 +154,21 @@ class NetworkTopology {
     _openModal() {
         if (!this._lastData) return;
         this.modal.classList.add('network-topology-modal--open');
-        // Full-size render: use fixed spacing and full node radius, canvas grows to fit
+        this._historySelect.value = this._selectedKey;
         const modalW = this.modalCanvas.parentElement.clientWidth - 32;
-        this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
-            modalW, COL_SPACING, NODE_RADIUS);
+        if (this._selectedKey === 'current') {
+            this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
+                modalW, COL_SPACING, NODE_RADIUS);
+        } else {
+            const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+            if (entry) {
+                this._renderToCanvas(
+                    {generation: '', nodes: entry.nodes, connections: entry.connections},
+                    this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+                );
+                this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
+            }
+        }
     }
 
     _closeModal() {
@@ -130,12 +180,23 @@ class NetworkTopology {
         this._emptyEl.style.display = 'none';
         this.canvas.style.display = '';
         const W = this.container.clientWidth - 32;
-        if (W <= 0) return; // hidden — refresh() will draw at correct size when visible
+        if (W <= 0) return;
         const maxColHeight = this._maxColHeight(data.nodes);
         const spacing = Math.min(COL_SPACING, (PREVIEW_H - V_PAD * 2) / Math.max(maxColHeight, 1));
         const radius = Math.max(3, Math.min(NODE_RADIUS, spacing * 0.35));
         this._renderToCanvas(data, this.canvas, this.ctx, this.genLabel, W, spacing, radius, PREVIEW_H);
-        if (this.modal.classList.contains('network-topology-modal--open')) this._openModal();
+        if (this.modal.classList.contains('network-topology-modal--open') && this._selectedKey === 'current') {
+            this._openModal();
+        }
+    }
+
+    _onCovered(data) {
+        this._history.push(data);
+        const option = document.createElement('option');
+        option.value = String(data.objectiveKey);
+        option.textContent = `Obj. ${data.objectiveKey}`;
+        option.title = data.label;
+        this._historySelect.appendChild(option);
     }
 
     _maxColHeight(nodes) {

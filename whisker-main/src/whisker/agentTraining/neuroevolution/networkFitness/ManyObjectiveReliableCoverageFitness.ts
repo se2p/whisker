@@ -33,6 +33,9 @@ export class ManyObjectiveReliableCoverageFitness extends ReliableCoverageFitnes
             this._noveltyFitness.addToBehaviourArchive(network);
         }
 
+        network.fitness = network.coverageObjectives
+            ? [...network.coverageObjectives.values()].reduce((s, v) => s + v, 0)
+            : 0;
     }
 
 

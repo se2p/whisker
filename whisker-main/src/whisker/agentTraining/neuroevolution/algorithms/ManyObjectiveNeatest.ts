@@ -239,6 +239,10 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     /**
      * Prints statistics about the current iteration.
      */
+    protected override _shouldRecordCoveredTopology(key: number): boolean {
+        return this._currentTargets.includes(key);
+    }
+
     protected iterationSummary(): void {
         logger.debug(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         logger.debug(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);

@@ -1025,7 +1025,8 @@ const initComponents = function () {
         title: i18next.t('network-topology-title'),
         generation: i18next.t('network-topology-generation'),
         expand: i18next.t('network-topology-expand'),
-        emptyMessage: i18next.t('network-topology-empty')
+        emptyMessage: i18next.t('network-topology-empty'),
+        currentTarget: i18next.t('network-topology-current-target')
     });
     Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-networks-title'),
@@ -1366,7 +1367,9 @@ const initEvents = function () {
             } else {
                 _searchActive = true;
                 if (Whisker.consoleLog) Whisker.consoleLog.clear();
-                if (Whisker.networkTopology) Whisker.networkTopology.startEmpty();
+                const _selectedConfig = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
+                if (Whisker.networkTopology && _selectedConfig.testGenerator !== 'reinforcementLearning') Whisker.networkTopology.startEmpty();
+                else if (Whisker.networkTopology) Whisker.networkTopology.reset();
                 if (Whisker.speciesNetworks) Whisker.speciesNetworks.startEmpty();
                 if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
                 if (Whisker.fitnessChart) Whisker.fitnessChart.startEmpty();
@@ -1437,7 +1440,8 @@ const _updateLang = () => {
             title: i18next.t('network-topology-title'),
             generation: i18next.t('network-topology-generation'),
             expand: i18next.t('network-topology-expand'),
-            emptyMessage: i18next.t('network-topology-empty')
+            emptyMessage: i18next.t('network-topology-empty'),
+            currentTarget: i18next.t('network-topology-current-target')
         });
     }
     if (Whisker.speciesNetworks) {

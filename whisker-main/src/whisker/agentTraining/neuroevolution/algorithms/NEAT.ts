@@ -131,6 +131,16 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), nodes, connections});
     }
 
+    protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
+        if (!Container.vm) return;
+        const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+        const nodes = network.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const connections = network.connections
+            .filter(c => c.isEnabled)
+            .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
+        Container.vm.emit('NETWORK_TOPOLOGY_COVERED', {objectiveKey: key, label, nodes, connections});
+    }
+
     /**
      * Reports the current state of the search.
      * @param population the population of networks
