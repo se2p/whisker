@@ -232,5 +232,7 @@
     "fitness-chart-best": "Bestes",
     "fitness-chart-average": "Durchschnitt",
     "fitness-chart-empty": "Starte einen NEAT-Algorithmus, um die Fitness über Zeit zu sehen",
-    "fitness-chart-label-neatest": "Aktuelles Ziel"
+    "fitness-chart-label-neatest": "Aktuelles Ziel",
+    "species-pop-chart-title": "Artenpopulation",
+    "species-pop-chart-empty": "Starte einen NEAT-Algorithmus, um die Artenpopulation über Zeit zu sehen"
 }

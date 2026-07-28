@@ -2139,6 +2139,50 @@ label {
     width: 100%;
 }
 
+/* ── Species Population Chart Component ─────────────────────────────────── */
+.species-pop-chart-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    padding-bottom: 8px;
+}
+
+.species-pop-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 10px 10px 0 0;
+}
+
+.species-pop-chart-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+}
+
+.species-pop-chart-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.species-pop-chart-empty {
+    padding: 48px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #d1d5db;
+}
+
+.species-pop-chart-canvas {
+    display: block;
+    width: 100%;
+}
+
 /* ── Coverage Curve Component ────────────────────────────────────────────── */
 .coverage-curve-card {
     background: #ffffff;

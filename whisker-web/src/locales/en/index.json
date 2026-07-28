@@ -232,5 +232,7 @@
     "fitness-chart-best": "Best",
     "fitness-chart-average": "Average",
     "fitness-chart-empty": "Start a NEAT algorithm to see fitness over time",
-    "fitness-chart-label-neatest": "Current objective"
+    "fitness-chart-label-neatest": "Current objective",
+    "species-pop-chart-title": "Species Population",
+    "species-pop-chart-empty": "Start a NEAT algorithm to see species population over time"
 }

@@ -73,6 +73,7 @@ const SpeciesNetworks = require('./components/species-networks');
 const ConsoleLog = require('./components/console-log');
 const CoverageCurve = require('./components/coverage-curve');
 const FitnessChart = require('./components/fitness-chart');
+const SpeciesPopulationChart = require('./components/species-population-chart');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -924,6 +925,7 @@ const handleOnLoadProjectFile = async function (fileSelect) {
     if (Whisker.speciesNetworks) Whisker.speciesNetworks.reset();
     if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
     if (Whisker.fitnessChart) Whisker.fitnessChart.reset();
+    if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.reset();
     await Whisker.scratch.loadProject(project);
     const placeholder = document.getElementById('scratch-placeholder');
     if (placeholder) placeholder.style.display = 'none';
@@ -1050,6 +1052,10 @@ const initComponents = function () {
         average: i18next.t('fitness-chart-average'),
         emptyMessage: i18next.t('fitness-chart-empty'),
         labelNeatest: i18next.t('fitness-chart-label-neatest')
+    });
+    Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('species-pop-chart-title'),
+        emptyMessage: i18next.t('species-pop-chart-empty')
     });
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
@@ -1374,6 +1380,7 @@ const initEvents = function () {
                 if (Whisker.speciesNetworks) Whisker.speciesNetworks.startEmpty();
                 if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
                 if (Whisker.fitnessChart) Whisker.fitnessChart.startEmpty();
+                if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.startEmpty();
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 $('#run-search').prop('disabled', true)
@@ -1473,6 +1480,12 @@ const _updateLang = () => {
             average: i18next.t('fitness-chart-average'),
             emptyMessage: i18next.t('fitness-chart-empty'),
             labelNeatest: i18next.t('fitness-chart-label-neatest')
+        });
+    }
+    if (Whisker.speciesPopulationChart) {
+        Whisker.speciesPopulationChart.updateI18n({
+            title: i18next.t('species-pop-chart-title'),
+            emptyMessage: i18next.t('species-pop-chart-empty')
         });
     }
     $('.lang-btn').removeClass('lang-btn-active');

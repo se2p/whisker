@@ -851,7 +851,8 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-lg-8" style="text-align: right;">
-                                            <div style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
+                                            <div
+                                                style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
                                                 <button id="run-search" type="button"
                                                     class="btn btn-main btn-sm vm-related" data-toggle="tooltip"
                                                     data-placement="top" data-animation="false"
@@ -907,72 +908,75 @@
 
                             <div class="col-lg-6">
                                 <div id="whisker-results-view">
-                                <div style="display:none">
-                                    <div id="testtable-tooltip">
-                                        <ul>
-                                            <li data-i18n="testtable-helptext01"></li>
-                                            <li data-i18n="testtable-helptext02"></li>
-                                            <li data-i18n="testtable-helptext03"></li>
-                                            <li data-i18n="testtable-helptext04"></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
-                                    <div id="test-table-toolbar">
-                                        <div id="test-table-toolbar-left">
-                                            <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
-                                            <div class="help-tooltip">
-                                                <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                                        alt="help" /></a>
-                                                <span class="help-text" data-i18n="testtable-tooltip"></span>
-                                            </div>
-                                        </div>
-                                        <div id="test-table-toolbar-right">
-                                            <button id="run-all-tests" class="btn btn-sm btn-table-action vm-related"
-                                                type="button" data-toggle="tooltip" data-placement="top"
-                                                data-animation="false" data-i18n="[title]t-tests">
-                                                <i id="run-tests-icon" class="fas fa-play"></i>
-                                                <i id="stop-tests-icon" class="fas fa-stop hide"></i>
-                                            </button>
-                                            <button id="applyChanges" class="editor-apply btn btn-sm btn-table-action"
-                                                type="button" data-toggle="tooltip" data-placement="top"
-                                                data-animation="false" onclick="_removeTestClass()"
-                                                data-i18n="[title]t-load">
-                                                <i class="fas fa-sync"></i>
-                                            </button>
-                                            <button class="editor-save btn btn-sm btn-table-action" type="button"
-                                                data-toggle="tooltip" data-placement="top" data-animation="false"
-                                                data-i18n="[title]t-save">
-                                                <i class="fas fa-download"></i>
-                                            </button>
-                                            <div id="test-table-search-box">
-                                                <i class="fas fa-search"></i>
-                                                <input id="test-table-search" type="search" data-i18n="[placeholder]search-placeholder">
-                                            </div>
-                                            <button class="btn btn-sm btn-table-action"
-                                                id="test-table-collapse-btn">
-                                                <i class="fas fa-chevron-up"></i>
-                                            </button>
+                                    <div style="display:none">
+                                        <div id="testtable-tooltip">
+                                            <ul>
+                                                <li data-i18n="testtable-helptext01"></li>
+                                                <li data-i18n="testtable-helptext02"></li>
+                                                <li data-i18n="testtable-helptext03"></li>
+                                                <li data-i18n="testtable-helptext04"></li>
+                                            </ul>
                                         </div>
                                     </div>
+                                    <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
+                                        <div id="test-table-toolbar">
+                                            <div id="test-table-toolbar-left">
+                                                <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                                                <div class="help-tooltip">
+                                                    <a href="#testtable-tooltip" class="help-icon inlinebox"><img
+                                                            src="assets/help.png" alt="help" /></a>
+                                                    <span class="help-text" data-i18n="testtable-tooltip"></span>
+                                                </div>
+                                            </div>
+                                            <div id="test-table-toolbar-right">
+                                                <button id="run-all-tests"
+                                                    class="btn btn-sm btn-table-action vm-related" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]t-tests">
+                                                    <i id="run-tests-icon" class="fas fa-play"></i>
+                                                    <i id="stop-tests-icon" class="fas fa-stop hide"></i>
+                                                </button>
+                                                <button id="applyChanges"
+                                                    class="editor-apply btn btn-sm btn-table-action" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    onclick="_removeTestClass()" data-i18n="[title]t-load">
+                                                    <i class="fas fa-sync"></i>
+                                                </button>
+                                                <button class="editor-save btn btn-sm btn-table-action" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]t-save">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <div id="test-table-search-box">
+                                                    <i class="fas fa-search"></i>
+                                                    <input id="test-table-search" type="search"
+                                                        data-i18n="[placeholder]search-placeholder">
+                                                </div>
+                                                <button class="btn btn-sm btn-table-action"
+                                                    id="test-table-collapse-btn">
+                                                    <i class="fas fa-chevron-up"></i>
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                    <div id="test-table-content">
-                                        <table class="display table table-sm mt-4">
-                                            <thead class="thead-white">
-                                                <tr>
-                                                    <th></th>
-                                                    <th>#</th>
-                                                    <th data-i18n="table-name"></th>
-                                                    <th data-i18n="table-categories"></th>
-                                                    <th data-i18n="table-test-result" class="result text-center"></th>
-                                                    <th></th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
+                                        <div id="test-table-content">
+                                            <table class="display table table-sm mt-4">
+                                                <thead class="thead-white">
+                                                    <tr>
+                                                        <th></th>
+                                                        <th>#</th>
+                                                        <th data-i18n="table-name"></th>
+                                                        <th data-i18n="table-categories"></th>
+                                                        <th data-i18n="table-test-result" class="result text-center">
+                                                        </th>
+                                                        <th></th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                                 <div id="whisker-dashboard-view" style="display:none;"></div>
                             </div>
@@ -1844,9 +1848,9 @@
                     var snCard = document.querySelector('.species-networks-card');
                     if (snCard) snCard.style.display = isLearning ? '' : 'none';
                 }
-                if (window.Whisker.fitnessChart) {
-                    var fcCard = document.querySelector('.fitness-chart-card');
-                    if (fcCard) fcCard.style.display = isLearning ? '' : 'none';
+                if (window.Whisker.speciesPopulationChart) {
+                    var spcCard = document.querySelector('.species-pop-chart-card');
+                    if (spcCard) spcCard.style.display = isLearning ? '' : 'none';
                 }
             }
         }

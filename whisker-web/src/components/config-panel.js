@@ -381,8 +381,13 @@ class ConfigPanel {
         window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
         this._populateLearningSettings(window._whiskerSelectedConfig, configPath);
         const cfg = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
+        const isDql = cfg.testGenerator === 'reinforcementLearning';
         const ntCard = document.querySelector('.network-topology-card');
-        if (ntCard) ntCard.style.display = cfg.testGenerator === 'reinforcementLearning' ? 'none' : '';
+        if (ntCard) ntCard.style.display = isDql ? 'none' : '';
+        const snCard = document.querySelector('.species-networks-card');
+        if (snCard) snCard.style.display = isDql ? 'none' : '';
+        const spcCard = document.querySelector('.species-pop-chart-card');
+        if (spcCard) spcCard.style.display = isDql ? 'none' : '';
     }
 
     _updateLearningSetting(key, value) {
