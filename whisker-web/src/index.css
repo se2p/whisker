@@ -2385,6 +2385,27 @@ label {
     background: #f9fafb;
 }
 
+.species-networks-row--best {
+    border-left: 3px solid #5b8dd9;
+    padding-left: 9px;
+}
+
+.species-networks-row--best .species-networks-row-label {
+    color: #5b8dd9;
+    font-weight: 700;
+}
+
+.species-networks-row--best:hover {
+    background: #eff4fd;
+}
+
+.species-networks-row-stats {
+    font-size: 11px;
+    color: #5b8dd9;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
 .species-networks-row-label {
     font-size: 12px;
     font-weight: 600;

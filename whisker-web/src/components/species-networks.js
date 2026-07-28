@@ -16,12 +16,16 @@ class SpeciesNetworks {
             members: i18n.members || 'members',
             bestNetwork: i18n.bestNetwork || 'Best Network',
             expand: i18n.expand || 'Click to expand',
-            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see per-species networks'
+            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see per-species networks',
+            currentTarget: i18n.currentTarget || 'Current'
         };
         this._lastData = null;
         this._openSpecies = null;
+        this._history = [];
+        this._selectedKey = 'current';
         this._buildUI();
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._render(data));
+        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => this._onCovered(data));
     }
 
     updateI18n(i18n) {
@@ -30,6 +34,7 @@ class SpeciesNetworks {
             el.textContent = this._i18n.title;
         });
         if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
+        if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
         if (this._lastData) this._render(this._lastData);
     }
 
@@ -40,20 +45,28 @@ class SpeciesNetworks {
     reset() {
         this._lastData = null;
         this._openSpecies = null;
+        this._history = [];
+        this._selectedKey = 'current';
         this._genLabel.textContent = '';
         this._listEl.innerHTML = '';
         this._emptyEl.style.display = '';
         this._listEl.style.display = 'none';
+        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
+        this._historySelect.value = 'current';
         this._closeModal();
     }
 
     startEmpty() {
         this._lastData = null;
         this._openSpecies = null;
+        this._history = [];
+        this._selectedKey = 'current';
         this._genLabel.textContent = '';
         this._listEl.innerHTML = '';
         this._emptyEl.style.display = 'none';
         this._listEl.style.display = '';
+        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
+        this._historySelect.value = 'current';
         this._closeModal();
     }
 
@@ -65,14 +78,46 @@ class SpeciesNetworks {
             <div class="species-networks-header">
                 <span class="species-networks-generation" id="sn-generation"></span>
                 <p class="species-networks-title">${this._i18n.title}</p>
+                <select class="network-topology-history-select" id="sn-history-select">
+                    <option value="current">${this._i18n.currentTarget}</option>
+                </select>
             </div>
             <div class="species-networks-empty"></div>
-            <div class="species-networks-list" style="display:none;"></div>`;
+            <div class="species-networks-list" style="display:none;"></div>
+            <div class="species-networks-preview" id="sn-preview" style="display:none;">
+                <canvas id="sn-preview-canvas"></canvas>
+            </div>`;
         this.container.appendChild(this._card);
         this._genLabel = this._card.querySelector('#sn-generation');
         this._emptyEl = this._card.querySelector('.species-networks-empty');
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._listEl = this._card.querySelector('.species-networks-list');
+        this._historySelect = this._card.querySelector('#sn-history-select');
+        this._previewEl = this._card.querySelector('#sn-preview');
+        this._previewCanvas = this._card.querySelector('#sn-preview-canvas');
+        this._previewCtx = this._previewCanvas.getContext('2d');
+
+        this._historySelect.addEventListener('change', () => {
+            this._selectedKey = this._historySelect.value;
+            if (this._selectedKey === 'current') {
+                if (this._lastData) {
+                    this._renderList(this._lastData.species, this._lastData.generation, this._lastData.bestSpeciesId);
+                } else {
+                    this._listEl.innerHTML = '';
+                    this._listEl.style.display = 'none';
+                    this._emptyEl.style.display = '';
+                    this._genLabel.textContent = '';
+                }
+            } else {
+                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+                if (entry) {
+                    this._emptyEl.style.display = 'none';
+                    this._listEl.style.display = '';
+                    this._renderList(entry.species, `Obj. ${entry.objectiveKey}`, entry.bestSpeciesId);
+                }
+            }
+            this._closeModal();
+        });
 
         this._modal = document.createElement('div');
         this._modal.className = 'network-topology-modal';
@@ -106,25 +151,45 @@ class SpeciesNetworks {
         this._lastData = data;
         this._emptyEl.style.display = 'none';
         this._listEl.style.display = '';
-        this._genLabel.textContent = `${this._i18n.generation} ${data.generation}`;
+        if (this._selectedKey === 'current') {
+            this._renderList(data.species, data.generation, data.bestSpeciesId);
+            if (this._modal.classList.contains('network-topology-modal--open') && this._openSpecies) {
+                const updated = data.species.find(s => s.speciesId === this._openSpecies.speciesId);
+                if (updated) this._openModal(updated, data.generation);
+            }
+        }
+    }
 
+    _renderList(species, generationLabel, bestSpeciesId = null) {
+        this._genLabel.textContent = typeof generationLabel === 'number' ?
+            `${this._i18n.generation} ${generationLabel}` :
+            String(generationLabel);
         this._listEl.innerHTML = '';
-        for (const sp of data.species) {
+        for (const sp of species) {
             const row = document.createElement('div');
             row.className = 'species-networks-row';
+            const isBest = bestSpeciesId !== null && sp.speciesId === bestSpeciesId;
+            if (isBest) row.classList.add('species-networks-row--best');
             row.title = this._i18n.expand;
+            const nodeCount = isBest ? sp.nodes.length : null;
+            const connCount = isBest ? sp.connections.length : null;
             row.innerHTML = `
                 <span class="species-networks-row-label">${this._i18n.species} ${sp.speciesId}</span>
                 <span class="species-networks-row-members">${sp.memberCount} ${this._i18n.members}</span>
+                ${isBest ? `<span class="species-networks-row-stats">Best network — ${nodeCount} nodes · ${connCount} connections</span>` : ''}
                 <span class="species-networks-expand-hint">⤢</span>`;
-            row.addEventListener('click', () => this._openModal(sp, data.generation));
+            row.addEventListener('click', () => this._openModal(sp, generationLabel));
             this._listEl.appendChild(row);
         }
+    }
 
-        if (this._modal.classList.contains('network-topology-modal--open') && this._openSpecies) {
-            const updated = data.species.find(s => s.speciesId === this._openSpecies.speciesId);
-            if (updated) this._openModal(updated, data.generation);
-        }
+    _onCovered(data) {
+        this._history.push(data);
+        const option = document.createElement('option');
+        option.value = String(data.objectiveKey);
+        option.textContent = `Obj. ${data.objectiveKey}`;
+        option.title = data.label;
+        this._historySelect.appendChild(option);
     }
 
     _openModal(species, generation) {
@@ -141,7 +206,9 @@ class SpeciesNetworks {
 
     _renderToCanvas(species, generation, W) {
         const {nodes, connections} = species;
-        this._modalGen.textContent = `${this._i18n.generation} ${generation}`;
+        this._modalGen.textContent = typeof generation === 'number' ?
+            `${this._i18n.generation} ${generation}` :
+            String(generation);
 
         const inputNodes = nodes.filter(n => n.type === 0 || n.type === 1);
         const hiddenNodes = nodes.filter(n => n.type === 2);

@@ -227,6 +227,7 @@
     "species-networks-best-network": "Best Network",
     "species-networks-expand": "Click to expand",
     "species-networks-empty": "Start a NEAT algorithm to see per-species networks",
+    "species-networks-current-target": "Current",
     "fitness-chart-title": "Fitness Over Time",
     "fitness-chart-best": "Best",
     "fitness-chart-average": "Average",

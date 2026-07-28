@@ -141,6 +141,47 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         Container.vm.emit('NETWORK_TOPOLOGY_COVERED', {objectiveKey: key, label, nodes, connections});
     }
 
+    protected _coveredSpeciesHistory: Map<number, {label: string; species: object[]}> = new Map();
+
+    protected _emitCoveredSpeciesTopology(key: number, population: NeatPopulation, coveringNetwork: NeatChromosome): void {
+        if (!Container.vm) return;
+        const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+        let bestSpeciesId: number | null = null;
+        let species = population.species
+            .map(s => {
+                const isCoveringSpecies = s.networks.includes(coveringNetwork);
+                if (isCoveringSpecies) bestSpeciesId = s.uID;
+                const best = isCoveringSpecies
+                    ? coveringNetwork
+                    : (s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]));
+                if (!best) return null;
+                return {
+                    speciesId: s.uID,
+                    memberCount: s.networks.length,
+                    averageFitness: Number(s.averageFitness.toFixed(4)),
+                    nodes: best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                    connections: best.connections
+                        .filter(c => c.isEnabled)
+                        .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+                };
+            })
+            .filter(s => s !== null);
+        if (species.length === 0) {
+            bestSpeciesId = 0;
+            species = [{
+                speciesId: 0,
+                memberCount: 1,
+                averageFitness: Number(coveringNetwork.fitness.toFixed(4)),
+                nodes: coveringNetwork.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                connections: coveringNetwork.connections
+                    .filter(c => c.isEnabled)
+                    .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+            }];
+        }
+        this._coveredSpeciesHistory.set(key, {label, species});
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY_COVERED', {objectiveKey: key, label, species, bestSpeciesId});
+    }
+
     /**
      * Reports the current state of the search.
      * @param population the population of networks
@@ -185,10 +226,13 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     protected _emitSpeciesTopologies(population: NeatPopulation): void {
         if (!Container.vm || population.networks.length === 0) return;
+        const champion = population.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, population.networks[0]);
+        let bestSpeciesId: number | null = null;
         const species = population.species
             .map(s => {
                 const best = s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]);
                 if (!best) return null;
+                if (champion && s.networks.includes(champion)) bestSpeciesId = s.uID;
                 return {
                     speciesId: s.uID,
                     memberCount: s.networks.length,
@@ -201,7 +245,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             })
             .filter(s => s !== null);
         if (species.length === 0) return;
-        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), species});
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), species, bestSpeciesId});
     }
 
     getStartTime(): number {

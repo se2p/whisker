@@ -1,17 +1,17 @@
-import {NEAT} from "./NEAT";
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperties";
-import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
-import {NeatestPopulation} from "../neuroevolutionPopulations/NeatestPopulation";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import { NEAT } from "./NEAT";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { SearchAlgorithmProperties } from "../../../search/SearchAlgorithmProperties";
+import { NeatPopulation } from "../neuroevolutionPopulations/NeatPopulation";
+import { NeatestPopulation } from "../neuroevolutionPopulations/NeatestPopulation";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../../utils/Arrays";
-import {OneOfStoppingCondition} from "../../../search/stoppingconditions/OneOfStoppingCondition";
-import {OptimalSolutionStoppingCondition} from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {Container} from "../../../utils/Container";
-import {NeatestParameter} from "../hyperparameter/NeatestParameter";
+import { OneOfStoppingCondition } from "../../../search/stoppingconditions/OneOfStoppingCondition";
+import { OptimalSolutionStoppingCondition } from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
+import { Container } from "../../../utils/Container";
+import { NeatestParameter } from "../hyperparameter/NeatestParameter";
 import logger from "../../../../util/logger";
-import {TargetObjectiveSelection} from "../misc/TargetObjectiveSelection";
+import { TargetObjectiveSelection } from "../misc/TargetObjectiveSelection";
 
 export class Neatest extends NEAT {
 
@@ -74,6 +74,7 @@ export class Neatest extends NEAT {
 
                 // Update the population, report the current status to the user and evolve the population.
                 this._population.updatePopulationStatistics();
+
 
                 // Switch if we stopped improving for a set number of generations.
                 const remainingTargets = this._getUncoveredObjectives()
@@ -204,6 +205,7 @@ export class Neatest extends NEAT {
                 this._archive.set(fitnessFunctionKey, network);
                 if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
                     this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
+                    this._emitCoveredSpeciesTopology(fitnessFunctionKey, this._population, network);
                 }
                 this.updateBestIndividualAndStatistics();
             }
@@ -307,11 +309,11 @@ export class Neatest extends NEAT {
             (a, b) => b.fitness > a.fitness ? b : a,
             this._population.networks[0]
         );
-        const nodes = best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const nodes = best.getAllNodes().map(n => ({ id: n.uID, type: n.type, depth: n.depth }));
         const connections = best.connections
             .filter(c => c.isEnabled)
-            .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
-        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), nodes, connections});
+            .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
+        Container.vm.emit('NETWORK_TOPOLOGY', { generation: this._getTopologyGeneration(), nodes, connections });
     }
 
     /**

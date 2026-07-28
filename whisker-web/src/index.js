@@ -1035,7 +1035,8 @@ const initComponents = function () {
         members: i18next.t('species-networks-members'),
         bestNetwork: i18next.t('species-networks-best-network'),
         expand: i18next.t('species-networks-expand'),
-        emptyMessage: i18next.t('species-networks-empty')
+        emptyMessage: i18next.t('species-networks-empty'),
+        currentTarget: i18next.t('species-networks-current-target')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('coverage-curve-title-statement'),
@@ -1452,7 +1453,8 @@ const _updateLang = () => {
             members: i18next.t('species-networks-members'),
             bestNetwork: i18next.t('species-networks-best-network'),
             expand: i18next.t('species-networks-expand'),
-            emptyMessage: i18next.t('species-networks-empty')
+            emptyMessage: i18next.t('species-networks-empty'),
+            currentTarget: i18next.t('species-networks-current-target')
         });
     }
     if (Whisker.coverageCurve) {

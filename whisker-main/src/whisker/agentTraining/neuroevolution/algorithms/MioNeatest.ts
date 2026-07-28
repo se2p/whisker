@@ -318,6 +318,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 this._archiveUncovered.delete(selectedTarget);
                 this._samplingCounter.delete(selectedTarget);
                 this._emitCoveredNetworkTopology(selectedTarget, candidate);
+                this._emitCoveredSpeciesTopology(selectedTarget, this._population, candidate);
                 this.updateBestIndividualAndStatistics();
                 continue;
             }
