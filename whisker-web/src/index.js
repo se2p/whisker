@@ -83,7 +83,8 @@ let _coverageType = 'statement';
 
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const accSlider = $('#acceleration-factor').slider({formatter: val => (val >= 100 ? '∞' : val)});
+const _sliderToAcceleration = val => (val >= 100 ? '∞' : val <= 0 ? parseFloat((1 + val * 0.05).toFixed(2)) : val);
+const accSlider = $('#acceleration-factor').slider({formatter: _sliderToAcceleration});
 
 const useBBTToggle = $('#use-bbt-tests');
 const useBBTAddCommentToggleRow = $('#use-bbt-tests-add-comment-row');
@@ -530,7 +531,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         mutantDownload: mutantDownload,
         log: true,
         headless,
-        useSaveStates: false,
+        useSaveStates: $('#use-save-states').is(':checked'),
         ...tracerSettings
     };
 
@@ -1150,7 +1151,7 @@ const _addFileListeners = function () {
     });
 };
 
-const _formatAcceleration = val => (val >= 100 ? '∞' : val);
+const _formatAcceleration = val => _sliderToAcceleration(val);
 
 const initEvents = function () {
 

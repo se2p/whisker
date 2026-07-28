@@ -138,6 +138,7 @@
     "snippets-helptext02": "Kopiere dir genau die Bausteine, die du für deine Test-Suite brauchst. Solltest du eine Schritt-für-Schritt-Einführung in Whisker-Tests brauchen, wähle ganz oben im Menü den Punkt 'Tutorial' aus.",
     "snippets-helptext03": "Eine vollständige Liste aller Codebausteine findest du in der Beschreibung auf der GitHub-Seite.",
     "use-save-states": "Setze Projekt mittels Speicherstand zurück",
+    "use-save-states-warning": "Stellt einen Startschnappschuss wieder her statt das Projekt neu zu laden. Kann gelegentlich zu Abstürzen führen.",
     "passing-assertion-count": "Bestandene Checks",
     "ASSERTION_MISSING_CONDITION": "Fehlende Bedingung",
     "ASSERTION_MISSING_VALUE": "Fehlender Wert",

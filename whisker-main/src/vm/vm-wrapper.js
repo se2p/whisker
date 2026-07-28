@@ -1,10 +1,10 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
 const logger = require('../util/logger');
 const Sprites = require('./sprites');
-const {Callbacks} = require('./callbacks');
-const {Inputs} = require('./inputs');
-const {RandomInputs} = require('./random-input');
-const {Constraints} = require('./constraints');
+const { Callbacks } = require('./callbacks');
+const { Inputs } = require('./inputs');
+const { RandomInputs } = require('./random-input');
+const { Constraints } = require('./constraints');
 require('setimmediate'); // attaches setImmediate to the global scope as side effect
 
 const STEP_TIME = 1000 / 30;
@@ -226,7 +226,7 @@ class VMWrapper {
      * @param {number=} steps Number of steps the run is lasting.
      * @returns {Promise<number>} Runtime in ms.
      */
-    async run({condition = (() => false), timeout = Infinity, steps = Infinity}) {
+    async run({ condition = (() => false), timeout = Infinity, steps = Infinity }) {
         if (this.isScratchRunning()) {
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                 'missing any await-statements in your test.');
@@ -298,7 +298,7 @@ class VMWrapper {
      * @returns {Promise<number>} Runtime in ms.
      */
     runForTime(timeout) {
-        return this.run({timeout});
+        return this.run({ timeout });
     }
 
     /**
@@ -308,7 +308,7 @@ class VMWrapper {
      * @returns {Promise<number>} Runtime in ms.
      */
     runUntil(condition, timeout) {
-        return this.run({condition, timeout});
+        return this.run({ condition, timeout });
     }
 
     /**
@@ -320,7 +320,7 @@ class VMWrapper {
     runUntilChanges(callback, timeout) {
         const initialValue = callback();
         const condition = () => callback() !== initialValue;
-        return this.run({condition, timeout});
+        return this.run({ condition, timeout });
     }
 
     /**
@@ -329,7 +329,7 @@ class VMWrapper {
      * @returns {Promise<number>} Runtime in steps.
      */
     async runForSteps(steps) {
-        return VMWrapper.convertFromTimeToSteps(await this.run({steps}));
+        return VMWrapper.convertFromTimeToSteps(await this.run({ steps }));
     }
 
     /**
@@ -404,7 +404,7 @@ class VMWrapper {
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
     async setup(project, accelerationFactor = 1) {
-        this.accelerationFactor = Number(accelerationFactor);
+        this.accelerationFactor = accelerationFactor === '∞' ? Infinity : Number(accelerationFactor);
         this.vm.runtime.virtualSound = -1;
 
         // By default, currentStep time is null and only initialized when the VM's start() method is called. Because we
