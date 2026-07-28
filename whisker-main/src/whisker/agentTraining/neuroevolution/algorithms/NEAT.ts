@@ -10,6 +10,11 @@ import {NeatChromosome} from "../networks/NeatChromosome";
 import logger from '../../../../util/logger';
 import {NeatParameter} from "../hyperparameter/NeatParameter";
 import {Container} from "../../../utils/Container";
+import {InputNode} from "../networkComponents/InputNode";
+import {ActionNode} from "../networkComponents/ActionNode";
+import {ActivationFunction} from "../networkComponents/ActivationFunction";
+import {NodeType} from "../networkComponents/NodeType";
+import {NodeGene} from "../networkComponents/NodeGene";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -114,6 +119,22 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         return this._iterations;
     }
 
+    protected _serializeNode(n: NodeGene): object {
+        const base = {id: n.uID, type: n.type, depth: n.depth};
+        if (n.type === NodeType.BIAS) {
+            return {...base, sprite: 'Bias', feature: ''};
+        }
+        if (n.type === NodeType.INPUT) {
+            const input = n as InputNode;
+            return {...base, sprite: input.sprite, feature: input.feature};
+        }
+        if (n.type === NodeType.OUTPUT) {
+            const action = n as ActionNode;
+            return {...base, event: action.event?.stringIdentifier(), aF: ActivationFunction[n.activationFunction]};
+        }
+        return {...base, aF: ActivationFunction[n.activationFunction]};
+    }
+
     protected _emitNetworkTopology(): void {
         if (!Container.vm) return;
         // NEAT stores the overall best at _fitnessFunctions.size+1; Neatest only stores per-objective networks.
@@ -124,7 +145,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
         if (!best) return;
-        const nodes = best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const nodes = best.getAllNodes().map(n => this._serializeNode(n));
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
@@ -134,7 +155,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
         if (!Container.vm) return;
         const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
-        const nodes = network.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth}));
+        const nodes = network.getAllNodes().map(n => this._serializeNode(n));
         const connections = network.connections
             .filter(c => c.isEnabled)
             .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
@@ -159,7 +180,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                     speciesId: s.uID,
                     memberCount: s.networks.length,
                     averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
                     connections: best.connections
                         .filter(c => c.isEnabled)
                         .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
@@ -172,7 +193,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                 speciesId: 0,
                 memberCount: 1,
                 averageFitness: Number(coveringNetwork.fitness.toFixed(4)),
-                nodes: coveringNetwork.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                nodes: coveringNetwork.getAllNodes().map(n => this._serializeNode(n)),
                 connections: coveringNetwork.connections
                     .filter(c => c.isEnabled)
                     .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
@@ -237,7 +258,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                     speciesId: s.uID,
                     memberCount: s.networks.length,
                     averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => ({id: n.uID, type: n.type, depth: n.depth})),
+                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
                     connections: best.connections
                         .filter(c => c.isEnabled)
                         .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))

@@ -121,6 +121,18 @@ class NetworkTopology {
         this.modalCanvas = this.modal.querySelector('#network-topology-modal-canvas');
         this.modalCtx = this.modalCanvas.getContext('2d');
         this.modalGenLabel = this.modal.querySelector('#nt-modal-generation');
+
+        this._tooltip = document.createElement('div');
+        this._tooltip.className = 'nt-weight-tooltip';
+        document.body.appendChild(this._tooltip);
+        this._modalNodePos = null;
+        this._modalConnections = null;
+        this._modalNodes = null;
+
+        this.modalCanvas.addEventListener('mousemove', e => this._onModalMouseMove(e));
+        this.modalCanvas.addEventListener('mouseleave', () => {
+            this._tooltip.style.display = 'none';
+        });
         this._historySelect = this.modal.querySelector('#nt-history-select');
         this._historySelect.addEventListener('change', () => {
             this._selectedKey = this._historySelect.value;
@@ -263,6 +275,61 @@ class NetworkTopology {
             ctx.lineWidth = Math.max(1, radius * 0.2);
             ctx.stroke();
         });
+
+        if (canvas === this.modalCanvas) {
+            this._modalNodePos = nodePos;
+            this._modalConnections = connections;
+            this._modalNodes = nodes;
+        }
+    }
+
+    _onModalMouseMove(e) {
+        if (!this._modalNodePos || !this._modalConnections) return;
+        const rect = this.modalCanvas.getBoundingClientRect();
+        const scaleX = this.modalCanvas.width / rect.width;
+        const scaleY = this.modalCanvas.height / rect.height;
+        const mx = (e.clientX - rect.left) * scaleX;
+        const my = (e.clientY - rect.top) * scaleY;
+
+        // Check nodes first
+        let label = null;
+        for (const node of (this._modalNodes || [])) {
+            const pos = this._modalNodePos.get(node.id);
+            if (!pos) continue;
+            const dx = mx - pos.x; const dy = my - pos.y;
+            if (dx * dx + dy * dy <= NODE_RADIUS * NODE_RADIUS) {
+                if (node.type === 0 || node.type === 1) label = `${node.sprite} · ${node.feature}`;
+                else if (node.type === 3) label = node.event || null;
+                else label = node.aF || '';
+                break;
+            }
+        }
+
+        // Fall back to connection weight
+        if (label === null) {
+            const THRESHOLD = 6;
+            for (const {source, target, weight} of this._modalConnections) {
+                const src = this._modalNodePos.get(source);
+                const tgt = this._modalNodePos.get(target);
+                if (!src || !tgt) continue;
+                const dx = tgt.x - src.x; const dy = tgt.y - src.y;
+                const lenSq = dx * dx + dy * dy;
+                const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((mx - src.x) * dx + (my - src.y) * dy) / lenSq));
+                const px = src.x + t * dx - mx; const py = src.y + t * dy - my;
+                if (px * px + py * py <= THRESHOLD * THRESHOLD) {
+                    label = weight.toFixed(4); break;
+                }
+            }
+        }
+
+        if (label === null) {
+            this._tooltip.style.display = 'none';
+        } else {
+            this._tooltip.textContent = label;
+            this._tooltip.style.display = 'block';
+            this._tooltip.style.left = `${e.clientX + 12}px`;
+            this._tooltip.style.top = `${e.clientY - 24}px`;
+        }
     }
 }
 

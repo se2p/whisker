@@ -2402,6 +2402,19 @@ label {
     color: #111827;
 }
 
+.nt-weight-tooltip {
+    display: none;
+    position: fixed;
+    background: var(--subColor);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10000;
+    white-space: nowrap;
+}
+
 #network-topology-modal-canvas {
     display: block;
     width: 100%;

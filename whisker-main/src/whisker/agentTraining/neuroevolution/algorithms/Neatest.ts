@@ -309,7 +309,7 @@ export class Neatest extends NEAT {
             (a, b) => b.fitness > a.fitness ? b : a,
             this._population.networks[0]
         );
-        const nodes = best.getAllNodes().map(n => ({ id: n.uID, type: n.type, depth: n.depth }));
+        const nodes = best.getAllNodes().map(n => this._serializeNode(n));
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
