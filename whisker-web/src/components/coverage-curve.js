@@ -1,6 +1,7 @@
 const H_PAD = 40;
 const V_PAD = 20;
-const CURVE_H = 180;
+const CURVE_H = 160;
+const X_LABEL_H = 20;
 
 class CoverageCurve {
     constructor(container, i18n = {}) {
@@ -73,7 +74,7 @@ class CoverageCurve {
         if (W <= 0) return;
 
         canvas.width = W;
-        canvas.height = CURVE_H + V_PAD * 2;
+        canvas.height = CURVE_H + V_PAD + X_LABEL_H + 4;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const chartX = H_PAD;
@@ -81,11 +82,12 @@ class CoverageCurve {
         const chartW = W - H_PAD - 10;
         const chartH = CURVE_H;
 
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = '#888';
+
         // Grid lines + Y labels
         ctx.strokeStyle = 'rgba(0,0,0,0.07)';
         ctx.lineWidth = 1;
-        ctx.fillStyle = '#888';
-        ctx.font = '10px sans-serif';
         ctx.textAlign = 'right';
         for (let pct = 0; pct <= 100; pct += 25) {
             const y = chartY + chartH - (pct / 100) * chartH;
@@ -107,17 +109,32 @@ class CoverageCurve {
 
         if (!this._data.length) return;
 
-        // Coverage line — X scaled by index so even few points spread across full width
-        const lastIdx = Math.max(this._data.length - 1, 1);
-        const toX = i => chartX + (i / lastIdx) * chartW;
+        const maxIter = Math.max(this._data[this._data.length - 1].iteration, 1);
+        const toX = iter => chartX + (iter / maxIter) * chartW;
         const toY = cov => chartY + chartH - cov * chartH;
 
+        // X axis ticks + labels
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'center';
+        const tickCount = 5;
+        for (let t = 0; t <= tickCount; t++) {
+            const iter = Math.round((t / tickCount) * maxIter);
+            const x = toX(iter);
+            ctx.beginPath();
+            ctx.moveTo(x, chartY + chartH);
+            ctx.lineTo(x, chartY + chartH + 4);
+            ctx.stroke();
+            ctx.fillText(String(iter), x, chartY + chartH + X_LABEL_H);
+        }
+
+        // Coverage line
         ctx.beginPath();
         ctx.strokeStyle = '#2563eb';
         ctx.lineWidth = 2;
         ctx.lineJoin = 'round';
         this._data.forEach((d, i) => {
-            const x = toX(i);
+            const x = toX(d.iteration);
             const y = toY(d.coverage);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);

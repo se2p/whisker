@@ -2199,7 +2199,7 @@ label {
 .species-pop-chart-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 10px 14px;
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
@@ -2210,6 +2210,7 @@ label {
     font-weight: 600;
     font-size: 13px;
     color: #374151;
+    flex: 1;
 }
 
 .species-pop-chart-count {
@@ -2627,6 +2628,25 @@ label {
 
 .console-log-filter-btn--active:hover {
     background: #1d4ed8;
+}
+
+.console-log-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.console-log-clear-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
 }
 
 .console-log-output {

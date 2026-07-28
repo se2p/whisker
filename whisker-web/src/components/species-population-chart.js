@@ -3,6 +3,7 @@ const PAD_R = 8;
 const PAD_T = 8;
 const PAD_B = 30;
 const CHART_H = 150;
+const MODAL_CHART_H = 400;
 
 const PALETTE = [
     '#2563eb', '#f97316', '#ec4899', '#10b981', '#f59e0b',
@@ -15,7 +16,8 @@ class SpeciesPopulationChart {
     constructor(container, i18n = {}) {
         this._i18n = {
             title: i18n.title || 'Species Population',
-            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time'
+            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time',
+            expand: i18n.expand || 'Click to expand'
         };
         this._history = [];
         this._speciesOrder = [];
@@ -33,6 +35,7 @@ class SpeciesPopulationChart {
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._countEl.textContent = '';
+        this._closeModal();
     }
 
     startEmpty() {
@@ -43,22 +46,27 @@ class SpeciesPopulationChart {
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
+        this._closeModal();
     }
 
     updateI18n(i18n) {
         this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._card.title = this._i18n.expand;
+        if (this._modalTitleEl) this._modalTitleEl.textContent = this._i18n.title;
     }
 
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'species-pop-chart-card';
         card.style.display = 'none';
+        card.title = this._i18n.expand;
         card.innerHTML = `
             <div class="species-pop-chart-header">
                 <span class="species-pop-chart-title"></span>
                 <span class="species-pop-chart-count"></span>
+                <span class="network-topology-expand-hint">⤢</span>
             </div>
             <div class="species-pop-chart-empty"></div>
             <canvas class="species-pop-chart-canvas" style="display:none;"></canvas>`;
@@ -73,6 +81,47 @@ class SpeciesPopulationChart {
 
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+
+        card.addEventListener('click', () => this._openModal());
+
+        // Modal
+        this._modal = document.createElement('div');
+        this._modal.className = 'network-topology-modal';
+        this._modal.innerHTML = `
+            <div class="network-topology-modal-box">
+                <div class="network-topology-modal-header">
+                    <p class="network-topology-title species-pop-chart-modal-title"></p>
+                    <button class="network-topology-modal-close" id="spc-modal-close">✕</button>
+                </div>
+                <div class="network-topology-modal-body">
+                    <canvas class="species-pop-chart-modal-canvas"></canvas>
+                </div>
+            </div>`;
+        document.body.appendChild(this._modal);
+
+        this._modalCanvas = this._modal.querySelector('.species-pop-chart-modal-canvas');
+        this._modalCtx = this._modalCanvas.getContext('2d');
+        this._modalTitleEl = this._modal.querySelector('.species-pop-chart-modal-title');
+        this._modalTitleEl.textContent = this._i18n.title;
+
+        this._modal.querySelector('#spc-modal-close').addEventListener('click', () => this._closeModal());
+        this._modal.addEventListener('click', e => {
+            if (e.target === this._modal) this._closeModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') this._closeModal();
+        });
+    }
+
+    _openModal() {
+        if (!this._history.length) return;
+        this._modal.classList.add('network-topology-modal--open');
+        const W = this._modalCanvas.parentElement.clientWidth - 32;
+        this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
+    }
+
+    _closeModal() {
+        this._modal.classList.remove('network-topology-modal--open');
     }
 
     _update(data) {
@@ -92,16 +141,21 @@ class SpeciesPopulationChart {
         this._canvas.style.display = '';
         this._countEl.textContent = `${data.species.length}`;
         this._redraw();
+        if (this._modal.classList.contains('network-topology-modal--open')) {
+            const W = this._modalCanvas.parentElement.clientWidth - 32;
+            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
+        }
     }
 
     _redraw() {
-        const canvas = this._canvas;
-        const ctx = this._ctx;
         const W = this._card.clientWidth - 2;
         if (W <= 0) return;
+        this._drawChart(this._canvas, this._ctx, W, CHART_H);
+    }
 
+    _drawChart(canvas, ctx, W, chartH) {
         canvas.width = W;
-        canvas.height = CHART_H + PAD_T + PAD_B;
+        canvas.height = chartH + PAD_T + PAD_B;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (!this._history.length) return;
@@ -109,8 +163,6 @@ class SpeciesPopulationChart {
         const chartX = PAD_L;
         const chartY = PAD_T;
         const chartW = W - PAD_L - PAD_R;
-        const chartH = CHART_H;
-
         const n = this._history.length;
         const toX = i => chartX + (i / Math.max(n - 1, 1)) * chartW;
         const toY = prop => chartY + chartH - prop * chartH;
@@ -128,7 +180,6 @@ class SpeciesPopulationChart {
 
             ctx.beginPath();
             if (n === 1) {
-                // Single point — fill full width
                 ctx.rect(chartX, toY(tops[0]), chartW, toY(floors[0]) - toY(tops[0]));
             } else {
                 for (let i = 0; i < n; i++) {
@@ -178,11 +229,9 @@ class SpeciesPopulationChart {
             labeled.add(rounded);
         }
 
-        // Always label last generation
         ctx.textAlign = n > 1 ? 'right' : 'center';
         ctx.fillText(String(lastGen), toX(n - 1), chartY + chartH + 13);
 
-        // "Generations" axis label
         ctx.textAlign = 'center';
         ctx.fillText('Generations', chartX + chartW / 2, chartY + chartH + PAD_B - 4);
     }

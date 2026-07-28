@@ -43,6 +43,7 @@ class ConsoleLog {
                 <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
                 <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
                 <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
             </div>
             <div class="console-log-output"></div>`;
         container.appendChild(card);
@@ -60,6 +61,10 @@ class ConsoleLog {
                 e.stopPropagation();
                 this._setFilter(btn.dataset.filter);
             });
+        });
+        card.querySelector('.console-log-clear-btn').addEventListener('click', e => {
+            e.stopPropagation();
+            this.clear();
         });
 
         card.querySelector('.console-log-header').addEventListener('click', () => this._toggleCollapse());
@@ -88,6 +93,7 @@ class ConsoleLog {
                     <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
                     <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
                     <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
+                    <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
                 </div>
                 <div class="network-topology-modal-body">
                     <div class="console-log-output console-log-modal-output"></div>
@@ -112,6 +118,10 @@ class ConsoleLog {
                 e.stopPropagation();
                 this._setFilter(btn.dataset.filter);
             });
+        });
+        this._modal.querySelector('.console-log-clear-btn').addEventListener('click', e => {
+            e.stopPropagation();
+            this.clear();
         });
 
         this._updateFilterLabels();
