@@ -79,7 +79,6 @@ const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
 const Whisker = window.Whisker = {};
 window.$ = $;
-let _coverageType = 'statement';
 
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
@@ -1042,9 +1041,8 @@ const initComponents = function () {
         currentTarget: i18next.t('species-networks-current-target')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
-        title: i18next.t('coverage-curve-title-statement'),
+        title: i18next.t('coverage-curve-title'),
         generation: i18next.t('coverage-curve-generation'),
-        coverage: i18next.t('coverage-curve-coverage'),
         emptyMessage: i18next.t('coverage-curve-empty')
     });
     Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'), {
@@ -1361,11 +1359,9 @@ const initEvents = function () {
         _resetProjectView();
     });
 
-    $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', e => {
+    $(document).on('click', '.whisker-coverage-btn[data-coverage-value]', () => {
         if (!Whisker.coverageCurve) return;
-        _coverageType = e.currentTarget.dataset.coverageValue;
-        const titleKey = _coverageType === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
-        Whisker.coverageCurve.updateI18n({title: i18next.t(titleKey)});
+        Whisker.coverageCurve.updateI18n({title: i18next.t('coverage-curve-title')});
     });
 
     $('#run-search')
@@ -1466,11 +1462,9 @@ const _updateLang = () => {
         });
     }
     if (Whisker.coverageCurve) {
-        const _coverageTitleKey = _coverageType === 'branch' ? 'coverage-curve-title' : 'coverage-curve-title-statement';
         Whisker.coverageCurve.updateI18n({
-            title: i18next.t(_coverageTitleKey),
+            title: i18next.t('coverage-curve-title'),
             generation: i18next.t('coverage-curve-generation'),
-            coverage: i18next.t('coverage-curve-coverage'),
             emptyMessage: i18next.t('coverage-curve-empty')
         });
     }

@@ -6,9 +6,8 @@ const X_LABEL_H = 20;
 class CoverageCurve {
     constructor(container, i18n = {}) {
         this._i18n = {
-            title: i18n.title || 'Branch Coverage',
+            title: i18n.title || 'Coverage',
             generation: i18n.generation || 'Generation',
-            coverage: i18n.coverage || 'Coverage',
             emptyMessage: i18n.emptyMessage || 'Start a search to see coverage over time'
         };
         this._data = [];
@@ -20,12 +19,14 @@ class CoverageCurve {
         this._data = [];
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
-        this._valueEl.textContent = '';
+        this._valueSEl.style.display = 'none';
+        this._valueBEl.style.display = 'none';
     }
 
     startEmpty() {
         this._data = [];
-        this._valueEl.textContent = '';
+        this._valueSEl.style.display = 'none';
+        this._valueBEl.style.display = 'none';
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -43,7 +44,10 @@ class CoverageCurve {
         card.innerHTML = `
             <div class="coverage-curve-header">
                 <span class="coverage-curve-title"></span>
-                <span class="coverage-curve-value"></span>
+                <span class="coverage-curve-value">
+                    <span class="coverage-curve-value-s" style="display:none;"></span>
+                    <span class="coverage-curve-value-b" style="display:none;"></span>
+                </span>
             </div>
             <div class="coverage-curve-empty"></div>
             <canvas class="coverage-curve-canvas" style="display:none;"></canvas>`;
@@ -51,7 +55,8 @@ class CoverageCurve {
 
         this._card = card;
         this._titleEl = card.querySelector('.coverage-curve-title');
-        this._valueEl = card.querySelector('.coverage-curve-value');
+        this._valueSEl = card.querySelector('.coverage-curve-value-s');
+        this._valueBEl = card.querySelector('.coverage-curve-value-b');
         this._emptyEl = card.querySelector('.coverage-curve-empty');
         this._canvas = card.querySelector('.coverage-curve-canvas');
         this._ctx = this._canvas.getContext('2d');
@@ -128,14 +133,26 @@ class CoverageCurve {
             ctx.fillText(String(iter), x, chartY + chartH + X_LABEL_H);
         }
 
-        // Coverage line
+        // Statement line
         ctx.beginPath();
         ctx.strokeStyle = '#2563eb';
         ctx.lineWidth = 2;
         ctx.lineJoin = 'round';
         this._data.forEach((d, i) => {
             const x = toX(d.iteration);
-            const y = toY(d.coverage);
+            const y = toY(d.statementCoverage);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        // Branch line
+        ctx.beginPath();
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        this._data.forEach((d, i) => {
+            const x = toX(d.iteration);
+            const y = toY(d.branchCoverage);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
@@ -143,7 +160,10 @@ class CoverageCurve {
 
         // Current value label
         const last = this._data[this._data.length - 1];
-        this._valueEl.textContent = `${(last.coverage * 100).toFixed(1)}%`;
+        this._valueSEl.style.display = '';
+        this._valueBEl.style.display = '';
+        this._valueSEl.textContent = `S: ${(last.statementCoverage * 100).toFixed(1)}%`;
+        this._valueBEl.textContent = `B: ${(last.branchCoverage * 100).toFixed(1)}%`;
     }
 }
 

@@ -2255,12 +2255,31 @@ label {
     font-weight: 600;
     font-size: 13px;
     color: #374151;
+    flex: 1;
 }
 
+
 .coverage-curve-value {
-    font-size: 13px;
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 600;
+}
+
+.coverage-curve-value-s {
+    background: #eff6ff;
     color: #2563eb;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    padding: 1px 8px;
+}
+
+.coverage-curve-value-b {
+    background: #fff7ed;
+    color: #ea6c10;
+    border: 1px solid #fed7aa;
+    border-radius: 999px;
+    padding: 1px 8px;
 }
 
 .coverage-curve-canvas {
