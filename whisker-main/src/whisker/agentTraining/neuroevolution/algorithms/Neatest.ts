@@ -204,6 +204,7 @@ export class Neatest extends NEAT {
                 coveredNewObjective = true;
                 this._archive.set(fitnessFunctionKey, network);
                 if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
+                    this._emitFitnessUpdate(network.fitness, this._population.averageFitness, 'neatest');
                     this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
                     this._emitCoveredSpeciesTopology(fitnessFunctionKey, this._population, network);
                 }

@@ -1050,7 +1050,8 @@ const initComponents = function () {
         best: i18next.t('fitness-chart-best'),
         average: i18next.t('fitness-chart-average'),
         emptyMessage: i18next.t('fitness-chart-empty'),
-        labelNeatest: i18next.t('fitness-chart-label-neatest')
+        labelNeatest: i18next.t('fitness-chart-label-neatest'),
+        currentTarget: i18next.t('fitness-chart-current-target')
     });
     Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-pop-chart-title'),
@@ -1474,7 +1475,8 @@ const _updateLang = () => {
             best: i18next.t('fitness-chart-best'),
             average: i18next.t('fitness-chart-average'),
             emptyMessage: i18next.t('fitness-chart-empty'),
-            labelNeatest: i18next.t('fitness-chart-label-neatest')
+            labelNeatest: i18next.t('fitness-chart-label-neatest'),
+            currentTarget: i18next.t('fitness-chart-current-target')
         });
     }
     if (Whisker.speciesPopulationChart) {

@@ -2168,6 +2168,12 @@ label {
     color: #9ca3af;
 }
 
+.fitness-chart-right-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .fitness-chart-value {
     font-size: 13px;
     font-weight: 600;

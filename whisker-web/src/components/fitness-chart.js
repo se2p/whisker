@@ -9,23 +9,38 @@ class FitnessChart {
             best: i18n.best || 'Best',
             average: i18n.average || 'Average',
             emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see fitness over time',
-            labelNeatest: i18n.labelNeatest || 'Current objective'
+            labelNeatest: i18n.labelNeatest || 'Current objective',
+            currentTarget: i18n.currentTarget || 'Current Target'
         };
         this._data = [];
+        this._history = [];
+        this._selectedKey = 'current';
         this._buildUI(container);
         window.Whisker.scratch.vm.on('FITNESS_UPDATE', data => this._update(data));
+        window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
+        window.Whisker.scratch.vm.on('OBJECTIVE_COVERED', data => this._onTargetCovered(data));
     }
 
     reset() {
         this._data = [];
+        this._history = [];
+        this._selectedKey = 'current';
+        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
+        this._historySelect.value = 'current';
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._valueEl.textContent = '';
+        this._subtitleEl.textContent = this._i18n.labelNeatest;
     }
 
     startEmpty() {
         this._data = [];
+        this._history = [];
+        this._selectedKey = 'current';
+        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
+        this._historySelect.value = 'current';
         this._valueEl.textContent = '';
+        this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -36,18 +51,25 @@ class FitnessChart {
         this._titleEl.textContent = this._i18n.title;
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
     }
 
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'fitness-chart-card';
+        card.style.display = 'none';
         card.innerHTML = `
             <div class="fitness-chart-header">
                 <div class="fitness-chart-title-group">
                     <span class="fitness-chart-title"></span>
                     <span class="fitness-chart-subtitle"></span>
                 </div>
-                <span class="fitness-chart-value"></span>
+                <div class="fitness-chart-right-group">
+                    <span class="fitness-chart-value"></span>
+                    <select class="network-topology-history-select fitness-chart-history-select">
+                        <option value="current"></option>
+                    </select>
+                </div>
             </div>
             <div class="fitness-chart-empty"></div>
             <canvas class="fitness-chart-canvas" style="display:none;"></canvas>`;
@@ -60,13 +82,48 @@ class FitnessChart {
         this._emptyEl = card.querySelector('.fitness-chart-empty');
         this._canvas = card.querySelector('.fitness-chart-canvas');
         this._ctx = this._canvas.getContext('2d');
+        this._historySelect = card.querySelector('.fitness-chart-history-select');
 
         this._titleEl.textContent = this._i18n.title;
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._historySelect.options[0].textContent = this._i18n.currentTarget;
+
+        this._historySelect.addEventListener('change', () => {
+            this._selectedKey = this._historySelect.value;
+            if (this._selectedKey === 'current') {
+                const runStarted = this._history.length > 0 || this._data.length > 0;
+                this._emptyEl.style.display = runStarted ? 'none' : '';
+                this._canvas.style.display = runStarted ? '' : 'none';
+                if (!this._data.length) this._valueEl.textContent = '';
+                this._redraw();
+            } else {
+                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+                if (entry) {
+                    this._emptyEl.style.display = 'none';
+                    this._canvas.style.display = '';
+                    this._redrawData(entry.data);
+                }
+            }
+        });
+    }
+
+    _onTargetCovered(event) {
+        this._history.push({objectiveKey: event.objectiveKey, label: event.label, data: [...this._data]});
+        this._data = [];
+        if (this._selectedKey === 'current') {
+            this._valueEl.textContent = '';
+            this._redraw();
+        }
+        const opt = document.createElement('option');
+        opt.value = String(event.objectiveKey);
+        opt.textContent = `Obj. ${event.objectiveKey}`;
+        opt.title = event.label;
+        this._historySelect.appendChild(opt);
     }
 
     _update(data) {
+        if (this._selectedKey !== 'current') return;
         this._data.push(data);
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
@@ -74,6 +131,10 @@ class FitnessChart {
     }
 
     _redraw() {
+        this._redrawData(this._data);
+    }
+
+    _redrawData(data) {
         const canvas = this._canvas;
         const ctx = this._ctx;
         const W = this._card.clientWidth - 2;
@@ -88,9 +149,9 @@ class FitnessChart {
         const chartW = W - H_PAD - 10;
         const chartH = CHART_H;
 
-        const hasAverage = this._data.some(d => d.average !== void 0);
-        const rawMax = this._data.reduce((m, d) => Math.max(m, d.best, d.average ?? -Infinity), -Infinity);
-        const rawMin = this._data.reduce((m, d) => Math.min(m, d.best, d.average ?? Infinity), Infinity);
+        const hasAverage = data.some(d => d.average !== void 0);
+        const rawMax = data.reduce((m, d) => Math.max(m, d.best, d.average ?? -Infinity), -Infinity);
+        const rawMin = data.reduce((m, d) => Math.min(m, d.best, d.average ?? Infinity), Infinity);
         const dataMax = isFinite(rawMax) ? rawMax : 1;
         const dataMin = Math.min(isFinite(rawMin) ? rawMin : 0, 0);
         const yStep = this._niceStep((dataMax - dataMin) || 1);
@@ -122,9 +183,9 @@ class FitnessChart {
         ctx.lineTo(chartX + chartW, chartY + chartH);
         ctx.stroke();
 
-        if (!this._data.length) return;
+        if (!data.length) return;
 
-        const lastIdx = Math.max(this._data.length - 1, 1);
+        const lastIdx = Math.max(data.length - 1, 1);
         const toX = i => chartX + (i / lastIdx) * chartW;
         const toY = v => chartY + chartH - ((v - yMin) / totalRange) * chartH;
 
@@ -136,7 +197,7 @@ class FitnessChart {
             ctx.setLineDash([4, 3]);
             ctx.lineJoin = 'round';
             let started = false;
-            this._data.forEach((d, i) => {
+            data.forEach((d, i) => {
                 if (d.average === void 0) return;
                 const x = toX(i);
                 const y = toY(d.average);
@@ -151,18 +212,25 @@ class FitnessChart {
             ctx.setLineDash([]);
         }
 
-        // Best line
-        ctx.beginPath();
+        // Best line (or dot for single point)
         ctx.strokeStyle = '#2563eb';
         ctx.lineWidth = 2;
-        ctx.lineJoin = 'round';
-        this._data.forEach((d, i) => {
-            const x = toX(i);
-            const y = toY(d.best);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
+        if (data.length === 1) {
+            ctx.beginPath();
+            ctx.arc(toX(0), toY(data[0].best), 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#2563eb';
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.lineJoin = 'round';
+            data.forEach((d, i) => {
+                const x = toX(i);
+                const y = toY(d.best);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
 
         // Legend
         if (hasAverage) {
@@ -191,7 +259,7 @@ class FitnessChart {
         }
 
         // Header value
-        const last = this._data[this._data.length - 1];
+        const last = data[data.length - 1];
         this._valueEl.textContent = `${this._i18n.best}: ${this._formatVal(last.best)}`;
     }
 

@@ -6,6 +6,7 @@ import logger from "../../../../util/logger";
 import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import {CoverageReward} from "../rewards/CoverageReward";
 import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import {Container} from "../../../utils/Container";
 
 export class CoverageDirectedDeepQLearning extends DeepQLearning {
 
@@ -24,11 +25,18 @@ export class CoverageDirectedDeepQLearning extends DeepQLearning {
         this._startTime = Date.now();
 
         // Outer Loop: Iterate over all yet uncovered coverage objectives.
+        let _prevObjectiveKey: number | null = null;
+        let _prevObjectiveLabel: string | null = null;
         while (this._getUncoveredObjectives().length > 0 && !(await this._stoppingCondition.isFinished(this))) {
+            if (_prevObjectiveKey !== null && this._archive.has(_prevObjectiveKey) && Container.vm) {
+                Container.vm.emit('OBJECTIVE_COVERED', {objectiveKey: _prevObjectiveKey, label: _prevObjectiveLabel});
+            }
             this._initialize();
 
             const currentObjective = this._selectNextObjective();
             const objectiveKey = this._getKeyForObjective(currentObjective);
+            _prevObjectiveKey = objectiveKey;
+            _prevObjectiveLabel = currentObjective.toString();
             const rewardFunction = new CoverageReward(currentObjective, this._actingNetwork);
 
             logger.info(`Current objective: ${currentObjective}`);

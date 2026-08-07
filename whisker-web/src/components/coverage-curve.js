@@ -114,8 +114,10 @@ class CoverageCurve {
 
         if (!this._data.length) return;
 
-        const maxIter = Math.max(this._data[this._data.length - 1].iteration, 1);
-        const toX = iter => chartX + (iter / maxIter) * chartW;
+        const isMonotonic = this._data.every((d, i) => i === 0 || d.iteration >= this._data[i - 1].iteration);
+        const xValues = isMonotonic ? this._data.map(d => d.iteration) : this._data.map((_, i) => i);
+        const maxX = Math.max(xValues[xValues.length - 1], 1);
+        const toX = x => chartX + (x / maxX) * chartW;
         const toY = cov => chartY + chartH - cov * chartH;
 
         // X axis ticks + labels
@@ -124,13 +126,13 @@ class CoverageCurve {
         ctx.textAlign = 'center';
         const tickCount = 5;
         for (let t = 0; t <= tickCount; t++) {
-            const iter = Math.round((t / tickCount) * maxIter);
-            const x = toX(iter);
+            const xVal = Math.round((t / tickCount) * maxX);
+            const x = toX(xVal);
             ctx.beginPath();
             ctx.moveTo(x, chartY + chartH);
             ctx.lineTo(x, chartY + chartH + 4);
             ctx.stroke();
-            ctx.fillText(String(iter), x, chartY + chartH + X_LABEL_H);
+            ctx.fillText(String(xVal), x, chartY + chartH + X_LABEL_H);
         }
 
         // Statement line
@@ -139,7 +141,7 @@ class CoverageCurve {
         ctx.lineWidth = 2;
         ctx.lineJoin = 'round';
         this._data.forEach((d, i) => {
-            const x = toX(d.iteration);
+            const x = toX(xValues[i]);
             const y = toY(d.statementCoverage);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
@@ -151,7 +153,7 @@ class CoverageCurve {
         ctx.lineWidth = 2;
         ctx.lineJoin = 'round';
         this._data.forEach((d, i) => {
-            const x = toX(d.iteration);
+            const x = toX(xValues[i]);
             const y = toY(d.branchCoverage);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);

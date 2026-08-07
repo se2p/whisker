@@ -827,7 +827,8 @@
                                                     <input id="use-save-states" type="checkbox" autocomplete="off">
                                                     <span class="slider round"></span>
                                                 </label>
-                                                <div class="save-states-warning" data-i18n="use-save-states-warning"></div>
+                                                <div class="save-states-warning" data-i18n="use-save-states-warning">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1859,6 +1860,10 @@
                 if (window.Whisker.speciesPopulationChart) {
                     var spcCard = document.querySelector('.species-pop-chart-card');
                     if (spcCard) spcCard.style.display = isLearning ? '' : 'none';
+                }
+                if (window.Whisker.fitnessChart) {
+                    var fCard = document.querySelector('.fitness-chart-card');
+                    if (fCard) fCard.style.display = isLearning ? '' : 'none';
                 }
             }
         }
