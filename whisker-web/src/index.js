@@ -1341,6 +1341,7 @@ const initEvents = function () {
         $(_algoRelated).prop('disabled', false);
         document.getElementById('whisker-tab-search').disabled = false;
         document.getElementById('whisker-tab-learning').disabled = false;
+        document.getElementById('whisker-tab-editor').disabled = false;
     };
 
     const _resetProjectView = () => {
@@ -1381,6 +1382,7 @@ const initEvents = function () {
                 if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.startEmpty();
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
+                document.getElementById('whisker-tab-editor').disabled = true;
                 $('#run-search').prop('disabled', true)
                     .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
                 $('#stop-search').show();

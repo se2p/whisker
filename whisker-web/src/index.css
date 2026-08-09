@@ -532,7 +532,7 @@ pre.prettyprint {
     color: #713f12;
     white-space: normal;
     width: 220px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     z-index: 100;
     pointer-events: none;
 }
@@ -960,7 +960,7 @@ tr td:nth-child(5) {
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 #test-table.spacer50 {
@@ -1046,7 +1046,7 @@ tr td:nth-child(5) {
 #test-table-search:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
 #test-table-collapse-btn {
@@ -1065,7 +1065,7 @@ tr td:nth-child(5) {
 
 /* Table content — no extra margin, override DataTables defaults */
 #test-table-content,
-#test-table-content > *,
+#test-table-content>*,
 #test-table-content .dataTables_wrapper {
     margin-top: 0 !important;
     padding-top: 0 !important;
@@ -2131,6 +2131,11 @@ label {
     padding: 16px;
 }
 
+#whisker-results-view {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
 /* ── Fitness Chart Component ─────────────────────────────────────────────── */
 .fitness-chart-card {
     background: #ffffff;
@@ -2398,19 +2403,19 @@ label {
     cursor: pointer;
     max-width: 220px;
     outline: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     transition: border-color 0.15s, box-shadow 0.15s;
     font-weight: 500;
 }
 
 .network-topology-history-select:hover {
     border-color: #9ca3af;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .network-topology-history-select:focus {
     border-color: #6b7280;
-    box-shadow: 0 0 0 3px rgba(107,114,128,0.12);
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.12);
 }
 
 .network-topology-modal-close {

@@ -89,9 +89,7 @@
             Console-Log
         </button>
         <button class="whisker-tab" id="whisker-tab-editor" data-i18n="title-editor"
-            onclick="_switchWhiskerTab('contentTestEditor', this); _manipulateTestEditor()">
-            Test Editor
-        </button>
+            onclick="_switchWhiskerTab('contentProject', this)"> Test Editor </button>
         <button class="whisker-tab" id="whisker-tab-model" data-i18n="title-model"
             onclick="_switchWhiskerTab('contentModelEditor', this)">
             Model Editor
@@ -749,16 +747,28 @@
                 <div class="whisker-main-panel">
                     <!-- View Toggle Bar -->
                     <div class="whisker-view-toggle-bar">
-                        <div class="whisker-view-toggle">
+                        <div class="whisker-view-toggle" id="whisker-search-toggle">
                             <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-results-btn"
-                                onclick="_switchViewMode('results', this)">
+                                onclick="_switchContentView('whisker-results-view', 'whisker-search-toggle', this)">
                                 <i class="fas fa-list"></i>
                                 <span data-i18n="viewmode-results">Results</span>
                             </button>
                             <button class="whisker-view-btn" id="whisker-view-statistics-btn"
-                                onclick="_switchViewMode('statistics', this)">
+                                onclick="_switchContentView('whisker-dashboard-view', 'whisker-search-toggle', this)">
                                 <i class="fas fa-chart-bar"></i>
                                 <span data-i18n="viewmode-statistics">Statistics</span>
+                            </button>
+                        </div>
+                        <div class="whisker-view-toggle" id="whisker-editor-toggle" style="display:none;">
+                            <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-editor-btn"
+                                onclick="_switchContentView('whisker-editor-view', 'whisker-editor-toggle', this)">
+                                <i class="fas fa-code"></i>
+                                <span data-i18n="title-editor">Test Editor</span>
+                            </button>
+                            <button class="whisker-view-btn" id="whisker-view-ergebnisse-btn"
+                                onclick="_switchContentView('whisker-results-view', 'whisker-editor-toggle', this)">
+                                <i class="fas fa-list"></i>
+                                <span data-i18n="viewmode-results">Results</span>
                             </button>
                         </div>
                     </div>
@@ -766,7 +776,7 @@
                     <div id="whisker-game-view" class="whisker-view-content">
                         <!-- Scratch project -->
                         <div id="scratch-project" class="row">
-                            <div class="col-lg-6">
+                            <div id="whisker-viewport-col" class="col-lg-6">
                                 <b><label id="your-project-label" data-i18n="your-project"></label></b>
                                 <div class="help-tooltip">
                                     <a href="#project-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
@@ -915,7 +925,7 @@
 
                             <!-- Tests table / Statistics (toggled) -->
 
-                            <div class="col-lg-6">
+                            <div id="whisker-content-col" class="col-lg-6">
                                 <div id="whisker-results-view">
                                     <div style="display:none">
                                         <div id="testtable-tooltip">
@@ -988,6 +998,448 @@
                                     </div>
                                 </div>
                                 <div id="whisker-dashboard-view" style="display:none;"></div>
+                                <div id="whisker-editor-view" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                            <b><label id="editor-header" data-i18n="editor-header"></label></b>
+                                            <div class="help-tooltip">
+                                                <a href="#editor-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="editor-tooltip"></span>
+                                            </div>
+
+                                            <div style="display:none">
+                                                <div id="editor-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="editor-helptext01"></li>
+                                                        <li data-i18n="editor-helptext02"></li>
+                                                        <li data-i18n="editor-helptext03"></li>
+                                                        <li data-i18n="editor-helptext04"></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div id="test-editor-div">
+                                                <div id="test-editor"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <b><label id="snippets-header" data-i18n="snippets-header"></label></b>
+                                            <div class="help-tooltip">
+                                                <a href="#snippets-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="snippets-tooltip"></span>
+                                            </div>
+
+                                            <div style="display:none">
+                                                <div id="snippets-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="snippets-helptext01"></li>
+                                                        <li data-i18n="snippets-helptext02"></li>
+                                                        <li data-i18n="snippets-helptext03"></li>
+                                                    </ul>
+                                                    <a href="https://github.com/se2p/whisker/blob/master/HOWTO.md"
+                                                        target="_blank">SE2P-Whisker
+                                                        on github</a>
+                                                </div>
+                                            </div>
+                                            <ul style="margin-left:-40px; list-style: none;">
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(1)"
+                                                        data-i18n="snippets:snippet01-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet1-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet1-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet01-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet01-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet01-helptext03">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet01-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet1" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet01-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(2)"
+                                                        data-i18n="snippets:snippet02-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet2-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet2-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet02-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext04">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext05">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet02-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet2" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet02-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(3)"
+                                                        data-i18n="snippets:snippet03-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet3-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet3-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet03-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext04">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet03-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet3" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet03-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(4)"
+                                                        data-i18n="snippets:snippet04-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet4-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet04-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet4-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <span
+                                                                        data-i18n="snippets:snippet04-helptext01"></span>
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet04-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext04">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext05">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext06">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext07">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext08">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet04-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet4" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet04-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(5)"
+                                                        data-i18n="snippets:snippet05-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet5-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet05-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet5-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <span
+                                                                        data-i18n="snippets:snippet05-helptext01"></span>
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet05-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet05-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet05-helptext04">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet05-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet5" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet05-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(6)"
+                                                        data-i18n="snippets:snippet06-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet6-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet06-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet6-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet06-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet06-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet06-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet6" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet06-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(7)"
+                                                        data-i18n="snippets:snippet07-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet7-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet07-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet7-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet07-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet07-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet07-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet7" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet07-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(8)"
+                                                        data-i18n="snippets:snippet08-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet8-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet08-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet8-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet08-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet08-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet08-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet8" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet08-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(9)"
+                                                        data-i18n="snippets:snippet09-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet9-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet09-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet9-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet09-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet09-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet09-helptext03">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet09-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet9" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet09-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(10)"
+                                                        data-i18n="snippets:snippet10-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet10-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet10-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet10-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet10-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet10-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet10-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet10" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet10-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(11)"
+                                                        data-i18n="snippets:snippet11-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet11-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet11-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet11-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet11-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet11-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet11-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet11" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet11-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1065,378 +1517,8 @@
                 </form>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentTestEditor" role="tabpanel" aria-labelledby="contact-tab">
-            <!-- Test editor -->
-            <div class="row">
-                <div class="col-lg-8">
-                    <b><label id="editor-header" data-i18n="editor-header"></label></b>
-                    <div class="help-tooltip">
-                        <a href="#editor-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                alt="help" /></a>
-                        <span class="help-text" data-i18n="editor-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="editor-tooltip">
-                            <ul>
-                                <li data-i18n="editor-helptext01"></li>
-                                <li data-i18n="editor-helptext02"></li>
-                                <li data-i18n="editor-helptext03"></li>
-                                <li data-i18n="editor-helptext04"></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div id="test-editor-div">
-                        <div id="test-editor"></div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <b><label id="snippets-header" data-i18n="snippets-header"></label></b>
-                    <div class="help-tooltip">
-                        <a href="#snippets-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                alt="help" /></a>
-                        <span class="help-text" data-i18n="snippets-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="snippets-tooltip">
-                            <ul>
-                                <li data-i18n="snippets-helptext01"></li>
-                                <li data-i18n="snippets-helptext02"></li>
-                                <li data-i18n="snippets-helptext03"></li>
-                            </ul>
-                            <a href="https://github.com/se2p/whisker/blob/master/HOWTO.md" target="_blank">SE2P-Whisker
-                                on github</a>
-                        </div>
-                    </div>
-                    <ul style="margin-left:-40px; list-style: none;">
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(1)"
-                                data-i18n="snippets:snippet01-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet1-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet1-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet01-helptext01"></li>
-                                                <li data-i18n="snippets:snippet01-helptext02"></li>
-                                                <li data-i18n="snippets:snippet01-helptext03"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet01-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet1" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet01-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(2)"
-                                data-i18n="snippets:snippet02-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet2-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet2-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet02-helptext01"></li>
-                                                <li data-i18n="snippets:snippet02-helptext02"></li>
-                                                <li data-i18n="snippets:snippet02-helptext03"></li>
-                                                <li data-i18n="snippets:snippet02-helptext04"></li>
-                                                <li data-i18n="snippets:snippet02-helptext05"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet02-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet2" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet02-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(3)"
-                                data-i18n="snippets:snippet03-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet3-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet3-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet03-helptext01"></li>
-                                                <li data-i18n="snippets:snippet03-helptext02"></li>
-                                                <li data-i18n="snippets:snippet03-helptext03"></li>
-                                                <li data-i18n="snippets:snippet03-helptext04"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet03-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet3" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet03-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(4)"
-                                data-i18n="snippets:snippet04-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet4-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet04-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet4-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <span data-i18n="snippets:snippet04-helptext01"></span>
-                                            <ol>
-                                                <li data-i18n="snippets:snippet04-helptext02"></li>
-                                                <li data-i18n="snippets:snippet04-helptext03"></li>
-                                                <li data-i18n="snippets:snippet04-helptext04"></li>
-                                                <li data-i18n="snippets:snippet04-helptext05"></li>
-                                                <li data-i18n="snippets:snippet04-helptext06"></li>
-                                                <li data-i18n="snippets:snippet04-helptext07"></li>
-                                                <li data-i18n="snippets:snippet04-helptext08"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet04-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet4" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet04-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(5)"
-                                data-i18n="snippets:snippet05-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet5-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet05-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet5-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <span data-i18n="snippets:snippet05-helptext01"></span>
-                                            <ol>
-                                                <li data-i18n="snippets:snippet05-helptext02"></li>
-                                                <li data-i18n="snippets:snippet05-helptext03"></li>
-                                                <li data-i18n="snippets:snippet05-helptext04"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet05-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet5" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet05-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(6)"
-                                data-i18n="snippets:snippet06-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet6-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet06-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet6-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet06-helptext01"></li>
-                                                <li data-i18n="snippets:snippet06-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet06-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet6" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet06-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(7)"
-                                data-i18n="snippets:snippet07-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet7-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet07-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet7-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet07-helptext01"></li>
-                                                <li data-i18n="snippets:snippet07-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet07-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet7" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet07-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(8)"
-                                data-i18n="snippets:snippet08-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet8-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet08-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet8-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet08-helptext01"></li>
-                                                <li data-i18n="snippets:snippet08-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet08-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet8" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet08-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(9)"
-                                data-i18n="snippets:snippet09-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet9-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet09-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet9-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet09-helptext01"></li>
-                                                <li data-i18n="snippets:snippet09-helptext02"></li>
-                                                <li data-i18n="snippets:snippet09-helptext03"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet09-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet9" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet09-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(10)"
-                                data-i18n="snippets:snippet10-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet10-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet10-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet10-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet10-helptext01"></li>
-                                                <li data-i18n="snippets:snippet10-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet10-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet10" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet10-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(11)"
-                                data-i18n="snippets:snippet11-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet11-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
-                                        alt="help" /></a>
-                                <span class="help-text" data-i18n="snippets:snippet11-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet11-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet11-helptext01"></li>
-                                                <li data-i18n="snippets:snippet11-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet11-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet11" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet11-shortcode"></pre>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        <!-- <div class="tab-pane tabBorder fade" id="contentTestEditor" role="tabpanel" aria-labelledby="contact-tab">
+        </div> -->
         <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="contact-tab">
             <!-- Model editor -->
             <div id="model-editor" class="mt-4 spacer10">
@@ -1818,15 +1900,90 @@
             }
         }
 
-        function _switchViewMode(mode, clickedBtn) {
-            document.querySelectorAll('.whisker-view-btn').forEach(function (btn) {
+        function _setProjectColumns(viewportClass, contentClass) {
+            var viewportCol = document.getElementById('whisker-viewport-col');
+            var contentCol = document.getElementById('whisker-content-col');
+            ['col-lg-3', 'col-lg-5', 'col-lg-6'].forEach(function (c) {
+                if (viewportCol) viewportCol.classList.remove(c);
+            });
+            ['col-lg-6', 'col-lg-7', 'col-lg-9'].forEach(function (c) {
+                if (contentCol) contentCol.classList.remove(c);
+            });
+            if (viewportCol) viewportCol.classList.add(viewportClass);
+            if (contentCol) contentCol.classList.add(contentClass);
+        }
+
+        function _switchContentView(viewId, toggleGroupId, clickedBtn) {
+            document.querySelectorAll('#' + toggleGroupId + ' .whisker-view-btn').forEach(function (btn) {
                 btn.classList.remove('whisker-view-btn--active');
             });
             clickedBtn.classList.add('whisker-view-btn--active');
-            document.getElementById('whisker-results-view').style.display = mode === 'results' ? '' : 'none';
-            document.getElementById('whisker-dashboard-view').style.display = mode === 'statistics' ? '' : 'none';
-            if (mode === 'statistics' && window.Whisker && window.Whisker.networkTopology) {
+            ['whisker-results-view', 'whisker-dashboard-view', 'whisker-editor-view'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = id === viewId ? '' : 'none';
+            });
+            if (viewId === 'whisker-dashboard-view' && window.Whisker && window.Whisker.networkTopology) {
                 window.Whisker.networkTopology.refresh();
+            }
+        }
+
+        function _applyProjectLayout(mode) {
+            var editorView = document.getElementById('whisker-editor-view');
+            var resultsView = document.getElementById('whisker-results-view');
+            var dashboardView = document.getElementById('whisker-dashboard-view');
+            var configPanel = document.getElementById('whisker-config-panel');
+            var searchToggle = document.getElementById('whisker-search-toggle');
+            var editorToggle = document.getElementById('whisker-editor-toggle');
+
+            var isEditor = mode === 'editor';
+            var isLearning = mode === 'learning';
+
+            if (configPanel)  configPanel.style.display  = isEditor ? 'none' : '';
+            if (searchToggle) searchToggle.style.display = isEditor ? 'none' : '';
+            if (editorToggle) editorToggle.style.display = isEditor ? '' : 'none';
+            _setProjectColumns(isEditor ? 'col-lg-5' : 'col-lg-6', isEditor ? 'col-lg-7' : 'col-lg-6');
+
+            if (isEditor) {
+                if (editorView)    editorView.style.display    = '';
+                if (resultsView)   resultsView.style.display   = 'none';
+                if (dashboardView) dashboardView.style.display = 'none';
+                document.querySelectorAll('#whisker-editor-toggle .whisker-view-btn').forEach(function (btn) {
+                    btn.classList.remove('whisker-view-btn--active');
+                });
+                var editorBtn = document.getElementById('whisker-view-editor-btn');
+                if (editorBtn) editorBtn.classList.add('whisker-view-btn--active');
+                _manipulateTestEditor();
+                return;
+            }
+
+            if (editorView)    editorView.style.display    = 'none';
+            if (resultsView)   resultsView.style.display   = '';
+            if (dashboardView) dashboardView.style.display = 'none';
+
+            document.querySelectorAll('#whisker-search-toggle .whisker-view-btn').forEach(function (btn) {
+                btn.classList.remove('whisker-view-btn--active');
+            });
+            var resultsBtn = document.getElementById('whisker-view-results-btn');
+            if (resultsBtn) resultsBtn.classList.add('whisker-view-btn--active');
+
+            if (window.Whisker && window.Whisker.configPanel) {
+                window.Whisker.configPanel.switchToMode(isLearning);
+            }
+            if (window.Whisker && window.Whisker.networkTopology) {
+                var card = document.querySelector('.network-topology-card');
+                if (card) card.style.display = isLearning ? '' : 'none';
+            }
+            if (window.Whisker && window.Whisker.speciesNetworks) {
+                var snCard = document.querySelector('.species-networks-card');
+                if (snCard) snCard.style.display = isLearning ? '' : 'none';
+            }
+            if (window.Whisker && window.Whisker.speciesPopulationChart) {
+                var spcCard = document.querySelector('.species-pop-chart-card');
+                if (spcCard) spcCard.style.display = isLearning ? '' : 'none';
+            }
+            if (window.Whisker && window.Whisker.fitnessChart) {
+                var fCard = document.querySelector('.fitness-chart-card');
+                if (fCard) fCard.style.display = isLearning ? '' : 'none';
             }
         }
 
@@ -1846,25 +2003,11 @@
                 var legacyTab = document.getElementById(legacyId);
                 if (legacyTab) legacyTab.click();
             }
-            if (targetContentId === 'contentProject' && window.Whisker && window.Whisker.configPanel) {
-                var isLearning = clickedBtn.id === 'whisker-tab-learning';
-                window.Whisker.configPanel.switchToMode(isLearning);
-                if (window.Whisker.networkTopology) {
-                    var card = document.querySelector('.network-topology-card');
-                    if (card) card.style.display = isLearning ? '' : 'none';
-                }
-                if (window.Whisker.speciesNetworks) {
-                    var snCard = document.querySelector('.species-networks-card');
-                    if (snCard) snCard.style.display = isLearning ? '' : 'none';
-                }
-                if (window.Whisker.speciesPopulationChart) {
-                    var spcCard = document.querySelector('.species-pop-chart-card');
-                    if (spcCard) spcCard.style.display = isLearning ? '' : 'none';
-                }
-                if (window.Whisker.fitnessChart) {
-                    var fCard = document.querySelector('.fitness-chart-card');
-                    if (fCard) fCard.style.display = isLearning ? '' : 'none';
-                }
+            if (targetContentId === 'contentProject') {
+                var mode = clickedBtn.id === 'whisker-tab-editor' ? 'editor'
+                    : clickedBtn.id === 'whisker-tab-learning' ? 'learning'
+                        : 'search';
+                _applyProjectLayout(mode);
             }
         }
 
