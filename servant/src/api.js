@@ -8,7 +8,7 @@ const {runTests} = require("./common");
 const app = express();
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
-    useTempFiles : true,
+    useTempFiles: true,
     tmpFileDir: os.tmpdir(),
 }));
 
@@ -62,15 +62,35 @@ async function startServer(pool) {
 
 function extractTestResults(whiskerResult) {
     const projectName = Object.keys(whiskerResult.summary)[0];
-    return whiskerResult.summary[projectName]
-        .map((t) => t.test)
-        .map((testResult) => {
-            return {
-                name: testResult.name,
-                index: testResult.index,
-                result: testResult.testResultClass,
-            };
-        });
+    const testResults = whiskerResult.summary[projectName]
+        .map(summary => summary.test)
+        .map(testResult => ({
+            name: testResult.name,
+            index: testResult.index,
+            result: testResult.testResultClass,
+        }));
+
+    return {
+        testResults,
+        coverage: extractCoverage(whiskerResult.coverage),
+    };
+}
+
+function extractCoverage(coverage) {
+    const coveredBlockIds = new Set();
+    for (const blockIds of coverage.coveredBlockIdsPerSprite.values()) {
+        blockIds.forEach(blockId => coveredBlockIds.add(blockId));
+    }
+
+    const blockIds = new Set();
+    for (const spriteBlockIds of coverage.blockIdsPerSprite.values()) {
+        spriteBlockIds.forEach(blockId => blockIds.add(blockId));
+    }
+
+    return {
+        covered: coveredBlockIds.size,
+        total: blockIds.size,
+    };
 }
 
 async function init() {
