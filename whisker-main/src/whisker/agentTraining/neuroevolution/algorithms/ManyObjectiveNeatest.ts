@@ -11,6 +11,7 @@ import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
 import logger from "../../../../util/logger";
 import {FitnessFunction} from "../../../search/FitnessFunction";
 import {TestCase} from "../../../core/TestCase";
+import {Container} from "../../../utils/Container";
 
 
 /**
@@ -243,6 +244,44 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         return this._currentTargets.includes(key);
     }
 
+    protected _shouldEmitPerTarget(): boolean {
+        return true;
+    }
+
+    protected override _emitNetworkTopology(): void {
+        if (!this._shouldEmitPerTarget()) return;
+        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        const perTarget = activeTargets
+            .map(key => {
+                const best = this._population.networks.reduce((a, b) =>
+                    (b.coverageObjectives.get(key) ?? 0) > (a.coverageObjectives.get(key) ?? 0) ? b : a,
+                    this._population.networks[0]
+                );
+                if (!best) return null;
+                const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+                return {
+                    targetKey: key,
+                    label,
+                    coverageScore: best.coverageObjectives.get(key) ?? 0,
+                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                    connections: best.connections
+                        .filter(c => c.isEnabled)
+                        .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+                };
+            })
+            .filter(Boolean);
+
+        if (perTarget.length === 0) return;
+        Container.vm.emit('NETWORK_TOPOLOGY', {
+            generation: this._getTopologyGeneration(),
+            perTarget,
+            nodes: perTarget[0].nodes,
+            connections: perTarget[0].connections
+        });
+    }
+
     protected iterationSummary(): void {
         logger.debug(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         logger.debug(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
@@ -260,6 +299,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
         this._emitSpeciesTopologies(this._population);
+        this._emitNetworkTopology();
     }
 
     protected override _getTopologyGeneration(): number {

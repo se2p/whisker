@@ -219,6 +219,8 @@
     "network-topology-generation": "Generation",
     "network-topology-expand": "Zum Vergrößern klicken",
     "network-topology-current-target": "Aktuelles Ziel",
+    "network-topology-frontier-targets": "Aktuelle Ziele",
+    "network-topology-previous-targets": "Vorherige Ziele",
     "species-networks-title": "Species Networks",
     "species-networks-generation": "Generation",
     "species-networks-species": "Species",

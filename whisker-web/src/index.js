@@ -1028,7 +1028,9 @@ const initComponents = function () {
         generation: i18next.t('network-topology-generation'),
         expand: i18next.t('network-topology-expand'),
         emptyMessage: i18next.t('network-topology-empty'),
-        currentTarget: i18next.t('network-topology-current-target')
+        currentTarget: i18next.t('network-topology-current-target'),
+        frontierTargets: i18next.t('network-topology-frontier-targets'),
+        previousTargets: i18next.t('network-topology-previous-targets')
     });
     Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-networks-title'),
@@ -1449,7 +1451,9 @@ const _updateLang = () => {
             generation: i18next.t('network-topology-generation'),
             expand: i18next.t('network-topology-expand'),
             emptyMessage: i18next.t('network-topology-empty'),
-            currentTarget: i18next.t('network-topology-current-target')
+            currentTarget: i18next.t('network-topology-current-target'),
+            frontierTargets: i18next.t('network-topology-frontier-targets'),
+            previousTargets: i18next.t('network-topology-previous-targets')
         });
     }
     if (Whisker.speciesNetworks) {

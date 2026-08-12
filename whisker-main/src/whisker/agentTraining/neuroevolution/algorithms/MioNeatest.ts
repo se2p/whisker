@@ -7,6 +7,7 @@ import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperti
 import {MioNeatestParameter} from "../hyperparameter/MioNeatestParameter";
 import logger from "../../../../util/logger";
 import Arrays from "../../../utils/Arrays";
+import {Container} from "../../../utils/Container";
 
 /**
  * Enhances Neatest with the MIO algorithm.
@@ -317,8 +318,10 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 this._archive.set(selectedTarget, candidate);
                 this._archiveUncovered.delete(selectedTarget);
                 this._samplingCounter.delete(selectedTarget);
-                this._emitCoveredNetworkTopology(selectedTarget, candidate);
-                this._emitCoveredSpeciesTopology(selectedTarget, this._population, candidate);
+                if (selectedTarget === this._currentTarget) {
+                    this._emitCoveredNetworkTopology(selectedTarget, candidate);
+                    this._emitCoveredSpeciesTopology(selectedTarget, this._population, candidate);
+                }
                 this.updateBestIndividualAndStatistics();
                 continue;
             }
@@ -402,6 +405,26 @@ export class MioNeatest extends ManyObjectiveNeatest {
      * Sets the required hyperparameter.
      * @param properties the user-defined hyperparameter.
      */
+    protected override _shouldEmitPerTarget(): boolean { return false; }
+
+    protected override _emitNetworkTopology(): void {
+        if (!Container.vm || this._currentTarget === undefined) return;
+        const candidates = this._archiveUncovered.get(this._currentTarget);
+        const best = candidates && candidates.length > 0
+            ? candidates.reduce((a, b) =>
+                (b.coverageObjectives.get(this._currentTarget) ?? 0) > (a.coverageObjectives.get(this._currentTarget) ?? 0) ? b : a,
+                candidates[0])
+            : this._archive.get(this._currentTarget);
+        if (!best) return;
+        Container.vm.emit('NETWORK_TOPOLOGY', {
+            generation: this._getTopologyGeneration(),
+            nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+            connections: best.connections.filter(c => c.isEnabled).map(c => ({
+                source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))
+            }))
+        });
+    }
+
     override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         super.setProperties(properties);
         this._mutationOperator = this._neuroevolutionProperties.mutationOperator;

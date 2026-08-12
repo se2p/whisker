@@ -2345,8 +2345,29 @@ label {
     padding: 2px 9px;
 }
 
+.network-topology-current-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.network-topology-current-label {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.network-topology-current-select {
+    font-size: 11px;
+    padding: 2px 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff;
+    color: #374151;
+    cursor: pointer;
+}
+
 .network-topology-expand-hint {
-    margin-left: auto;
     font-size: 14px;
     color: #9ca3af;
 }

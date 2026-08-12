@@ -21,11 +21,15 @@ class NetworkTopology {
             generation: i18n.generation || 'Generation',
             expand: i18n.expand || 'Click to expand',
             emptyMessage: i18n.emptyMessage || 'Start a learning algorithm to see the network topology',
-            currentTarget: i18n.currentTarget || 'Current Target'
+            currentTarget: i18n.currentTarget || 'Current Target',
+            frontierTargets: i18n.frontierTargets || 'Current Targets',
+            previousTargets: i18n.previousTargets || 'Previous Targets'
         };
         this._lastData = null;
         this._history = [];
         this._selectedKey = 'current';
+        this._perTargetData = [];
+        this._selectedCurrentKey = null;
         this._buildUI();
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY', data => this._render(data));
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onCovered(data));
@@ -53,10 +57,12 @@ class NetworkTopology {
         this._lastData = null;
         this._history = [];
         this._selectedKey = 'current';
-        while (this._historySelect.options.length > 1) {
-            this._historySelect.remove(1);
-        }
+        this._perTargetData = [];
+        this._selectedCurrentKey = null;
+        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
         this._historySelect.value = 'current';
+        this._currentSelect.innerHTML = '';
+        this._currentGroup.style.display = 'none';
         this.genLabel.textContent = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = '';
@@ -68,10 +74,12 @@ class NetworkTopology {
         this._lastData = null;
         this._history = [];
         this._selectedKey = 'current';
-        while (this._historySelect.options.length > 1) {
-            this._historySelect.remove(1);
-        }
+        this._perTargetData = [];
+        this._selectedCurrentKey = null;
+        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
         this._historySelect.value = 'current';
+        this._currentSelect.innerHTML = '';
+        this._currentGroup.style.display = 'none';
         this.genLabel.textContent = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = 'none';
@@ -88,6 +96,11 @@ class NetworkTopology {
             <div class="network-topology-header">
                 <span class="network-topology-generation" id="nt-generation"></span>
                 <p class="network-topology-title">${this._i18n.title}</p>
+                <span style="flex:1;"></span>
+                <div class="network-topology-current-group" id="nt-current-group" style="display:none;">
+                    <span class="network-topology-current-label">Frontier</span>
+                    <select class="network-topology-current-select" id="nt-current-select"></select>
+                </div>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
             <div class="network-topology-empty"></div>
@@ -99,6 +112,23 @@ class NetworkTopology {
         this.genLabel = card.querySelector('#nt-generation');
         this._emptyEl = card.querySelector('.network-topology-empty');
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._currentGroup = card.querySelector('#nt-current-group');
+        this._currentGroup.addEventListener('click', e => e.stopPropagation());
+        this._currentSelect = card.querySelector('#nt-current-select');
+        this._currentSelect.addEventListener('change', () => {
+            this._selectedCurrentKey = parseInt(this._currentSelect.value, 10);
+            const active = this._perTargetData.find(t => t.targetKey === this._selectedCurrentKey);
+            if (active && this._lastData) {
+                const W = this.container.clientWidth - 32;
+                const maxColHeight = this._maxColHeight(active.nodes);
+                const spacing = Math.min(COL_SPACING, (PREVIEW_H - V_PAD * 2) / Math.max(maxColHeight, 1));
+                const radius = Math.max(3, Math.min(NODE_RADIUS, spacing * 0.35));
+                this._renderToCanvas(
+                    {nodes: active.nodes, connections: active.connections, generation: this._lastData.generation},
+                    this.canvas, this.ctx, this.genLabel, W, spacing, radius, PREVIEW_H
+                );
+            }
+        });
 
         // Modal
         this.modal = document.createElement('div');
@@ -135,21 +165,45 @@ class NetworkTopology {
         });
         this._historySelect = this.modal.querySelector('#nt-history-select');
         this._historySelect.addEventListener('change', () => {
-            this._selectedKey = this._historySelect.value;
-            if (this._selectedKey !== 'current') {
-                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+            const val = this._historySelect.value;
+            const modalW = this.modalCanvas.parentElement.clientWidth - 32;
+            if (val.startsWith('frontier:')) {
+                const key = parseInt(val.split(':')[1], 10);
+                this._selectedCurrentKey = key;
+                this._currentSelect.value = String(key);
+                const active = this._perTargetData.find(t => t.targetKey === key);
+                if (active) {
+                    this._renderToCanvas(
+                        {nodes: active.nodes, connections: active.connections, generation: this._lastData.generation},
+                        this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+                    );
+                }
+            } else if (val.startsWith('covered:')) {
+                const key = parseInt(val.split(':')[1], 10);
+                const entry = this._history.find(h => h.objectiveKey === key);
                 if (entry) {
-                    const modalW = this.modalCanvas.parentElement.clientWidth - 32;
                     this._renderToCanvas(
                         {generation: '', nodes: entry.nodes, connections: entry.connections},
                         this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
                     );
                     this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
                 }
-            } else if (this._lastData) {
-                const modalW = this.modalCanvas.parentElement.clientWidth - 32;
-                this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
-                    modalW, COL_SPACING, NODE_RADIUS);
+            } else {
+                // plain Neatest 'current'
+                this._selectedKey = val;
+                if (val !== 'current') {
+                    const entry = this._history.find(h => String(h.objectiveKey) === val);
+                    if (entry) {
+                        this._renderToCanvas(
+                            {generation: '', nodes: entry.nodes, connections: entry.connections},
+                            this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+                        );
+                        this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
+                    }
+                } else if (this._lastData) {
+                    this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
+                        modalW, COL_SPACING, NODE_RADIUS);
+                }
             }
         });
 
@@ -166,20 +220,59 @@ class NetworkTopology {
     _openModal() {
         if (!this._lastData) return;
         this.modal.classList.add('network-topology-modal--open');
-        this._historySelect.value = this._selectedKey;
         const modalW = this.modalCanvas.parentElement.clientWidth - 32;
-        if (this._selectedKey === 'current') {
-            this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
-                modalW, COL_SPACING, NODE_RADIUS);
+
+        if (this._perTargetData.length > 0) {
+            this._rebuildModalSelectPerTarget();
+            const active = this._perTargetData.find(t => t.targetKey === this._selectedCurrentKey) ??
+                        this._perTargetData[0];
+            this._selectedCurrentKey = active.targetKey;
+            this._historySelect.value = `frontier:${active.targetKey}`;
+            this._renderToCanvas(
+                {nodes: active.nodes, connections: active.connections, generation: this._lastData.generation},
+                this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+            );
         } else {
-            const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
-            if (entry) {
-                this._renderToCanvas(
-                    {generation: '', nodes: entry.nodes, connections: entry.connections},
-                    this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
-                );
-                this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
+            this._historySelect.value = this._selectedKey;
+            if (this._selectedKey === 'current') {
+                this._renderToCanvas(this._lastData, this.modalCanvas, this.modalCtx, this.modalGenLabel,
+                    modalW, COL_SPACING, NODE_RADIUS);
+            } else {
+                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
+                if (entry) {
+                    this._renderToCanvas(
+                        {generation: '', nodes: entry.nodes, connections: entry.connections},
+                        this.modalCanvas, this.modalCtx, this.modalGenLabel, modalW, COL_SPACING, NODE_RADIUS
+                    );
+                    this.modalGenLabel.textContent = `Obj. ${entry.objectiveKey}`;
+                }
             }
+        }
+    }
+
+    _rebuildModalSelectPerTarget() {
+        this._historySelect.innerHTML = '';
+        const frontierGroup = document.createElement('optgroup');
+        frontierGroup.label = this._i18n.frontierTargets;
+        this._perTargetData.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = `frontier:${t.targetKey}`;
+            opt.textContent = `Obj. ${t.targetKey}`;
+            opt.title = t.label;
+            frontierGroup.appendChild(opt);
+        });
+        this._historySelect.appendChild(frontierGroup);
+        if (this._history.length > 0) {
+            const coveredGroup = document.createElement('optgroup');
+            coveredGroup.label = this._i18n.previousTargets;
+            this._history.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = `covered:${h.objectiveKey}`;
+                opt.textContent = `Obj. ${h.objectiveKey}`;
+                opt.title = h.label;
+                coveredGroup.appendChild(opt);
+            });
+            this._historySelect.appendChild(coveredGroup);
         }
     }
 
@@ -193,22 +286,53 @@ class NetworkTopology {
         this.canvas.style.display = '';
         const W = this.container.clientWidth - 32;
         if (W <= 0) return;
-        const maxColHeight = this._maxColHeight(data.nodes);
+
+        let renderSrc = data;
+        if (data.perTarget && data.perTarget.length > 0) {
+            this._perTargetData = data.perTarget;
+            this._rebuildCurrentSelect();
+            const active = this._perTargetData.find(t => t.targetKey === this._selectedCurrentKey) ??
+                        this._perTargetData[0];
+            this._selectedCurrentKey = active.targetKey;
+            renderSrc = {nodes: active.nodes, connections: active.connections, generation: data.generation};
+        } else {
+            this._perTargetData = [];
+            this._currentGroup.style.display = 'none';
+        }
+
+        const maxColHeight = this._maxColHeight(renderSrc.nodes);
         const spacing = Math.min(COL_SPACING, (PREVIEW_H - V_PAD * 2) / Math.max(maxColHeight, 1));
         const radius = Math.max(3, Math.min(NODE_RADIUS, spacing * 0.35));
-        this._renderToCanvas(data, this.canvas, this.ctx, this.genLabel, W, spacing, radius, PREVIEW_H);
+        this._renderToCanvas(renderSrc, this.canvas, this.ctx, this.genLabel, W, spacing, radius, PREVIEW_H);
         if (this.modal.classList.contains('network-topology-modal--open') && this._selectedKey === 'current') {
             this._openModal();
         }
     }
 
+    _rebuildCurrentSelect() {
+        const prevKey = this._selectedCurrentKey;
+        this._currentSelect.innerHTML = '';
+        this._perTargetData.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = String(t.targetKey);
+            opt.textContent = `Obj. ${t.targetKey}`;
+            opt.title = t.label;
+            this._currentSelect.appendChild(opt);
+        });
+        const stillPresent = this._perTargetData.some(t => t.targetKey === prevKey);
+        this._currentSelect.value = String(stillPresent ? prevKey : this._perTargetData[0].targetKey);
+        this._currentGroup.style.display = '';
+    }
+
     _onCovered(data) {
         this._history.push(data);
-        const option = document.createElement('option');
-        option.value = String(data.objectiveKey);
-        option.textContent = `Obj. ${data.objectiveKey}`;
-        option.title = data.label;
-        this._historySelect.appendChild(option);
+        if (this._perTargetData.length === 0) {
+            const option = document.createElement('option');
+            option.value = String(data.objectiveKey);
+            option.textContent = `Obj. ${data.objectiveKey}`;
+            option.title = data.label;
+            this._historySelect.appendChild(option);
+        }
     }
 
     _maxColHeight(nodes) {
