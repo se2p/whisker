@@ -55,6 +55,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      * Initializes required variables.
      */
     protected initialize(): void {
+        this._initTopologyHistory();
         this._iterations = 0;
         this._startTime = Date.now();
         this._fitnessFunctionMap = new Map(this._fitnessFunctions) as unknown as Map<number, StatementFitnessFunction>;
@@ -274,12 +275,10 @@ export abstract class ManyObjectiveNeatest extends Neatest {
             .filter(Boolean);
 
         if (perTarget.length === 0) return;
-        Container.vm.emit('NETWORK_TOPOLOGY', {
-            generation: this._getTopologyGeneration(),
-            perTarget,
-            nodes: perTarget[0].nodes,
-            connections: perTarget[0].connections
-        });
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, perTarget, nodes: perTarget[0].nodes, connections: perTarget[0].connections};
+        this._topologyHistory.set(gen, snapshot);
+        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
 
     protected iterationSummary(): void {

@@ -30,9 +30,13 @@ class NetworkTopology {
         this._selectedKey = 'current';
         this._perTargetData = [];
         this._selectedCurrentKey = null;
+        this._selectedGen = 'latest';
+        this._knownGenerations = [];
+        this._lastHistorySnapshot = null;
         this._buildUI();
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY', data => this._render(data));
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onCovered(data));
+        window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_HISTORY', data => this._renderHistorySnapshot(data));
     }
 
     updateI18n(i18n) {
@@ -59,11 +63,15 @@ class NetworkTopology {
         this._selectedKey = 'current';
         this._perTargetData = [];
         this._selectedCurrentKey = null;
+        this._selectedGen = 'latest';
+        this._knownGenerations = [];
+        this._lastHistorySnapshot = null;
         this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
+        this._historySelect.style.display = '';
         this._historySelect.value = 'current';
         this._currentSelect.innerHTML = '';
         this._currentGroup.style.display = 'none';
-        this.genLabel.textContent = '';
+        this.genLabel.innerHTML = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = '';
         this.canvas.style.display = 'none';
@@ -76,11 +84,15 @@ class NetworkTopology {
         this._selectedKey = 'current';
         this._perTargetData = [];
         this._selectedCurrentKey = null;
+        this._selectedGen = 'latest';
+        this._knownGenerations = [];
+        this._lastHistorySnapshot = null;
         this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
         this._historySelect.value = 'current';
         this._currentSelect.innerHTML = '';
         this._currentGroup.style.display = 'none';
-        this.genLabel.textContent = '';
+        this.genLabel.innerHTML = '';
+        this.genLabel.innerHTML = '';
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = 'none';
         this.canvas.style.display = '';
@@ -94,7 +106,7 @@ class NetworkTopology {
         card.style.display = 'none';
         card.innerHTML = `
             <div class="network-topology-header">
-                <span class="network-topology-generation" id="nt-generation"></span>
+                <select class="network-topology-generation" id="nt-generation"></select>
                 <p class="network-topology-title">${this._i18n.title}</p>
                 <span style="flex:1;"></span>
                 <div class="network-topology-current-group" id="nt-current-group" style="display:none;">
@@ -114,6 +126,16 @@ class NetworkTopology {
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._currentGroup = card.querySelector('#nt-current-group');
         this._currentGroup.addEventListener('click', e => e.stopPropagation());
+        this.genLabel.addEventListener('click', e => e.stopPropagation());
+        this.genLabel.addEventListener('change', () => {
+            this._selectedGen = this.genLabel.value;
+            if (this._selectedGen === 'latest') {
+                this._lastHistorySnapshot = null;
+                if (this._lastData) this._renderSnapshot(this._lastData);
+            } else {
+                window.Whisker.scratch.vm.emit('REQUEST_TOPOLOGY_GEN', {generation: parseInt(this._selectedGen, 10)});
+            }
+        });
         this._currentSelect = card.querySelector('#nt-current-select');
         this._currentSelect.addEventListener('change', () => {
             this._selectedCurrentKey = parseInt(this._currentSelect.value, 10);
@@ -222,6 +244,25 @@ class NetworkTopology {
         this.modal.classList.add('network-topology-modal--open');
         const modalW = this.modalCanvas.parentElement.clientWidth - 32;
 
+        if (this._selectedGen !== 'latest' && this._lastHistorySnapshot) {
+            this._historySelect.style.display = 'none';
+            const snap = this._lastHistorySnapshot;
+            let renderSrc = snap;
+            let activeTargetKey = null;
+            if (snap.perTarget && snap.perTarget.length > 0) {
+                const active = snap.perTarget.find(t => t.targetKey === this._selectedCurrentKey) ?? snap.perTarget[0];
+                activeTargetKey = active.targetKey;
+                renderSrc = {nodes: active.nodes, connections: active.connections, generation: snap.generation};
+            }
+            this._renderToCanvas(renderSrc, this.modalCanvas, this.modalCtx, this.modalGenLabel,
+                modalW, COL_SPACING, NODE_RADIUS);
+            if (activeTargetKey !== null) {
+                this.modalGenLabel.textContent += ` — Obj. ${activeTargetKey}`;
+            }
+            return;
+        }
+
+        this._historySelect.style.display = '';
         if (this._perTargetData.length > 0) {
             this._rebuildModalSelectPerTarget();
             const active = this._perTargetData.find(t => t.targetKey === this._selectedCurrentKey) ??
@@ -284,9 +325,37 @@ class NetworkTopology {
         this._lastData = data;
         this._emptyEl.style.display = 'none';
         this.canvas.style.display = '';
+
+        // Track generation for the history dropdown
+        const gen = data.generation;
+        if (!this._knownGenerations.includes(gen)) {
+            this._knownGenerations.push(gen);
+            if (this._knownGenerations.length === 1) {
+                this.genLabel.innerHTML = `<option value="latest">${this._i18n.generation} ${gen}</option>`;
+            } else {
+                const latestOpt = this.genLabel.querySelector('option[value="latest"]');
+                if (latestOpt) latestOpt.textContent = `${this._i18n.generation} ${gen}`;
+                const prevGen = this._knownGenerations[this._knownGenerations.length - 2];
+                const prevOpt = document.createElement('option');
+                prevOpt.value = String(prevGen);
+                prevOpt.textContent = `${this._i18n.generation} ${prevGen}`;
+                this.genLabel.insertBefore(prevOpt, latestOpt);
+            }
+        }
+
+        // Only re-render the canvas if user is watching live
+        if (this._selectedGen !== 'latest') return;
+
+        this._renderSnapshot(data);
+
+        if (this.modal.classList.contains('network-topology-modal--open') && this._selectedKey === 'current') {
+            this._openModal();
+        }
+    }
+
+    _renderSnapshot(data) {
         const W = this.container.clientWidth - 32;
         if (W <= 0) return;
-
         let renderSrc = data;
         if (data.perTarget && data.perTarget.length > 0) {
             this._perTargetData = data.perTarget;
@@ -299,12 +368,16 @@ class NetworkTopology {
             this._perTargetData = [];
             this._currentGroup.style.display = 'none';
         }
-
         const maxColHeight = this._maxColHeight(renderSrc.nodes);
         const spacing = Math.min(COL_SPACING, (PREVIEW_H - V_PAD * 2) / Math.max(maxColHeight, 1));
         const radius = Math.max(3, Math.min(NODE_RADIUS, spacing * 0.35));
         this._renderToCanvas(renderSrc, this.canvas, this.ctx, this.genLabel, W, spacing, radius, PREVIEW_H);
-        if (this.modal.classList.contains('network-topology-modal--open') && this._selectedKey === 'current') {
+    }
+
+    _renderHistorySnapshot(data) {
+        this._lastHistorySnapshot = data;
+        this._renderSnapshot(data);
+        if (this.modal.classList.contains('network-topology-modal--open')) {
             this._openModal();
         }
     }
@@ -344,10 +417,21 @@ class NetworkTopology {
         return Math.max(...[inputNodes, ...hiddenCols, outputNodes].map(c => c.length));
     }
 
+    _setGenLabelText(genLabel, text) {
+        if (genLabel.tagName === 'SELECT') {
+            if (this._selectedGen !== 'latest') return;
+            const latestOpt = genLabel.querySelector('option[value="latest"]');
+            if (latestOpt) latestOpt.textContent = text;
+            else if (genLabel.options.length > 0) genLabel.options[0].textContent = text;
+        } else {
+            genLabel.textContent = text;
+        }
+    }
+
     // fixedH is optional — if omitted the canvas grows to fit the content
     _renderToCanvas(data, canvas, ctx, genLabel, W, spacing, radius, fixedH) {
         const {generation, nodes, connections} = data;
-        genLabel.textContent = `${this._i18n.generation} ${generation}`;
+        this._setGenLabelText(genLabel, `${this._i18n.generation} ${generation}`);
 
         const inputNodes = nodes.filter(n => n.type === 0 || n.type === 1);
         const hiddenNodes = nodes.filter(n => n.type === 2);

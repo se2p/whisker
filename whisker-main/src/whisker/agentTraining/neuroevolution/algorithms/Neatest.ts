@@ -54,6 +54,7 @@ export class Neatest extends NEAT {
      * @returns Mapping of an objective's key to the network capable of reaching the given objective reliably.
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
+        this._initTopologyHistory();
         this.initialise();
         const totalNumObjectives = this._fitnessFunctions.size;
         while (this._archive.size != totalNumObjectives && !(await this._stoppingCondition.isFinished(this))) {
@@ -314,7 +315,10 @@ export class Neatest extends NEAT {
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
-        Container.vm.emit('NETWORK_TOPOLOGY', { generation: this._getTopologyGeneration(), nodes, connections });
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, nodes, connections};
+        this._topologyHistory.set(gen, snapshot);
+        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
 
     /**

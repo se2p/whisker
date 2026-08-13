@@ -50,6 +50,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<Map<number, NeatChromosome>> {
+        this._initTopologyHistory();
         const population = this.getPopulation();
         await population.generatePopulation();
         this._iterations = 0;
@@ -135,6 +136,27 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         return {...base, aF: ActivationFunction[n.activationFunction]};
     }
 
+    protected _topologyHistory: Map<number, object> = new Map();
+    private static _topologyHistoryListener: ((data: {generation: number}) => void) | null = null;
+
+    protected _initTopologyHistory(): void {
+        this._topologyHistory = new Map();
+        if (!Container.vm) return;
+        if (NEAT._topologyHistoryListener) {
+            Container.vm.removeListener('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
+        }
+        NEAT._topologyHistoryListener = (data: {generation: number}) => this._onRequestTopologyGen(data);
+        Container.vm.on('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
+    }
+
+    private _onRequestTopologyGen(data: {generation: number}): void {
+        if (!Container.vm) return;
+        const snapshot = this._topologyHistory.get(data.generation);
+        if (snapshot) {
+            Container.vm.emit('NETWORK_TOPOLOGY_HISTORY', snapshot);
+        }
+    }
+
     protected _emitNetworkTopology(): void {
         if (!Container.vm) return;
         // NEAT stores the overall best at _fitnessFunctions.size+1; Neatest only stores per-objective networks.
@@ -149,7 +171,10 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}));
-        Container.vm.emit('NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), nodes, connections});
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, nodes, connections};
+        this._topologyHistory.set(gen, snapshot);
+        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
 
     protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {

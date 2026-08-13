@@ -2343,6 +2343,10 @@ label {
     background: #e5e7eb;
     border-radius: 999px;
     padding: 2px 9px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    appearance: auto;
 }
 
 .network-topology-current-group {

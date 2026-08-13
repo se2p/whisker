@@ -416,13 +416,16 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 candidates[0])
             : this._archive.get(this._currentTarget);
         if (!best) return;
-        Container.vm.emit('NETWORK_TOPOLOGY', {
-            generation: this._getTopologyGeneration(),
+        const gen = this._getTopologyGeneration();
+        const snapshot = {
+            generation: gen,
             nodes: best.getAllNodes().map(n => this._serializeNode(n)),
             connections: best.connections.filter(c => c.isEnabled).map(c => ({
                 source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))
             }))
-        });
+        };
+        this._topologyHistory.set(gen, snapshot);
+        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
 
     override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
