@@ -227,11 +227,23 @@ p {
 
 /* ==== Header Structure ==== */
 
-#small-logo {
+#small-logo,
+.whisker-logo-img {
     position: static;
     width: auto;
     height: 36px;
     margin: 0;
+}
+
+.whisker-static-header {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.whisker-static-logo-link {
+    display: flex;
+    align-items: center;
 }
 
 .banner {

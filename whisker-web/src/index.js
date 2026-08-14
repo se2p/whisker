@@ -1543,14 +1543,14 @@ const loadHeader = function () {
         $('#tutorial').attr('href', 'tutorial.html');
         $('#contact').attr('href', 'contact.html');
         $('#about').attr('href', 'about.html');
-        $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
+        $('.whisker-logo-img').attr('src', '../assets/whisker-text-logo.png');
         $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
         $('#tutorial').attr('href', 'html/tutorial.html');
         $('#contact').attr('href', 'html/contact.html');
         $('#about').attr('href', 'html/about.html');
-        $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
+        $('.whisker-logo-img').attr('src', 'assets/whisker-text-logo.png');
         $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
     $('#tutorial').attr('target', '_blank');

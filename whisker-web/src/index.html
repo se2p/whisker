@@ -57,7 +57,9 @@
     <!-- NEW TOP BAR -->
     <header id="whisker-topbar">
         <div class="whisker-topbar-logo">
-            <img id="small-logo" src="assets/whisker-text-logo.png" alt="Whisker" />
+            <a href="https://www.fim.uni-passau.de/en/chair-for-software-engineering-ii">
+                <img id="small-logo" class="whisker-logo-img" src="assets/whisker-text-logo.png" alt="Whisker" />
+            </a>
         </div>
         <div class="whisker-topbar-center">
             <label class="whisker-upload-btn" for="fileselect-project">
@@ -1938,14 +1940,14 @@
             var isEditor = mode === 'editor';
             var isLearning = mode === 'learning';
 
-            if (configPanel)  configPanel.style.display  = isEditor ? 'none' : '';
+            if (configPanel) configPanel.style.display = isEditor ? 'none' : '';
             if (searchToggle) searchToggle.style.display = isEditor ? 'none' : '';
             if (editorToggle) editorToggle.style.display = isEditor ? '' : 'none';
             _setProjectColumns(isEditor ? 'col-lg-5' : 'col-lg-6', isEditor ? 'col-lg-7' : 'col-lg-6');
 
             if (isEditor) {
-                if (editorView)    editorView.style.display    = '';
-                if (resultsView)   resultsView.style.display   = 'none';
+                if (editorView) editorView.style.display = '';
+                if (resultsView) resultsView.style.display = 'none';
                 if (dashboardView) dashboardView.style.display = 'none';
                 document.querySelectorAll('#whisker-editor-toggle .whisker-view-btn').forEach(function (btn) {
                     btn.classList.remove('whisker-view-btn--active');
@@ -1956,8 +1958,8 @@
                 return;
             }
 
-            if (editorView)    editorView.style.display    = 'none';
-            if (resultsView)   resultsView.style.display   = '';
+            if (editorView) editorView.style.display = 'none';
+            if (resultsView) resultsView.style.display = '';
             if (dashboardView) dashboardView.style.display = 'none';
 
             document.querySelectorAll('#whisker-search-toggle .whisker-view-btn').forEach(function (btn) {
