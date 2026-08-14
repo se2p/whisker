@@ -210,7 +210,7 @@ class SpeciesPopulationChart {
         ctx.stroke();
 
         // X-axis labels
-        ctx.font = '10px sans-serif';
+        ctx.font = '12px sans-serif';
         ctx.fillStyle = '#9ca3af';
 
         const firstGen = this._history[0].generation;

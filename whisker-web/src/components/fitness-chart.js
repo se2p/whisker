@@ -161,7 +161,7 @@ class FitnessChart {
 
         // Grid lines + Y labels
         ctx.lineWidth = 1;
-        ctx.font = '10px sans-serif';
+        ctx.font = '12px sans-serif';
         ctx.textAlign = 'right';
         for (let v = yMin; v <= yMax + yStep * 0.01; v += yStep) {
             const y = chartY + chartH - ((v - yMin) / totalRange) * chartH;
@@ -234,7 +234,7 @@ class FitnessChart {
 
         // Legend
         if (hasAverage) {
-            ctx.font = '10px sans-serif';
+            ctx.font = '12px sans-serif';
             ctx.textAlign = 'left';
             ctx.strokeStyle = '#2563eb';
             ctx.lineWidth = 2;

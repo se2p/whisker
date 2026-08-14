@@ -76,6 +76,8 @@
     </header>
     <!-- NEW TAB BAR -->
     <nav id="whisker-tabbar">
+        <button class="whisker-tab" id="whisker-tab-editor" data-i18n="title-editor"
+            onclick="_switchWhiskerTab('contentProject', this)"> Test Editor </button>
         <button class="whisker-tab active" id="whisker-tab-search" data-i18n="tab-search"
             onclick="_switchWhiskerTab('contentProject', this)">
             Search-Based Testing
@@ -88,8 +90,6 @@
             onclick="_switchWhiskerTab('contentLogs', this)">
             Console-Log
         </button>
-        <button class="whisker-tab" id="whisker-tab-editor" data-i18n="title-editor"
-            onclick="_switchWhiskerTab('contentProject', this)"> Test Editor </button>
         <button class="whisker-tab" id="whisker-tab-model" data-i18n="title-model"
             onclick="_switchWhiskerTab('contentModelEditor', this)">
             Model Editor

@@ -87,7 +87,7 @@ class CoverageCurve {
         const chartW = W - H_PAD - 10;
         const chartH = CURVE_H;
 
-        ctx.font = '10px sans-serif';
+        ctx.font = '12px sans-serif';
         ctx.fillStyle = '#888';
 
         // Grid lines + Y labels
