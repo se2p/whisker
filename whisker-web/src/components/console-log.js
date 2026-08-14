@@ -67,7 +67,7 @@ class ConsoleLog {
             this.clear();
         });
 
-        card.querySelector('.console-log-header').addEventListener('click', () => this._toggleCollapse());
+        card.querySelector('.console-log-header').addEventListener('click', () => this._openModal());
         this._collapseBtn.addEventListener('click', e => {
             e.stopPropagation();
             this._toggleCollapse();

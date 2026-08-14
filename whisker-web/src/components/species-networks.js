@@ -321,12 +321,12 @@ class SpeciesNetworks {
             const isBest = bestSpeciesId !== null && sp.speciesId === bestSpeciesId;
             if (isBest) row.classList.add('species-networks-row--best');
             row.title = this._i18n.expand;
-            const nodeCount = isBest ? sp.nodes.length : null;
-            const connCount = isBest ? sp.connections.length : null;
+            const nodeCount = sp.nodes.length;
+            const connCount = sp.connections.length;
             row.innerHTML = `
                 <span class="species-networks-row-label">${this._i18n.species} ${sp.speciesId}</span>
                 <span class="species-networks-row-members">${sp.memberCount} ${this._i18n.members}</span>
-                ${isBest ? `<span class="species-networks-row-stats">Best network — ${nodeCount} nodes · ${connCount} connections</span>` : ''}
+                <span class="species-networks-row-stats">Best network — ${nodeCount} nodes · ${connCount} connections</span>
                 <span class="species-networks-expand-hint">⤢</span>`;
             row.addEventListener('click', () => this._openModal(sp, generationLabel));
             this._listEl.appendChild(row);

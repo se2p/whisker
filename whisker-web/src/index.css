@@ -2144,6 +2144,12 @@ label {
     overflow: hidden;
     margin-top: 12px;
     padding-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.fitness-chart-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .fitness-chart-header {
@@ -2250,6 +2256,12 @@ label {
     overflow: hidden;
     margin-top: 12px;
     padding-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.coverage-curve-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .coverage-curve-header {
@@ -2481,6 +2493,11 @@ label {
     width: 100%;
 }
 
+.chart-modal-canvas {
+    display: block;
+    width: 100%;
+}
+
 /* ── Species Networks Component ──────────────────────────────────────────── */
 .species-networks-card {
     background: #ffffff;
@@ -2561,9 +2578,13 @@ label {
 
 .species-networks-row-stats {
     font-size: 13px;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+.species-networks-row--best .species-networks-row-stats {
     color: #5b8dd9;
     opacity: 0.85;
-    white-space: nowrap;
 }
 
 .species-networks-row-label {

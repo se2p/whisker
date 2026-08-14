@@ -8,7 +8,8 @@ class CoverageCurve {
         this._i18n = {
             title: i18n.title || 'Coverage',
             generation: i18n.generation || 'Generation',
-            emptyMessage: i18n.emptyMessage || 'Start a search to see coverage over time'
+            emptyMessage: i18n.emptyMessage || 'Start a search to see coverage over time',
+            expand: i18n.expand || 'Click to expand'
         };
         this._data = [];
         this._buildUI(container);
@@ -21,6 +22,7 @@ class CoverageCurve {
         this._canvas.style.display = 'none';
         this._valueSEl.style.display = 'none';
         this._valueBEl.style.display = 'none';
+        this._closeModal();
     }
 
     startEmpty() {
@@ -36,11 +38,14 @@ class CoverageCurve {
         this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._card.title = this._i18n.expand;
+        if (this._modalTitle) this._modalTitle.textContent = this._i18n.title;
     }
 
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'coverage-curve-card';
+        card.title = this._i18n.expand;
         card.innerHTML = `
             <div class="coverage-curve-header">
                 <span class="coverage-curve-title"></span>
@@ -48,6 +53,7 @@ class CoverageCurve {
                     <span class="coverage-curve-value-s" style="display:none;"></span>
                     <span class="coverage-curve-value-b" style="display:none;"></span>
                 </span>
+                <span class="network-topology-expand-hint">⤢</span>
             </div>
             <div class="coverage-curve-empty"></div>
             <canvas class="coverage-curve-canvas" style="display:none;"></canvas>`;
@@ -63,6 +69,45 @@ class CoverageCurve {
 
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+
+        card.addEventListener('click', () => this._openModal());
+
+        this._modal = document.createElement('div');
+        this._modal.className = 'network-topology-modal';
+        this._modal.innerHTML = `
+            <div class="network-topology-modal-box">
+                <div class="network-topology-modal-header">
+                    <p class="network-topology-title"></p>
+                    <button class="network-topology-modal-close">✕</button>
+                </div>
+                <div class="network-topology-modal-body">
+                    <canvas class="chart-modal-canvas"></canvas>
+                </div>
+            </div>`;
+        document.body.appendChild(this._modal);
+        this._modalTitle = this._modal.querySelector('.network-topology-title');
+        this._modalTitle.textContent = this._i18n.title;
+        this._modalCanvas = this._modal.querySelector('.chart-modal-canvas');
+        this._modalCtx = this._modalCanvas.getContext('2d');
+
+        this._modal.addEventListener('click', e => {
+            if (e.target === this._modal) this._closeModal();
+        });
+        this._modal.querySelector('.network-topology-modal-close').addEventListener('click', () => this._closeModal());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') this._closeModal();
+        });
+    }
+
+    _openModal() {
+        if (!this._data.length) return;
+        this._modal.classList.add('network-topology-modal--open');
+        const w = this._modalCanvas.parentElement.clientWidth - 32;
+        this._renderToCanvas(this._modalCanvas, this._modalCtx, w);
+    }
+
+    _closeModal() {
+        this._modal.classList.remove('network-topology-modal--open');
     }
 
     _update(data) {
@@ -70,14 +115,19 @@ class CoverageCurve {
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
+        if (this._modal.classList.contains('network-topology-modal--open')) {
+            const w = this._modalCanvas.parentElement.clientWidth - 32;
+            this._renderToCanvas(this._modalCanvas, this._modalCtx, w);
+        }
     }
 
     _redraw() {
-        const canvas = this._canvas;
-        const ctx = this._ctx;
         const W = this._card.clientWidth - 2; // card border
         if (W <= 0) return;
+        this._renderToCanvas(this._canvas, this._ctx, W);
+    }
 
+    _renderToCanvas(canvas, ctx, W) {
         canvas.width = W;
         canvas.height = CURVE_H + V_PAD + X_LABEL_H + 4;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -164,8 +214,8 @@ class CoverageCurve {
         const last = this._data[this._data.length - 1];
         this._valueSEl.style.display = '';
         this._valueBEl.style.display = '';
-        this._valueSEl.textContent = `S: ${(last.statementCoverage * 100).toFixed(1)}%`;
-        this._valueBEl.textContent = `B: ${(last.branchCoverage * 100).toFixed(1)}%`;
+        this._valueSEl.textContent = `Statement: ${(last.statementCoverage * 100).toFixed(1)}%`;
+        this._valueBEl.textContent = `Branch: ${(last.branchCoverage * 100).toFixed(1)}%`;
     }
 }
 
