@@ -139,14 +139,25 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected _topologyHistory: Map<number, object> = new Map();
     private static _topologyHistoryListener: ((data: {generation: number}) => void) | null = null;
 
+    protected _speciesTopologyHistory: Map<number, object> = new Map();
+    private static _speciesTopologyHistoryListener: ((data: {generation: number}) => void) | null = null;
+
     protected _initTopologyHistory(): void {
         this._topologyHistory = new Map();
+        this._speciesTopologyHistory = new Map();
         if (!Container.vm) return;
+
         if (NEAT._topologyHistoryListener) {
             Container.vm.removeListener('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
         }
         NEAT._topologyHistoryListener = (data: {generation: number}) => this._onRequestTopologyGen(data);
         Container.vm.on('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
+
+        if (NEAT._speciesTopologyHistoryListener) {
+            Container.vm.removeListener('REQUEST_SPECIES_TOPOLOGY_GEN', NEAT._speciesTopologyHistoryListener);
+        }
+        NEAT._speciesTopologyHistoryListener = (data: {generation: number}) => this._onRequestSpeciesTopologyGen(data);
+        Container.vm.on('REQUEST_SPECIES_TOPOLOGY_GEN', NEAT._speciesTopologyHistoryListener);
     }
 
     private _onRequestTopologyGen(data: {generation: number}): void {
@@ -154,6 +165,14 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         const snapshot = this._topologyHistory.get(data.generation);
         if (snapshot) {
             Container.vm.emit('NETWORK_TOPOLOGY_HISTORY', snapshot);
+        }
+    }
+
+    private _onRequestSpeciesTopologyGen(data: {generation: number}): void {
+        if (!Container.vm) return;
+        const snapshot = this._speciesTopologyHistory.get(data.generation);
+        if (snapshot) {
+            Container.vm.emit('SPECIES_NETWORK_TOPOLOGY_HISTORY', snapshot);
         }
     }
 
@@ -291,7 +310,10 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             })
             .filter(s => s !== null);
         if (species.length === 0) return;
-        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', {generation: this._getTopologyGeneration(), species, bestSpeciesId});
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, species, bestSpeciesId};
+        this._speciesTopologyHistory.set(gen, snapshot);
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
     }
 
     getStartTime(): number {

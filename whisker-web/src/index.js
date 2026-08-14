@@ -1040,7 +1040,9 @@ const initComponents = function () {
         bestNetwork: i18next.t('species-networks-best-network'),
         expand: i18next.t('species-networks-expand'),
         emptyMessage: i18next.t('species-networks-empty'),
-        currentTarget: i18next.t('species-networks-current-target')
+        currentTarget: i18next.t('species-networks-current-target'),
+        frontierTargets: i18next.t('species-networks-frontier-targets'),
+        previousTargets: i18next.t('species-networks-previous-targets')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('coverage-curve-title'),
@@ -1465,7 +1467,9 @@ const _updateLang = () => {
             bestNetwork: i18next.t('species-networks-best-network'),
             expand: i18next.t('species-networks-expand'),
             emptyMessage: i18next.t('species-networks-empty'),
-            currentTarget: i18next.t('species-networks-current-target')
+            currentTarget: i18next.t('species-networks-current-target'),
+            frontierTargets: i18next.t('species-networks-frontier-targets'),
+            previousTargets: i18next.t('species-networks-previous-targets')
         });
     }
     if (Whisker.coverageCurve) {

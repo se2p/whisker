@@ -1,17 +1,17 @@
-import {Neatest} from "./Neatest";
-import {NetworkChromosome} from "../networks/NetworkChromosome";
-import {ManyObjectiveNetworkFitnessFunction} from "../networkFitness/ManyObjectiveNetworkFitnessFunction";
-import {Randomness} from "../../../utils/Randomness";
-import {DiversityMetric, ManyObjectiveNeatestParameter} from "../hyperparameter/ManyObjectiveNeatestParameter";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
-import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperties";
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
+import { Neatest } from "./Neatest";
+import { NetworkChromosome } from "../networks/NetworkChromosome";
+import { ManyObjectiveNetworkFitnessFunction } from "../networkFitness/ManyObjectiveNetworkFitnessFunction";
+import { Randomness } from "../../../utils/Randomness";
+import { DiversityMetric, ManyObjectiveNeatestParameter } from "../hyperparameter/ManyObjectiveNeatestParameter";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
+import { SearchAlgorithmProperties } from "../../../search/SearchAlgorithmProperties";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { NeatPopulation } from "../neuroevolutionPopulations/NeatPopulation";
 import logger from "../../../../util/logger";
-import {FitnessFunction} from "../../../search/FitnessFunction";
-import {TestCase} from "../../../core/TestCase";
-import {Container} from "../../../utils/Container";
+import { FitnessFunction } from "../../../search/FitnessFunction";
+import { TestCase } from "../../../core/TestCase";
+import { Container } from "../../../utils/Container";
 
 
 /**
@@ -81,7 +81,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      * a negative value if the second chromosome is better, and 0 if they are equal.
      */
     protected async compareChromosomes(chromosome1: NeatChromosome, chromosome2: NeatChromosome,
-                                       objective: FitnessFunction<TestCase>): Promise<number> {
+        objective: FitnessFunction<TestCase>): Promise<number> {
         const fitnessKey = this.mapObjectiveToKey(objective as StatementFitnessFunction);
         const fitness1 = await chromosome1.getFitness(objective, fitnessKey);
         const fitness2 = await chromosome2.getFitness(objective, fitnessKey);
@@ -269,16 +269,70 @@ export abstract class ManyObjectiveNeatest extends Neatest {
                     nodes: best.getAllNodes().map(n => this._serializeNode(n)),
                     connections: best.connections
                         .filter(c => c.isEnabled)
-                        .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
                 };
             })
             .filter(Boolean);
 
         if (perTarget.length === 0) return;
         const gen = this._getTopologyGeneration();
-        const snapshot = {generation: gen, perTarget, nodes: perTarget[0].nodes, connections: perTarget[0].connections};
+        const snapshot = { generation: gen, perTarget, nodes: perTarget[0].nodes, connections: perTarget[0].connections };
         this._topologyHistory.set(gen, snapshot);
         Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
+    }
+
+    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
+        if (!Container.vm || population.networks.length === 0) return;
+
+        const champion = population.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, population.networks[0]);
+        let globalBestSpeciesId: number | null = null;
+        const globalSpecies = population.species.map(s => {
+            const best = s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]);
+            if (!best) return null;
+            if (s.networks.includes(champion)) globalBestSpeciesId = s.uID;
+            return {
+                speciesId: s.uID,
+                memberCount: s.networks.length,
+                averageFitness: Number(s.averageFitness.toFixed(4)),
+                nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                connections: best.connections.filter(c => c.isEnabled)
+                    .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
+            };
+        }).filter(Boolean);
+
+        if (globalSpecies.length === 0) return;
+
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        const perTarget = activeTargets.map(key => {
+            let bestSpeciesId: number | null = null;
+            let bestScore = -1;
+            const perTargetSpecies = population.species.map(s => {
+                if (s.networks.length === 0) return null;
+                const best = s.networks.reduce((a, b) =>
+                    (b.coverageObjectives.get(key) ?? 0) > (a.coverageObjectives.get(key) ?? 0) ? b : a,
+                    s.networks[0]
+                );
+                const score = best.coverageObjectives.get(key) ?? 0;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestSpeciesId = s.uID;
+                }
+                return {
+                    speciesId: s.uID,
+                    memberCount: s.networks.length,
+                    averageFitness: Number(s.averageFitness.toFixed(4)),
+                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                    connections: best.connections.filter(c => c.isEnabled)
+                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
+                };
+            }).filter(Boolean);
+            return { targetKey: key, species: perTargetSpecies, bestSpeciesId };
+        });
+
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, species: globalSpecies, bestSpeciesId: globalBestSpeciesId, perTarget};
+        this._speciesTopologyHistory.set(gen, snapshot);
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
     }
 
     protected iterationSummary(): void {
@@ -297,8 +351,18 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         }
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
-        this._emitSpeciesTopologies(this._population);
         this._emitNetworkTopology();
+    }
+
+    /**
+     * Some many-objective algorithms (e.g. MIO) change their focused target well within a single "generation"
+     * boundary, so batching the species-topology emission with the rest of iterationSummary() would show a stale
+     * target's species until the next generation. updateBestIndividualAndStatistics() already runs every round
+     * (it's what keeps _emitNetworkTopology() live), so piggyback species topology on the same cadence.
+     */
+    protected override updateBestIndividualAndStatistics(): void {
+        super.updateBestIndividualAndStatistics();
+        this._emitSpeciesTopologies(this._population);
     }
 
     protected override _getTopologyGeneration(): number {

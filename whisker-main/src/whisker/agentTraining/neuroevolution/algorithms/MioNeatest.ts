@@ -428,6 +428,40 @@ export class MioNeatest extends ManyObjectiveNeatest {
         Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
 
+    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
+        if (!Container.vm || population.networks.length === 0 || this._currentTarget === undefined) return;
+
+        let bestSpeciesId: number | null = null;
+        let bestScore = -1;
+        const species = population.species.map(s => {
+            if (s.networks.length === 0) return null;
+            const best = s.networks.reduce((a, b) =>
+                (b.coverageObjectives.get(this._currentTarget) ?? 0) > (a.coverageObjectives.get(this._currentTarget) ?? 0) ? b : a,
+                s.networks[0]
+            );
+            const score = best.coverageObjectives.get(this._currentTarget) ?? 0;
+            if (score > bestScore) {
+                bestScore = score;
+                bestSpeciesId = s.uID;
+            }
+            return {
+                speciesId: s.uID,
+                memberCount: s.networks.length,
+                averageFitness: Number(s.averageFitness.toFixed(4)),
+                nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                connections: best.connections.filter(c => c.isEnabled)
+                    .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+            };
+        }).filter(Boolean);
+
+        if (species.length === 0) return;
+
+        const gen = this._getTopologyGeneration();
+        const snapshot = {generation: gen, species, bestSpeciesId};
+        this._speciesTopologyHistory.set(gen, snapshot);
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
+    }
+
     override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         super.setProperties(properties);
         this._mutationOperator = this._neuroevolutionProperties.mutationOperator;

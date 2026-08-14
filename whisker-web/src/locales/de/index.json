@@ -229,6 +229,8 @@
     "species-networks-expand": "Zum Vergrößern klicken",
     "species-networks-empty": "Starte einen NEAT-Algorithmus, um die Netzwerke pro Spezies zu sehen",
     "species-networks-current-target": "Aktuell",
+    "species-networks-frontier-targets": "Aktuelle Ziele",
+    "species-networks-previous-targets": "Vorherige Ziele",
     "fitness-chart-title": "Fitness über Zeit",
     "fitness-chart-best": "Bestes",
     "fitness-chart-average": "Durchschnitt",
