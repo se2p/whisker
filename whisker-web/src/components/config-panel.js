@@ -81,12 +81,6 @@ class ConfigPanel {
         return value !== void 0 && value !== null;
     }
 
-    _setInputValue(id, value) {
-        if (!this._isDefined(value)) return;
-        const input = document.getElementById(id);
-        if (input) input.value = value;
-    }
-
     _initEventListeners() {
         const el = this.el;
 

@@ -24,9 +24,19 @@ class FileSelect {
                 filenames[i] = this.files[i].name;
             }
             const label = filenames.join(', ');
-            $(this.fileselect)
-                .siblings('label')
-                .html(label);
+            const $label = $(this.fileselect).siblings('label');
+
+            /* If the label marks a dedicated slot for the filename, only fill that slot, so that
+             * surrounding markup such as an icon survives. Dropping data-i18n keeps a later
+             * language switch from translating the filename away again. Labels without such a
+             * slot keep the previous behaviour of replacing their whole content. */
+            const $filenameSlot = $label.find('[data-filename]');
+            if ($filenameSlot.length) {
+                $filenameSlot.removeAttr('data-i18n')
+                    .text(label);
+            } else {
+                $label.html(label);
+            }
 
             onLoad(this);
         });

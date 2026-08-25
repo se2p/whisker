@@ -38,8 +38,6 @@ const snippetsDE = require('./locales/de/snippets.json');
 const snippetsEN = require('./locales/en/snippets.json');
 const tutorialDE = require('./locales/de/tutorial.json');
 const tutorialEN = require('./locales/en/tutorial.json');
-const contactDE = require('./locales/de/contact.json');
-const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
@@ -1125,24 +1123,10 @@ const _addFileListeners = function () {
         const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
-    $('#fileselect-project').on('change', event => {
-        const fileName = Whisker.projectFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
+    $('#fileselect-project').on('change', () => {
         if (document.querySelector('#container').stateActionRecorder) {
             Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
         }
-    });
-    $('#fileselect-tests').on('change', event => {
-        const fileName = Whisker.testFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-models').on('change', event => {
         const fileName = Whisker.modelFileSelect.getName();
@@ -1541,14 +1525,12 @@ const loadHeader = function () {
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
         $('#tutorial').attr('href', 'tutorial.html');
-        $('#contact').attr('href', 'contact.html');
         $('#about').attr('href', 'about.html');
         $('.whisker-logo-img').attr('src', '../assets/whisker-text-logo.png');
         $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
         $('#tutorial').attr('href', 'html/tutorial.html');
-        $('#contact').attr('href', 'html/contact.html');
         $('#about').attr('href', 'html/about.html');
         $('.whisker-logo-img').attr('src', 'assets/whisker-text-logo.png');
         $('#banner').attr('src', 'assets/whiskerHeader.png');
@@ -1617,7 +1599,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'about', 'snippets', 'tutorial', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
+        ns: ['index', 'about', 'snippets', 'tutorial', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -1628,7 +1610,6 @@ i18next
                 about: aboutDE,
                 snippets: snippetsDE,
                 tutorial: tutorialDE,
-                contact: contactDE,
                 imprint: imprintDE,
                 privacy: privacyDE,
                 footer: footerDE,
@@ -1640,7 +1621,6 @@ i18next
                 about: aboutEN,
                 snippets: snippetsEN,
                 tutorial: tutorialEN,
-                contact: contactEN,
                 imprint: imprintEN,
                 privacy: privacyEN,
                 footer: footerEN,
@@ -1671,15 +1651,6 @@ $(document).on('click', '.lang-btn', event => {
 });
 
 const _updateFilenameLabels = () => {
-    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
-        $('#project-label').html(Whisker.projectFileSelect.getName());
-    }
-    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
-        $('#tests-label').html(Whisker.testFileSelect.getName());
-    }
-    // if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
-    //     $('#config-label').html(Whisker.configFileSelect.getName());
-    // }
     if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }

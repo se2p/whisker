@@ -31,26 +31,6 @@
     <!-- Holds additional data such as the selected mutation operators -->
     <div id="container"></div>
 
-    <!-- Main functionality buttons -->
-    <div id="main-functionality">
-        <!--
-        <div class="help-tooltip" style="text-align:center;">
-            <a href="#controls-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help" /></a>
-            <span class="help-text" data-i18n="controls-tooltip"></span>
-        </div>
-        <div style="display:none">
-            <div id="controls-tooltip">
-                <ol>
-                    <li data-i18n="controls-helptext01"></li>
-                    <li data-i18n="controls-helptext02"></li>
-                    <li data-i18n="controls-helptext03"></li>
-                    <li data-i18n="controls-helptext04"></li>
-                </ol>
-            </div>
-        </div>
-        -->
-    </div>
-
     <!-- Header (preserved for JS) -->
     <div id="header" role="navigation" style="display:none;"></div>
 
@@ -62,20 +42,47 @@
             </a>
         </div>
         <div class="whisker-topbar-center">
-            <label class="whisker-upload-btn" for="fileselect-project">
-                <i class="fas fa-upload"></i>
-                <span data-i18n="topbar-upload-project">Upload .sb3 Project</span>
-            </label>
-            <label class="whisker-upload-btn" for="fileselect-tests">
-                <i class="fas fa-upload"></i>
-                <span data-i18n="topbar-upload-tests">Upload Tests</span>
-            </label>
+            <div class="whisker-topbar-upload">
+                <input type="file" class="vm-related" id="fileselect-project" accept=".sb3" name="program-file"
+                    title="" />
+                <label class="whisker-upload-btn" for="fileselect-project">
+                    <i class="fas fa-upload"></i>
+                    <span data-filename data-i18n="topbar-upload-project">Upload .sb3 Project</span>
+                </label>
+            </div>
+            <div class="whisker-topbar-upload">
+                <input type="file" class="vm-related" id="fileselect-tests" accept=".js, .json, .sb3" name="test-file"
+                    title="" />
+                <label class="whisker-upload-btn" for="fileselect-tests">
+                    <i class="fas fa-upload"></i>
+                    <span data-filename data-i18n="topbar-upload-tests">Upload Tests</span>
+                </label>
+            </div>
         </div>
         <div class="whisker-topbar-right">
             <button class="lang-btn" data-lng="de" title="Deutsch">DE</button>
             <button class="lang-btn" data-lng="en" title="English">EN</button>
         </div>
     </header>
+
+    <!-- Fancybox popups triggered programmatically from index.js when a project/test .sb3 is loaded -->
+    <div style="display:none">
+        <a id="project-contains-bbts-tooltip-link" href="#project-contains-bbts-tooltip" class="inlinebox"></a>
+    </div>
+    <div style="display:none">
+        <div id="project-contains-bbts-tooltip">
+            <p data-i18n="project-contains-bbts"></p>
+        </div>
+    </div>
+    <div style="display:none">
+        <a id="no-bbts-tooltip-link" href="#no-bbts-tooltip" class="inlinebox"></a>
+    </div>
+    <div style="display:none">
+        <div id="no-bbts-tooltip">
+            <p data-i18n="test-no-bbts-in-sb3"></p>
+        </div>
+    </div>
+
     <!-- NEW TAB BAR -->
     <nav id="whisker-tabbar">
         <button class="whisker-tab" id="whisker-tab-editor" data-i18n="title-editor"
@@ -102,11 +109,6 @@
     <div style="position:fixed; opacity:0; top:-200px; left:0; z-index:-1;">
         <ul class="nav nav-tabs" id="whiskerTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tabUpload" data-bs-toggle="tab" data-bs-target="#contentUpload"
-                    type="button" role="tab" aria-controls="contentUpload" aria-selected="false"
-                    data-i18n="title-uploads"></button>
-            </li>
-            <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="tabProject" data-bs-toggle="tab" data-bs-target="#contentProject"
                     type="button" role="tab" aria-controls="contentProject" aria-selected="true"
                     data-i18n="title-project"></button>
@@ -114,11 +116,6 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabLogs" data-bs-toggle="tab" data-bs-target="#contentLogs" type="button"
                     role="tab" aria-controls="contentLogs" aria-selected="false" data-i18n="title-console"></button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tabTestEditor" data-bs-toggle="tab" data-bs-target="#contentTestEditor"
-                    type="button" role="tab" aria-controls="contentTestEditor" onclick="_manipulateTestEditor()"
-                    aria-selected="false" data-i18n="title-editor"></button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabModelEditor" data-bs-toggle="tab" data-bs-target="#contentModelEditor"
@@ -129,151 +126,8 @@
     </div>
 
     <div class="tab-content container-fluid" id="whiskerTabContent">
-        <div class="tab-pane tabBorder fade" id="contentUpload" role="tabpanel" aria-labelledby="home-tab">
-            <div class="row">
-                <div class="col-lg-12">
-                    <form>
-                        <div class="row">
-
-                            <!-- Sb3 upload -->
-                            <div class="col-lg-6">
-                                <div id="file-upload" class="row form">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10 label-padding">
-                                                <b><label id="fileselect-project-label" for="fileselect-project"
-                                                        data-i18n="program"></label></b>
-                                                <div class="help-tooltip">
-                                                    <a href="#upload-tooltip" class="help-icon inlinebox"><img
-                                                            src="assets/help.png" alt="help" /></a>
-                                                    <span class="help-text" data-i18n="upload-tooltip"></span>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <div id="upload-tooltip">
-                                                        <ol>
-                                                            <li data-i18n="upload-helptext01"></li>
-                                                            <li data-i18n="upload-helptext02"></li>
-                                                            <li data-i18n="upload-helptext03"></li>
-                                                        </ol>
-                                                        <a href='https://scratch.mit.edu' target='_blank'>Scratch
-                                                            Web-GUI</a>
-                                                        <div
-                                                            style="text-align:center; padding-left: 30px; display:inline-block;">
-                                                            <img src='assets/upload01.png' />
-                                                            <img src='assets/upload02.png' style="padding-left:30px;" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <a id="project-contains-bbts-tooltip-link"
-                                                        href="#project-contains-bbts-tooltip" class="inlinebox"></a>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <div id="project-contains-bbts-tooltip">
-                                                        <p data-i18n="project-contains-bbts"></p>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img class="img" src="assets/sb3.png" alt="sb3" />
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                    <input type="file" class="vm-related" id="fileselect-project"
-                                                        accept=".sb3" name="program-file" title="" />
-                                                    <label id="project-label" class="filename-label"
-                                                        for="fileselect-project" data-i18n="no-file"
-                                                        data-toggle="tooltip" data-placement="top"></label>
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="help-text2a" class="form-text text-muted"
-                                                        data-i18n="choose-file"></small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Test upload -->
-                            <div class="col-lg-6">
-                                <div id="test-upload" class="row form">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10 label-padding">
-                                                <b><label id="fileselect-tests-label" for="fileselect-tests"
-                                                        data-i18n="test" data-animation="false"></label></b>
-                                                <div class="help-tooltip">
-                                                    <a href="#test-tooltip" class="help-icon inlinebox"><img
-                                                            src="assets/help.png" alt="help" /></a>
-                                                    <span class="help-text" data-i18n="test-tooltip"></span>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <div id="test-tooltip">
-                                                        <ol>
-                                                            <li data-i18n="test-helptext01"></li>
-                                                            <li data-i18n="test-helptext02"></li>
-                                                            <li data-i18n="test-helptext03"></li>
-                                                        </ol>
-                                                        <div
-                                                            style="text-align:center; padding-left: 30px; display:inline-block;">
-                                                            <img src='assets/test01.png' />
-                                                            <img src='assets/test02.png' style="padding-left:30px;" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <a id="no-bbts-tooltip-link" href="#no-bbts-tooltip"
-                                                        class="inlinebox"></a>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <div id="no-bbts-tooltip">
-                                                        <p data-i18n="test-no-bbts-in-sb3"></p>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img class="img" src="assets/js.png" alt="js" />
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                    <input type="file" class="vm-related" id="fileselect-tests"
-                                                        accept=".js, .json, .sb3" name="test-file" title="" />
-                                                    <label id="tests-label" class="filename-label"
-                                                        for="fileselect-tests" data-i18n="no-file"
-                                                        data-animation="false"></label>
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="help-text2b" class="form-text text-muted"
-                                                        data-i18n="choose-file"></small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
         <div class="tab-pane tabBorder fade show active" id="contentProject" role="tabpanel"
-            aria-labelledby="contact-tab">
+            aria-labelledby="tabProject">
             <div class="whisker-workspace-split">
                 <!-- Left: Config Panel (30%) -->
                 <div class="whisker-config-panel" id="whisker-config-panel">
@@ -1448,7 +1302,7 @@
                 </div>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel" aria-labelledby="tabLogs">
             <!-- TAP13 output -->
             <div id="output-run" class="mt-4 spacer50">
                 <b><label id="tap-header" data-i18n="header:tap"></label></b>
@@ -1519,9 +1373,7 @@
                 </form>
             </div>
         </div>
-        <!-- <div class="tab-pane tabBorder fade" id="contentTestEditor" role="tabpanel" aria-labelledby="contact-tab">
-        </div> -->
-        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="contact-tab">
+        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="tabModelEditor">
             <!-- Model editor -->
             <div id="model-editor" class="mt-4 spacer10">
                 <h3 data-i18n="modelEditor:title"></h3>
@@ -1997,7 +1849,6 @@
             var legacyTabMap = {
                 'contentProject': 'tabProject',
                 'contentLogs': 'tabLogs',
-                'contentTestEditor': 'tabTestEditor',
                 'contentModelEditor': 'tabModelEditor'
             };
             var legacyId = legacyTabMap[targetContentId];

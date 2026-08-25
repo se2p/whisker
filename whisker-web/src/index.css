@@ -767,14 +767,6 @@ pre.prettyprint {
     background-color: #5e5e5e
 }
 
-.resp-sharing-button--whatsapp {
-    background-color: #25D366
-}
-
-.resp-sharing-button--whatsapp:hover {
-    background-color: #1da851
-}
-
 .resp-sharing-button--facebook {
     background-color: #3b5998;
     border-color: #3b5998;
@@ -806,17 +798,6 @@ pre.prettyprint {
 .resp-sharing-button--email:active {
     background-color: #5e5e5e;
     border-color: #5e5e5e;
-}
-
-.resp-sharing-button--whatsapp {
-    background-color: #25D366;
-    border-color: #25D366;
-}
-
-.resp-sharing-button--whatsapp:hover,
-.resp-sharing-button--whatsapp:active {
-    background-color: #1DA851;
-    border-color: #1DA851;
 }
 
 /* ===== Components ===== */
@@ -1835,30 +1816,20 @@ label {
     margin: 0;
 }
 
-.whisker-logo-icon {
-    width: 32px;
-    height: 32px;
-    background-color: #2563eb;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.whisker-logo-text {
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
-}
-
 .whisker-topbar-center {
     flex: 1;
     display: flex;
     justify-content: center;
     gap: 12px;
+}
+
+/* One wrapper per input so FileSelect's siblings('label') lookup resolves to a single label. */
+.whisker-topbar-upload {
+    display: inline-flex;
+}
+
+#whisker-topbar input[type="file"] {
+    display: none;
 }
 
 .whisker-upload-btn {
@@ -1879,6 +1850,13 @@ label {
 
 .whisker-upload-btn:hover {
     background-color: #e5e7eb;
+}
+
+.whisker-upload-btn span {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .whisker-topbar-right {
@@ -1990,9 +1968,7 @@ label {
 
 /* ===== NEW SHELL: Testing Workspace Split ===== */
 
-#contentUpload,
 #contentLogs,
-#contentTestEditor,
 #contentModelEditor {
     max-width: 1140px;
     margin-left: auto;
