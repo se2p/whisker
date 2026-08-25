@@ -1,24 +1,6 @@
-const fileUrl = require('file-url');
-const path = require('path');
-const fs = require('fs');
-
-// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = 'dist/index.html';
+const {loadProject, openWhiskerPage} = require('../utils/whisker-gui');
 
 const timeout = 50000;
-const ACCELERATION = Infinity;
-
-async function loadProject(scratchPath) {
-    const projectSelection = await page.$('#fileselect-project');
-    await projectSelection.uploadFile(scratchPath);
-    const projectTab = await page.$('#tabProject');
-    await projectTab.evaluate(t => t.click());
-    const toggleExtendedView = await page.$('#extendedView');
-    await toggleExtendedView.evaluate(t => t.click());
-    await page.evaluate(factor => {
-        document.querySelector('#acceleration-value').innerText = factor;
-    }, ACCELERATION);
-}
 
 async function getUncoveredBlocks() {
     const output = await page.$('#output-log .output-content');
@@ -54,23 +36,7 @@ async function getCoverage() {
 }
 
 beforeEach(async () => {
-    // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
-    // Since this is a purely visual feature and does not harm the test execution in any way,
-    // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
-    if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath);
-    }
-
-    await jestPuppeteer.resetBrowser();
-    page = await browser.newPage();
-    page.on('error', msg => console.error(msg.text()))
-        .on('pageerror', async err => {
-            console.error(err.message);
-            await page.close(); // Not very graceful, but immediately shuts the test down. There must be a nicer way?
-            return Promise.reject(err);
-        });
-    await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
+    await openWhiskerPage();
 });
 
 describe('Algorithms', () => {

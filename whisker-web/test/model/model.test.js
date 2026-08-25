@@ -1,21 +1,7 @@
-const fileUrl = require('file-url');
-const path = require('path');
-const fs = require('fs');
+const {openWhiskerPage, setAcceleration, uploadFile} = require('../utils/whisker-gui');
 
-// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = 'dist/index.html';
-
-const ACCELERATION = Infinity;
-
-async function uploadFile(selector, filePath) {
-    const exists = fs.existsSync(filePath);
-    if (!exists) {
-        console.log(`The file ${filePath} does not exist!`);
-        expect(exists).toBe(true);
-    }
-    await (await page.$(selector)).uploadFile(filePath);
-}
-
+// Unlike the other suites, model tests either upload a test file or fall back to a fixed model
+// duration, so they compose the GUI helpers themselves instead of using the shared loadProject.
 async function loadProject(scratchPath, modelPath, userModelOrTest) {
     await uploadFile('#fileselect-project', scratchPath);
     if (modelPath) {
@@ -28,11 +14,7 @@ async function loadProject(scratchPath, modelPath, userModelOrTest) {
     } else {
         await uploadFile('#fileselect-tests', userModelOrTest);
     }
-    const projectTab = await page.$('#tabProject');
-    await projectTab.evaluate(t => t.click());
-    await page.evaluate(factor => {
-        document.querySelector('#acceleration-value').innerText = factor;
-    }, ACCELERATION);
+    await setAcceleration();
 }
 
 async function readModelErrors() {
@@ -42,7 +24,6 @@ async function readModelErrors() {
         "expected": "number",
         "received": "string",
         "path": [`;
-
 
     const coverageOutput = await page.$('#output-run .output-content');
     while (true) {
@@ -78,17 +59,7 @@ async function readModelErrors() {
 }
 
 beforeEach(async () => {
-    // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
-    // Since this is a purely visual feature and does not harm the test execution in any way,
-    // we simply remove the file when calling the servant.
-    const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
-    if (fs.existsSync(prettifyPath)) {
-        fs.unlinkSync(prettifyPath);
-    }
-
-    await jestPuppeteer.resetBrowser();
-    page = await browser.newPage();
-    await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
+    await openWhiskerPage({catchPageErrors: false});
 });
 
 async function testProgram(errors, fails, coverage) {

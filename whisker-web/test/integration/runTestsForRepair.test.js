@@ -1,24 +1,5 @@
-const fileUrl = require('file-url');
-const path = require('path');
-const fs = require('fs');
 const {getLineNumber} = require('whisker-main/src/util/get-line-number');
-
-// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
-const URL = 'dist/index.html';
-
-const ACCELERATION = Infinity;
-
-async function loadProjectAndTests(scratchPath, testPath) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#fileselect-tests')).uploadFile(testPath);
-    const projectTab = await page.$('#tabProject');
-    await projectTab.evaluate(t => t.click());
-    const toggleExtendedView = await page.$('#extendedView');
-    await toggleExtendedView.evaluate(t => t.click());
-    await page.evaluate(factor => {
-        document.querySelector('#acceleration-value').innerText = factor;
-    }, ACCELERATION);
-}
+const {loadProject, openWhiskerPage} = require('../utils/whisker-gui');
 
 const expected = {
     testa: {
@@ -451,19 +432,9 @@ describe.each(Object.entries(expected))('Test execution traces', (name, trace) =
     let traces = null;
 
     beforeAll(async () => {
-        // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
-        // Since this is a purely visual feature and does not harm the test execution in any way,
-        // we simply remove the file when calling the servant.
-        const prettifyPath = path.resolve(__dirname, '../../dist/includes/prettify.js');
-        if (fs.existsSync(prettifyPath)) {
-            fs.unlinkSync(prettifyPath);
-        }
+        await openWhiskerPage({catchPageErrors: false});
 
-        await jestPuppeteer.resetBrowser();
-        page = await browser.newPage();
-        await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-
-        await loadProjectAndTests('test/fixtures/project.json', 'test/fixtures/tests.js');
+        await loadProject('test/fixtures/project.json', {tests: 'test/fixtures/tests.js'});
         const result = (await page.evaluate(() => window.Whisker.runTestsForRepair()));
 
         // Comparing the entire stack trace is infeasible, because line numbers change when the source code is changed,

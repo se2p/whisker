@@ -11,41 +11,7 @@ const {scratchPath} = require("./cli").opts;
  * @typedef {import("puppeteer").Page} Page
  */
 
-/**
- * Switches to the project tab, which is necessary to start the test run. Additionally, to click on the start test
- * generation button for test generation runs, we have to toggle the extended view.
- * @param {Page} page
- * @param {boolean} toggleExtendedView
- * @returns {Promise<void>}
- */
-async function switchToProjectTab(page, toggleExtendedView) {
-    const projectTab = await page.$('#tabProject');
-    await projectTab.evaluate(t => t.click());
-    if (toggleExtendedView) {
-        const toggleExtendedView = await page.$('#extendedView');
-        await toggleExtendedView.evaluate(t => t.click());
-    }
-}
 
-/**
- * Switches to the upload tab, which is necessary to upload Scratch .sb3 files and test generation configs.
- * @param {Page} page
- * @returns {Promise<void>}
- */
-async function switchToUploadTab(page) {
-    const projectTab = await page.$('#tabUpload');
-    await projectTab.evaluate(t => t.click());
-}
-
-/**
- * Toggles the extended view element.
- * @param {Page} page
- * @returns {Promise<void>}
- */
-async function toggleExtendedView(page) {
-    const toggleExtendedView = await page.$('#extendedView');
-    await toggleExtendedView.evaluate(t => t.click());
-}
 
 /**
  * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
@@ -118,9 +84,6 @@ function recordLineNumbersOfAssertions(code) {
 }
 
 module.exports = {
-    switchToProjectTab,
-    switchToUploadTab,
-    toggleExtendedView,
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
     recordLineNumbersOfAssertions,
