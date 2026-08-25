@@ -39,7 +39,7 @@ async function checkFitnessValuesForExecutionHaltingBlocks() {
 }
 
 beforeEach(async () => {
-    await openWhiskerPage({catchPageErrors: false});
+    await openWhiskerPage();
     await (await page.$('#fileselect-config')).uploadFile('test/integration/testConfigs/fitnessTests.json');
 });
 

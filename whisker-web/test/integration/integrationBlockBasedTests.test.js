@@ -1,4 +1,4 @@
-const {openProjectTabWithLayout, openWhiskerPage} = require('../utils/whisker-gui');
+const {openSearchTab, openWhiskerPage, sleep} = require('../utils/whisker-gui');
 
 const timeout = 30000;
 
@@ -19,12 +19,13 @@ async function getOutputLogWhenBBTTestsAreDone(clearLogAfterFinished = false) {
             return log;
         }
 
-        await new Promise(_ => setTimeout(_, 250));
+        await sleep(500);
     }
 }
 
 beforeEach(async () => {
     await openWhiskerPage();
+    await openSearchTab();
 
     // prevent fancybox tooltip from opening
     await page.evaluate(() => {
@@ -43,7 +44,7 @@ describe('Block-Based Tests Integration', () => {
 
         await (await page.$('#fileselect-project')).uploadFile(projectWithBBTs);
         await (await page.$('#fileselect-tests')).uploadFile(projectWithBBTs);
-        await openProjectTabWithLayout();
+        await sleep(500);
         await (await page.$('#run-all-tests')).click();
         const outputLog = await getOutputLogWhenBBTTestsAreDone();
 
@@ -77,7 +78,7 @@ describe('Block-Based Tests Integration', () => {
 
         for (const project of projects) {
             await (await page.$('#fileselect-project')).uploadFile(project);
-            await openProjectTabWithLayout();
+            await openSearchTab();
             await (await page.$('#run-all-tests')).click();
             logs.push(await getOutputLogWhenBBTTestsAreDone(true));
         }
@@ -118,8 +119,7 @@ describe('Block-Based Tests Integration', () => {
 
         await (await page.$('#fileselect-project')).uploadFile(projectPath);
         await (await page.$('#fileselect-tests')).uploadFile(projectPath);
-
-        await openProjectTabWithLayout();
+        await sleep(500);
 
         // no seed
         await (await page.$('#run-all-tests')).click();

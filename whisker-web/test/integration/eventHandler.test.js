@@ -1,4 +1,4 @@
-const {loadProject, openWhiskerPage} = require('../utils/whisker-gui');
+const {loadProject, openWhiskerPage, sleep} = require('../utils/whisker-gui');
 
 const timeout = 30000;
 
@@ -32,9 +32,9 @@ describe('Corner cases handling', () => {
         await expect(log).toBe('empty project');
     }, timeout);
 
-    // Test fails for unknown reasons. However, upon manual verification the dead code project is handled correctly.
-    test.skip('Test code without event handlers', async () => {
+    test('Test code without event handlers', async () => {
         await loadProject('test/integration/onlyDeadCode/OnlyDeadCodeTest.sb3');
+        await sleep(500);
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();

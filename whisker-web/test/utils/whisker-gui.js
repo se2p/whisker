@@ -39,23 +39,9 @@ async function uploadFile(selector, filePath) {
 }
 
 /**
- * Switches to the project tab via the redesigned tab bar, which also runs the project layout pass.
- *
- * Block-based tests need this: the layout pass calls `configPanel.switchToMode`, which reveals
- * `#bbt-toggles` (`src/components/config-panel.js:190`) -- without it a run never reports
- * completion.
- *
- * Not a general-purpose "open the project tab" helper, and no other suite should need it. The
- * project pane is already active on load, and the layout pass additionally resets
- * `window._whiskerSelectedConfig` to the `config/mio.json` default (`config-panel.js:183`), which
- * would silently discard a config the test just uploaded. It is safe here only because block-based
- * tests upload no config of their own.
- *
- * The click is dispatched through the DOM because the legacy tab bar sits off-screen since the
- * redesign; Puppeteer's own `click()` simulates a real mouse click and cannot reach elements
- * outside the viewport.
+ * Switches to the search tab.
  */
-async function openProjectTabWithLayout() {
+async function openSearchTab() {
     const projectTab = await page.$('#whisker-tab-search');
     await projectTab.evaluate(t => t.click());
 }
@@ -74,9 +60,6 @@ async function setAcceleration(factor = ACCELERATION) {
 /**
  * Uploads a project together with the optional tests and models belonging to it, and sets the
  * acceleration factor.
- *
- * No tab switch is needed: the project pane is markup-default "show active" (`src/index.html:275`)
- * and nothing in these suites switches away from it.
  *
  * @param {string} scratchPath path to the .sb3 project under test
  * @param {object} [options] what to upload alongside the project, and how to run it
@@ -100,15 +83,8 @@ async function loadProject(scratchPath, {tests, models, acceleration = ACCELERAT
 
 /**
  * Opens a fresh browser page showing the Whisker GUI, and points the `page` global at it.
- *
- * `catchPageErrors` records existing drift rather than a deliberate policy: most suites install
- * these handlers, while BranchDistance, runTestsForRepair and the model tests never did. The flag
- * can be dropped once those three have been checked for latent page errors.
- *
- * @param {object} [options] how to set the page up
- * @param {boolean} [options.catchPageErrors] whether to fail the test when the page reports an error
  */
-async function openWhiskerPage({catchPageErrors = true} = {}) {
+async function openWhiskerPage() {
     // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
     // Since this is a purely visual feature and does not harm the test execution in any way,
     // we simply remove the file when calling the servant.
@@ -120,32 +96,35 @@ async function openWhiskerPage({catchPageErrors = true} = {}) {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
 
-    if (catchPageErrors) {
-        page.on('error', msg => console.error(msg.text()))
-            .on('pageerror', async err => {
-                console.error(err.message);
-                // Not very graceful, but immediately shuts the test down. There must be a nicer way?
-                await page.close();
-                return Promise.reject(err);
-            });
-    }
+    page.on('error', msg => console.error(msg.text()))
+        .on('pageerror', async err => {
+            console.error(err.message);
+            // Not very graceful, but immediately shuts the test down. There must be a nicer way?
+            await page.close();
+            return Promise.reject(err);
+        });
 
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 
-    // `domcontentloaded` fires before the bundle has run its $(document).ready handler, which is what
-    // populates `window.Whisker` and binds the click handlers (`src/index.js:1590`). Interacting
-    // before that finishes is silently destructive rather than loud: clicking Run with
-    // `Whisker.projectFileSelect` still undefined just opens a modal and starts no search
-    // (`src/index.js:1373`), so the suite then polls an empty output log until it times out.
     await page.waitForFunction(() => window.Whisker && window.Whisker.projectFileSelect &&
         window.Whisker.configFileSelect);
+}
+
+/**
+ * Some flaky tests need to wait for the GUI to catch up.
+ * @param {number} timeout How long to wait
+ * @returns {*} The promise that resolves when the timeout is over
+ */
+function sleep(timeout) {
+    return new Promise(r => setTimeout(r, timeout));
 }
 
 module.exports = {
     ACCELERATION,
     loadProject,
     openWhiskerPage,
-    openProjectTabWithLayout,
+    openSearchTab,
     setAcceleration,
-    uploadFile
+    uploadFile,
+    sleep
 };

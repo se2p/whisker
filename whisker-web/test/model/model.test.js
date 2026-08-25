@@ -59,7 +59,7 @@ async function readModelErrors() {
 }
 
 beforeEach(async () => {
-    await openWhiskerPage({catchPageErrors: false});
+    await openWhiskerPage();
 });
 
 async function testProgram(errors, fails, coverage) {

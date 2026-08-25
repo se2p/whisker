@@ -432,7 +432,7 @@ describe.each(Object.entries(expected))('Test execution traces', (name, trace) =
     let traces = null;
 
     beforeAll(async () => {
-        await openWhiskerPage({catchPageErrors: false});
+        await openWhiskerPage();
 
         await loadProject('test/fixtures/project.json', {tests: 'test/fixtures/tests.js'});
         const result = (await page.evaluate(() => window.Whisker.runTestsForRepair()));
