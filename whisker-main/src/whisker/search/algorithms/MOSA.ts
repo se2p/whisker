@@ -326,7 +326,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         throw new Error('Method not implemented.');
     }
     private async _emitFrontierFitnessUpdate(population: C[]): Promise<void> {
-        if (population.length == 0) return;
+        if (!Container.vm || population.length == 0) return;
         const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
         if (activeTargets.length === 0) return;
         const perTarget = await Promise.all(activeTargets.map(async key => {
