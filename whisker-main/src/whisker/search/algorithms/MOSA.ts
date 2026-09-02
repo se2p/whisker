@@ -18,17 +18,18 @@
  *
  */
 
-import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {Randomness} from "../../utils/Randomness";
-import {Selection} from "../Selection";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import { GeneticAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { Randomness } from "../../utils/Randomness";
+import { Selection } from "../Selection";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
-import {Chromosome} from "../Chromosome";
+import { Chromosome } from "../Chromosome";
+import { Container } from '../../utils/Container';
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -159,6 +160,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             await this._applyLocalSearch(parentPopulation);
             this._iterations++;
             this.updateStatistics();
+            await this._emitFrontierFitnessUpdate(parentPopulation);
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
@@ -323,6 +325,38 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     setFitnessFunction(): void {
         throw new Error('Method not implemented.');
     }
+    private async _emitFrontierFitnessUpdate(population: C[]): Promise<void> {
+        if (population.length == 0) return;
+        const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
+        if (activeTargets.length === 0) return;
+        const perTarget = await Promise.all(activeTargets.map(async key => {
+            const fitnessFunction = this._fitnessFunctions.get(key)!;
+            let sum = 0;
+            const scores: number[] = [];
+            for (const chromosome of population) {
+                const score = await fitnessFunction.getFitness(chromosome);
+                sum += score;
+                scores.push(score);
+            }
+            const best = Math.min(...scores);
+            const average = sum / scores.length;
+            return {
+                targetKey: key,
+                label: fitnessFunction.toString(),
+                best: Number(best.toFixed(4)),
+                average: Number(average.toFixed(4))
+            };
+        }));
+
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._iterations,
+            best: perTarget[0].best,
+            average: perTarget[0].average,
+            label: perTarget[0].label,
+            perTarget
+        });
+    }
+
 
     /**
      * Compares the given chromosomes based on their fitness towards a coverage objective.
@@ -334,7 +368,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * a negative value if the second chromosome is better, and 0 if they are equal.
      */
     private async _compareChromosomes(chromosome1: Chromosome, chromosome2: Chromosome,
-                                      objective: FitnessFunction<Chromosome>): Promise<number> {
+        objective: FitnessFunction<Chromosome>): Promise<number> {
         const fitness1 = await chromosome1.getFitness(objective);
         const fitness2 = await chromosome2.getFitness(objective);
         const compareValue = objective.compare(fitness1, fitness2);

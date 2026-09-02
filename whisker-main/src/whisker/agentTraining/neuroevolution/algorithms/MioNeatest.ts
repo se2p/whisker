@@ -1,13 +1,13 @@
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {ManyObjectiveNeatest} from "./ManyObjectiveNeatest";
-import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
-import {NeatMutation} from "../operators/NeatMutation";
-import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperties";
-import {MioNeatestParameter} from "../hyperparameter/MioNeatestParameter";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { ManyObjectiveNeatest } from "./ManyObjectiveNeatest";
+import { NeatPopulation } from "../neuroevolutionPopulations/NeatPopulation";
+import { NeatMutation } from "../operators/NeatMutation";
+import { SearchAlgorithmProperties } from "../../../search/SearchAlgorithmProperties";
+import { MioNeatestParameter } from "../hyperparameter/MioNeatestParameter";
 import logger from "../../../../util/logger";
 import Arrays from "../../../utils/Arrays";
-import {Container} from "../../../utils/Container";
+import { Container } from "../../../utils/Container";
 
 /**
  * Enhances Neatest with the MIO algorithm.
@@ -450,16 +450,34 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 averageFitness: Number(s.averageFitness.toFixed(4)),
                 nodes: best.getAllNodes().map(n => this._serializeNode(n)),
                 connections: best.connections.filter(c => c.isEnabled)
-                    .map(c => ({source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))}))
+                    .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
             };
         }).filter(Boolean);
 
         if (species.length === 0) return;
 
         const gen = this._getTopologyGeneration();
-        const snapshot = {generation: gen, species, bestSpeciesId};
+        const snapshot = { generation: gen, species, bestSpeciesId };
         this._speciesTopologyHistory.set(gen, snapshot);
         Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
+    }
+
+
+    /* override since in mio we are showing the fitness for the single target we are mutating for not the frontier*/
+    protected override _emitFitnessUpdate(): void {
+        if (!Container.vm || this._currentTarget === undefined) return;
+        const scores = this._population.networks.map(n => n.coverageObjectives.get(this._currentTarget) ?? 0);
+        if (scores.length === 0) return;
+        const best = Math.max(...scores);
+        const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        const label = this._fitnessFunctions.get(this._currentTarget)?.toString() ?? `Objective ${this._currentTarget}`;
+
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._getTopologyGeneration(),
+            best: Number(best.toFixed(4)),
+            average: Number(average.toFixed(4)),
+            label
+        });
     }
 
     override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {

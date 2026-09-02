@@ -223,6 +223,8 @@
     "fitness-chart-empty": "Start a NEAT algorithm to see fitness over time",
     "fitness-chart-label-neatest": "Current objective",
     "fitness-chart-current-target": "Current Target",
+    "fitness-chart-frontier-targets": "Current Targets",
+    "fitness-chart-previous-targets": "Previous Targets",
     "species-pop-chart-title": "Species Population",
     "species-pop-chart-empty": "Start a NEAT algorithm to see species population over time"
 }

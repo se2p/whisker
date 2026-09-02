@@ -249,6 +249,25 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         return true;
     }
 
+    /**
+     * Gives many-objective algorithms the same covering-moment fitness point Neatest already emits in
+     * updateArchive(), so a target covered before its first per-round update lands isn't archived with zero data.
+     */
+    protected override _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
+        if (Container.vm) {
+            const score = Number((network.coverageObjectives.get(key) ?? 1).toFixed(4));
+            const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+            Container.vm.emit('FITNESS_UPDATE', {
+                generation: this._getTopologyGeneration(),
+                best: score,
+                average: score,
+                label,
+                perTarget: [{targetKey: key, label, best: score, average: score}]
+            });
+        }
+        super._emitCoveredNetworkTopology(key, network);
+    }
+
     protected override _emitNetworkTopology(): void {
         if (!this._shouldEmitPerTarget()) return;
         if (!Container.vm || !this._population || this._population.networks.length === 0) return;
@@ -363,6 +382,39 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     protected override updateBestIndividualAndStatistics(): void {
         super.updateBestIndividualAndStatistics();
         this._emitSpeciesTopologies(this._population);
+        this._emitFitnessUpdate();
+    }
+
+    /**
+     * Reports best/average fitness towards every currently active (uncovered, reachable) target, rather than a
+     * single value - many-objective algorithms pursue several targets at once, so a single "current" fitness value
+     * would arbitrarily represent only one of them.
+     */
+    protected override _emitFitnessUpdate(): void {
+        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        if (activeTargets.length === 0) return;
+
+        const perTarget = activeTargets.map(key => {
+            const scores = this._population.networks.map(n => n.coverageObjectives.get(key) ?? 0);
+            const best = Math.max(...scores);
+            const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+            return {
+                targetKey: key,
+                label,
+                best: Number(best.toFixed(4)),
+                average: Number(average.toFixed(4))
+            };
+        });
+
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._getTopologyGeneration(),
+            best: perTarget[0].best,
+            average: perTarget[0].average,
+            label: perTarget[0].label,
+            perTarget
+        });
     }
 
     protected override _getTopologyGeneration(): number {

@@ -11,10 +11,14 @@ class FitnessChart {
             emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see fitness over time',
             labelNeatest: i18n.labelNeatest || 'Current objective',
             currentTarget: i18n.currentTarget || 'Current Target',
+            frontierTargets: i18n.frontierTargets || 'Current Targets',
+            previousTargets: i18n.previousTargets || 'Previous Targets',
             expand: i18n.expand || 'Click to expand'
         };
         this._data = [];
         this._history = [];
+        this._perTargetSeries = new Map();
+        this._perTargetLabels = new Map();
         this._selectedKey = 'current';
         this._buildUI(container);
         window.Whisker.scratch.vm.on('FITNESS_UPDATE', data => this._update(data));
@@ -25,26 +29,28 @@ class FitnessChart {
     reset() {
         this._data = [];
         this._history = [];
+        this._perTargetSeries = new Map();
+        this._perTargetLabels = new Map();
         this._selectedKey = 'current';
-        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
-        this._historySelect.value = 'current';
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._valueEl.textContent = '';
         this._subtitleEl.textContent = this._i18n.labelNeatest;
+        this._rebuildHistorySelect();
         this._closeModal();
     }
 
     startEmpty() {
         this._data = [];
         this._history = [];
+        this._perTargetSeries = new Map();
+        this._perTargetLabels = new Map();
         this._selectedKey = 'current';
-        while (this._historySelect.options.length > 1) this._historySelect.remove(1);
-        this._historySelect.value = 'current';
         this._valueEl.textContent = '';
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
+        this._rebuildHistorySelect();
         this._redraw();
     }
 
@@ -53,15 +59,14 @@ class FitnessChart {
         this._titleEl.textContent = this._i18n.title;
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
-        if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
         this._card.title = this._i18n.expand;
         if (this._modalTitle) this._modalTitle.textContent = this._i18n.title;
+        if (this._historySelect) this._rebuildHistorySelect();
     }
 
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'fitness-chart-card';
-        card.style.display = 'none';
         card.title = this._i18n.expand;
         card.innerHTML = `
             <div class="fitness-chart-header">
@@ -93,25 +98,11 @@ class FitnessChart {
         this._titleEl.textContent = this._i18n.title;
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
-        this._historySelect.options[0].textContent = this._i18n.currentTarget;
 
         this._historySelect.addEventListener('click', e => e.stopPropagation());
         this._historySelect.addEventListener('change', () => {
             this._selectedKey = this._historySelect.value;
-            if (this._selectedKey === 'current') {
-                const runStarted = this._history.length > 0 || this._data.length > 0;
-                this._emptyEl.style.display = runStarted ? 'none' : '';
-                this._canvas.style.display = runStarted ? '' : 'none';
-                if (!this._data.length) this._valueEl.textContent = '';
-                this._redraw();
-            } else {
-                const entry = this._history.find(h => String(h.objectiveKey) === this._selectedKey);
-                if (entry) {
-                    this._emptyEl.style.display = 'none';
-                    this._canvas.style.display = '';
-                    this._redrawData(entry.data);
-                }
-            }
+            this._applySelection();
         });
 
         card.addEventListener('click', () => this._openModal());
@@ -156,25 +147,111 @@ class FitnessChart {
     }
 
     _onTargetCovered(event) {
-        this._history.push({objectiveKey: event.objectiveKey, label: event.label, data: [...this._data]});
-        this._data = [];
-        if (this._selectedKey === 'current') {
-            this._valueEl.textContent = '';
-            this._redraw();
-        }
-        const opt = document.createElement('option');
-        opt.value = String(event.objectiveKey);
-        opt.textContent = `Obj. ${event.objectiveKey}`;
-        opt.title = event.label;
-        this._historySelect.appendChild(opt);
+        const key = event.objectiveKey;
+        const seriesData = this._perTargetSeries.has(key) ? this._perTargetSeries.get(key) : [...this._data];
+        this._history.push({objectiveKey: key, label: event.label, data: seriesData});
+        this._perTargetSeries.delete(key);
+        this._perTargetLabels.delete(key);
+        if (this._perTargetSeries.size === 0) this._data = [];
+        this._rebuildHistorySelect();
+        this._applySelection();
     }
 
     _update(data) {
+        if (data.perTarget && data.perTarget.length > 0) {
+            data.perTarget.forEach(t => {
+                if (!this._perTargetSeries.has(t.targetKey)) this._perTargetSeries.set(t.targetKey, []);
+                this._perTargetSeries.get(t.targetKey).push({best: t.best, average: t.average});
+                this._perTargetLabels.set(t.targetKey, t.label);
+            });
+            this._rebuildHistorySelect();
+            this._applySelection();
+            return;
+        }
         if (this._selectedKey !== 'current') return;
         this._data.push(data);
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
+    }
+
+    _rebuildHistorySelect() {
+        const prevValue = this._historySelect.value;
+        this._historySelect.innerHTML = '';
+
+        if (this._perTargetSeries.size > 0) {
+            const frontierGroup = document.createElement('optgroup');
+            frontierGroup.label = this._i18n.frontierTargets;
+            [...this._perTargetSeries.keys()].forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = `frontier:${key}`;
+                opt.textContent = `Obj. ${key}`;
+                const label = this._perTargetLabels.get(key);
+                if (label) opt.title = label;
+                frontierGroup.appendChild(opt);
+            });
+            this._historySelect.appendChild(frontierGroup);
+        } else {
+            const opt = document.createElement('option');
+            opt.value = 'current';
+            opt.textContent = this._i18n.currentTarget;
+            this._historySelect.appendChild(opt);
+        }
+
+        if (this._history.length > 0) {
+            const coveredParent = this._perTargetSeries.size > 0 ?
+                document.createElement('optgroup') : this._historySelect;
+            if (coveredParent !== this._historySelect) {
+                coveredParent.label = this._i18n.previousTargets;
+            }
+            this._history.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = `covered:${h.objectiveKey}`;
+                opt.textContent = `Obj. ${h.objectiveKey}`;
+                opt.title = h.label;
+                coveredParent.appendChild(opt);
+            });
+            if (coveredParent !== this._historySelect) {
+                this._historySelect.appendChild(coveredParent);
+            }
+        }
+
+        const values = Array.from(this._historySelect.options).map(o => o.value);
+        if (values.includes(prevValue)) {
+            this._historySelect.value = prevValue;
+        } else if (this._perTargetSeries.size > 0) {
+            this._historySelect.value = `frontier:${[...this._perTargetSeries.keys()][0]}`;
+        } else {
+            this._historySelect.value = 'current';
+        }
+        this._selectedKey = this._historySelect.value;
+    }
+
+    _applySelection() {
+        const key = this._selectedKey;
+        let data = null;
+        let title = this._i18n.labelNeatest;
+
+        if (key.startsWith('frontier:')) {
+            const targetKey = parseInt(key.split(':')[1], 10);
+            data = this._perTargetSeries.get(targetKey) || [];
+            title = this._perTargetLabels.get(targetKey) || `Obj. ${targetKey}`;
+        } else if (key.startsWith('covered:')) {
+            const targetKey = parseInt(key.split(':')[1], 10);
+            const entry = this._history.find(h => h.objectiveKey === targetKey);
+            data = entry ? entry.data : [];
+            title = entry ? entry.label : '';
+        } else {
+            data = this._data;
+            title = this._i18n.labelNeatest;
+        }
+
+        const runStarted = data.length > 0;
+        this._emptyEl.style.display = runStarted ? 'none' : '';
+        this._canvas.style.display = runStarted ? '' : 'none';
+        this._subtitleEl.textContent = title;
+        if (!data.length) this._valueEl.textContent = '';
+        this._redrawData(data);
     }
 
     _redraw() {

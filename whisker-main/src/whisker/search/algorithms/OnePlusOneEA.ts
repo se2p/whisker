@@ -18,12 +18,12 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import { Chromosome } from '../Chromosome';
+import { SearchAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -71,6 +71,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         if (await this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
+            // Report here too, since an instantly covered target skips the loop below entirely.
+            this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
@@ -91,6 +93,7 @@ ${bestIndividual.toString()}`);
             this._iterations++;
             this.updateCoverageTimeLine();
             this._emitCoverageUpdate();
+            this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
             StatisticsCollector.getInstance().incrementIterationCount();
         }
         logger.debug("1+1 EA completed at " + Date.now());

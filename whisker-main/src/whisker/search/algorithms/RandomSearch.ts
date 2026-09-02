@@ -18,12 +18,12 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import { Chromosome } from '../Chromosome';
+import { SearchAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import logger from '../../../util/logger';
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -73,7 +73,9 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                     this._bestIndividuals = [];
                     this._bestIndividuals.push(bestIndividual);
                 }
+                this._emitFitnessUpdate(bestFitness, undefined, "randomsearch");
             }
+
             this.updateStatistics();
             this._iterations++;
             logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);

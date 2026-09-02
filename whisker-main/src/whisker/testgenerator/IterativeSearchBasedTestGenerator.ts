@@ -82,6 +82,14 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             if (!archive.has(fitnessFunction)) {
                 break;
             }
+            // Each target here runs on a brand-new SearchAlgorithm instance, so the fitness chart has no way to
+            // know when one target's sub-search ends and the next begins - without this, per-target fitness data
+            // gets spliced into one continuous, misleading series. Emitting the target as covered lets the chart
+            // (which already listens for this event) archive that target's history and start a clean series for
+            // the next one.
+            if (Container.vm) {
+                Container.vm.emit('OBJECTIVE_COVERED', {objectiveKey: fitnessFunction, label: nextFitnessTarget.toString()});
+            }
         }
         // Update Statistics related to achieving full coverage
         if (this._archive.size === this._fitnessFunctions.size) {

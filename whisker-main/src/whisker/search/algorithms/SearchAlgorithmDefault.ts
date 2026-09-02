@@ -18,18 +18,18 @@
  *
  */
 
-import {Chromosome} from "../Chromosome";
-import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
-import {ChromosomeGenerator} from "../ChromosomeGenerator";
-import {FitnessFunction} from "../FitnessFunction";
-import {Selection} from "../Selection";
-import {SearchAlgorithm} from "../SearchAlgorithm";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {StoppingCondition} from "../StoppingCondition";
-import {TestChromosome} from "../../testcase/TestChromosome";
+import { Chromosome } from "../Chromosome";
+import { SearchAlgorithmProperties } from "../SearchAlgorithmProperties";
+import { ChromosomeGenerator } from "../ChromosomeGenerator";
+import { FitnessFunction } from "../FitnessFunction";
+import { Selection } from "../Selection";
+import { SearchAlgorithm } from "../SearchAlgorithm";
+import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { StoppingCondition } from "../StoppingCondition";
+import { TestChromosome } from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
-import {emitCoverageUpdate} from "../../utils/Container";
+import { emitCoverageUpdate, emitFitnessUpdate } from "../../utils/Container";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -174,12 +174,15 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     /**
      * Updates the coverage over time timeline.
      */
-    protected updateCoverageTimeLine():void {
+    protected updateCoverageTimeLine(): void {
         StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
 
     protected _emitCoverageUpdate(): void {
         emitCoverageUpdate(this._iterations, this._archive, this._fitnessFunctions);
+    }
+    protected _emitFitnessUpdate(best: number, average?: number, label?: string): void {
+        emitFitnessUpdate(this._iterations, best, average, label);
     }
 
 }
