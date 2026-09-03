@@ -254,7 +254,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * _emitNetworkTopology(); does nothing if that generation was never recorded.
      */
     private _onRequestTopologyGen(data: { generation: number }): void {
-        if (!Container.vm) return;
         const snapshot = this._topologyHistory.get(data.generation);
         if (snapshot) {
             Container.vm.emit('NETWORK_TOPOLOGY_HISTORY', snapshot);
@@ -266,7 +265,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * _emitSpeciesTopologies(); does nothing if that generation was never recorded.
      */
     private _onRequestSpeciesTopologyGen(data: { generation: number }): void {
-        if (!Container.vm) return;
         const snapshot = this._speciesTopologyHistory.get(data.generation);
         if (snapshot) {
             Container.vm.emit('SPECIES_NETWORK_TOPOLOGY_HISTORY', snapshot);
@@ -306,7 +304,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * update, which would otherwise leave that target's fitness-chart history empty.
      */
     protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
-        if (!Container.vm) return;
         const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
         const nodes = network.getAllNodes().map(n => n.toJSON());
         const connections = network.connections
@@ -320,7 +317,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * show once that target moves from "currently active" to "covered".
      */
     protected _emitCoveredSpeciesTopology(key: number, population: NeatPopulation, coveringNetwork: NeatChromosome): void {
-        if (!Container.vm) return;
         const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
         let bestSpeciesId: number | null = null;
         let species = population.species
@@ -362,7 +358,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * MioNeatest to report only the single target it is currently mutating towards.
      */
     protected override _emitFitnessUpdate(best: number, average?: number, label?: string): void {
-        if (!Container.vm) return;
         const data: { generation: number; best: number; average?: number; label?: string } = {
             generation: this._getTopologyGeneration(),
             best: Number(best.toFixed(4))
