@@ -419,7 +419,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
         const gen = this._getTopologyGeneration();
         const snapshot = {
             generation: gen,
-            nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+            nodes: best.getAllNodes().map(n => n.toJSON()),
             connections: best.connections.filter(c => c.isEnabled).map(c => ({
                 source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))
             }))
@@ -448,7 +448,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 speciesId: s.uID,
                 memberCount: s.networks.length,
                 averageFitness: Number(s.averageFitness.toFixed(4)),
-                nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                nodes: best.getAllNodes().map(n => n.toJSON()),
                 connections: best.connections.filter(c => c.isEnabled)
                     .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
             };

@@ -1,11 +1,11 @@
 const {weightToColor} = require('./network-colors');
 
-// Mirrors the backend NodeType enum: INPUT=0, BIAS=1, HIDDEN=2, OUTPUT=3
+// Keyed by the backend NodeGene.toJSON() letter codes: I=Input, B=Bias, H=Hidden, A=Action/Output
 const NODE_COLORS = {
-    0: '#5b8dd9',
-    1: '#5b8dd9',
-    2: '#7c5cbf',
-    3: '#27ae60'
+    I: '#5b8dd9',
+    B: '#5b8dd9',
+    H: '#7c5cbf',
+    A: '#27ae60'
 };
 const NODE_RADIUS = 10;
 const COL_SPACING = 55;
@@ -409,11 +409,11 @@ class NetworkTopology {
     }
 
     _maxColHeight(nodes) {
-        const hiddenNodes = nodes.filter(n => n.type === 2);
-        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.depth))];
-        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.depth === d));
-        const inputNodes = nodes.filter(n => n.type === 0 || n.type === 1);
-        const outputNodes = nodes.filter(n => n.type === 3);
+        const hiddenNodes = nodes.filter(n => n.t === 'H');
+        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.d))];
+        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.d === d));
+        const inputNodes = nodes.filter(n => n.t === 'I' || n.t === 'B');
+        const outputNodes = nodes.filter(n => n.t === 'A');
         return Math.max(...[inputNodes, ...hiddenCols, outputNodes].map(c => c.length));
     }
 
@@ -433,11 +433,11 @@ class NetworkTopology {
         const {generation, nodes, connections} = data;
         this._setGenLabelText(genLabel, `${this._i18n.generation} ${generation}`);
 
-        const inputNodes = nodes.filter(n => n.type === 0 || n.type === 1);
-        const hiddenNodes = nodes.filter(n => n.type === 2);
-        const outputNodes = nodes.filter(n => n.type === 3);
-        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.depth))].sort((a, b) => a - b);
-        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.depth === d));
+        const inputNodes = nodes.filter(n => n.t === 'I' || n.t === 'B');
+        const hiddenNodes = nodes.filter(n => n.t === 'H');
+        const outputNodes = nodes.filter(n => n.t === 'A');
+        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.d))].sort((a, b) => a - b);
+        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.d === d));
         const columns = [inputNodes, ...hiddenCols, outputNodes];
         const numCols = columns.length;
         const maxColHeight = Math.max(...columns.map(c => c.length));
@@ -454,7 +454,7 @@ class NetworkTopology {
             const x = colX(ci);
             col.forEach((node, ni) => {
                 const y = H / 2 + (ni - (col.length - 1) / 2) * spacing;
-                nodePos.set(node.id, {x, y, type: node.type});
+                nodePos.set(node.id, {x, y, type: node.t});
             });
         });
 
@@ -477,7 +477,7 @@ class NetworkTopology {
         nodePos.forEach(({x, y, type}) => {
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = NODE_COLORS[type] || NODE_COLORS[2];
+            ctx.fillStyle = NODE_COLORS[type] || NODE_COLORS.H;
             ctx.fill();
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.lineWidth = Math.max(1, radius * 0.2);
@@ -506,8 +506,9 @@ class NetworkTopology {
             if (!pos) continue;
             const dx = mx - pos.x; const dy = my - pos.y;
             if (dx * dx + dy * dy <= NODE_RADIUS * NODE_RADIUS) {
-                if (node.type === 0 || node.type === 1) label = `${node.sprite} · ${node.feature}`;
-                else if (node.type === 3) label = node.event || null;
+                if (node.t === 'I') label = `${node.sprite} · ${node.feature}`;
+                else if (node.t === 'B') label = 'Bias';
+                else if (node.t === 'A') label = node.event || null;
                 else label = node.aF || '';
                 break;
             }

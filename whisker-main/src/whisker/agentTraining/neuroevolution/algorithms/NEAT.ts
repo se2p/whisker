@@ -10,11 +10,6 @@ import { NeatChromosome } from "../networks/NeatChromosome";
 import logger from '../../../../util/logger';
 import { NeatParameter } from "../hyperparameter/NeatParameter";
 import { Container } from "../../../utils/Container";
-import { InputNode } from "../networkComponents/InputNode";
-import { ActionNode } from "../networkComponents/ActionNode";
-import { ActivationFunction } from "../networkComponents/ActivationFunction";
-import { NodeType } from "../networkComponents/NodeType";
-import { NodeGene } from "../networkComponents/NodeGene";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -228,27 +223,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     /**
-     * Converts a single network node into the plain, UI-facing shape used by the topology snapshots above,
-     * including only the fields relevant to that node's type (e.g. sprite/feature for inputs, the triggered
-     * event for outputs).
-     */
-    protected _serializeNode(n: NodeGene): object {
-        const base = { id: n.uID, type: n.type, depth: n.depth };
-        if (n.type === NodeType.BIAS) {
-            return { ...base, sprite: 'Bias', feature: '' };
-        }
-        if (n.type === NodeType.INPUT) {
-            const input = n as InputNode;
-            return { ...base, sprite: input.sprite, feature: input.feature };
-        }
-        if (n.type === NodeType.OUTPUT) {
-            const action = n as ActionNode;
-            return { ...base, event: action.event?.stringIdentifier(), aF: ActivationFunction[n.activationFunction] };
-        }
-        return { ...base, aF: ActivationFunction[n.activationFunction] };
-    }
-
-    /**
      * Sets up the generation-history feature for the topology/species charts: as the search progresses,
      * every snapshot gets cached in _topologyHistory/_speciesTopologyHistory (keyed by generation) so the
      * UI can later ask to see any past generation again, not just the latest one. That "asking" happens
@@ -315,7 +289,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
         if (!best) return;
-        const nodes = best.getAllNodes().map(n => this._serializeNode(n));
+        const nodes = best.getAllNodes().map(n => n.toJSON());
         const connections = best.connections
             .filter(c => c.isEnabled)
             .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
@@ -334,7 +308,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
         if (!Container.vm) return;
         const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
-        const nodes = network.getAllNodes().map(n => this._serializeNode(n));
+        const nodes = network.getAllNodes().map(n => n.toJSON());
         const connections = network.connections
             .filter(c => c.isEnabled)
             .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
@@ -361,7 +335,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                     speciesId: s.uID,
                     memberCount: s.networks.length,
                     averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                    nodes: best.getAllNodes().map(n => n.toJSON()),
                     connections: best.connections
                         .filter(c => c.isEnabled)
                         .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
@@ -374,7 +348,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                 speciesId: 0,
                 memberCount: 1,
                 averageFitness: Number(coveringNetwork.fitness.toFixed(4)),
-                nodes: coveringNetwork.getAllNodes().map(n => this._serializeNode(n)),
+                nodes: coveringNetwork.getAllNodes().map(n => n.toJSON()),
                 connections: coveringNetwork.connections
                     .filter(c => c.isEnabled)
                     .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
@@ -417,7 +391,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                     speciesId: s.uID,
                     memberCount: s.networks.length,
                     averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => this._serializeNode(n)),
+                    nodes: best.getAllNodes().map(n => n.toJSON()),
                     connections: best.connections
                         .filter(c => c.isEnabled)
                         .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
