@@ -92,7 +92,9 @@ ${bestIndividual.toString()}`);
             }
             this._iterations++;
             this.updateCoverageTimeLine();
+            // Emit coverage updates to the UI
             this._emitCoverageUpdate();
+            // Report fitness updates to the UI
             this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
             StatisticsCollector.getInstance().incrementIterationCount();
         }

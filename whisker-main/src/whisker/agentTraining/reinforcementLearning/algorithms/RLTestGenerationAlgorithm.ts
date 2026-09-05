@@ -1,5 +1,5 @@
-import {TfAgentWrapper} from "../agents/TfAgentWrapper";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import { TfAgentWrapper } from "../agents/TfAgentWrapper";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
 import logger from "../../../../util/logger";
 import {
     CoverageObjectiveParameter,
@@ -9,18 +9,18 @@ import {
     ReplayMemoryParameter,
     RewardParameter, RewardType, RLHyperparameter, TrainingParameter
 } from "../hyperparameter/RLHyperparameter";
-import {StoppingCondition} from "../../../search/StoppingCondition";
-import {RLEnvironment, Trajectory} from "../misc/RLEnvironment";
-import {RLAlgorithm} from "./RLAlgorithm";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {StepsReward} from "../rewards/StepsReward";
-import {RewardFunction} from "../rewards/RewardFunction";
-import {ScoreReward} from "../rewards/ScoreReward";
-import {CoverageReward} from "../rewards/CoverageReward";
-import {TargetObjectiveSelection} from "../../neuroevolution/misc/TargetObjectiveSelection";
+import { StoppingCondition } from "../../../search/StoppingCondition";
+import { RLEnvironment, Trajectory } from "../misc/RLEnvironment";
+import { RLAlgorithm } from "./RLAlgorithm";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { StepsReward } from "../rewards/StepsReward";
+import { RewardFunction } from "../rewards/RewardFunction";
+import { ScoreReward } from "../rewards/ScoreReward";
+import { CoverageReward } from "../rewards/CoverageReward";
+import { TargetObjectiveSelection } from "../../neuroevolution/misc/TargetObjectiveSelection";
 import Arrays from "../../../utils/Arrays";
-import {NonExhaustiveCaseDistinction} from "../../../core/exceptions/NonExhaustiveCaseDistinction";
-import {Container} from "../../../utils/Container";
+import { NonExhaustiveCaseDistinction } from "../../../core/exceptions/NonExhaustiveCaseDistinction";
+import { Container } from "../../../utils/Container";
 
 export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implements RLAlgorithm<A> {
 
@@ -91,7 +91,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
     protected readonly _stoppingCondition: StoppingCondition<A>;
 
     protected constructor(protected readonly _hyperparameter: RLHyperparameter,
-                          protected readonly _environment: RLEnvironment) {
+        protected readonly _environment: RLEnvironment) {
         this._epsilonGreedyParameter = _hyperparameter.epsilonGreedyParameter;
         this._replayMemoryParameter = _hyperparameter.replayMemoryParameter;
         this._rewardParameter = _hyperparameter.rewardParameter;
@@ -112,7 +112,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
      * @param greedily Whether the agent should perform actions greedily or not.
      */
     abstract performEpisode(environment: RLEnvironment, agent: A,
-                            rewardFunction: RewardFunction, greedily: boolean): Promise<Trajectory>;
+        rewardFunction: RewardFunction, greedily: boolean): Promise<Trajectory>;
 
     /**
      * Initializes the reward function based on the specified reward type.
@@ -126,7 +126,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
      * @returns The {@link RewardFunction} based on which the agent should be optimized.
      */
     protected _initializeRewardFunction(type: RewardType, agent?: TfAgentWrapper,
-                                        objective?: StatementFitnessFunction): RewardFunction {
+        objective?: StatementFitnessFunction): RewardFunction {
         switch (type) {
             case "steps":
                 return new StepsReward();
@@ -194,13 +194,11 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
         this._overallMaxReward = Math.max(this._overallMaxReward, this._maxReward);
         this._averageReward /= this._coverageObjectiveParameter.stableCount;
         this._evaluations++;
-        if (Container.vm) {
-            Container.vm.emit('FITNESS_UPDATE', {
-                generation: this._observedEpisodes,
-                best: Number(this._overallMaxReward.toFixed(4)),
-                average: Number(this._averageReward.toFixed(4))
-            });
-        }
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._observedEpisodes,
+            best: Number(this._overallMaxReward.toFixed(4)),
+            average: Number(this._averageReward.toFixed(4))
+        });
 
         this._updateArchive(agent);
 
@@ -300,7 +298,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
      * a minimal fixpoint is reached.
      */
     protected _epsilonDecay(): void {
-        const {epsilonStart, epsilonEnd, epsilonMaxFrames} = this._epsilonGreedyParameter;
+        const { epsilonStart, epsilonEnd, epsilonMaxFrames } = this._epsilonGreedyParameter;
 
         if (this._epsilon > epsilonEnd) {
             const decayRate = (epsilonStart - epsilonEnd) / epsilonMaxFrames;

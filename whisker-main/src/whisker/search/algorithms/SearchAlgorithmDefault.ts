@@ -29,7 +29,7 @@ import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import { StoppingCondition } from "../StoppingCondition";
 import { TestChromosome } from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
-import { emitCoverageUpdate, emitFitnessUpdate } from "../../utils/Container";
+import { emitCoverageUpdate, emitFitnessUpdate } from "../../utils/ReportingEvents";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -178,9 +178,17 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         StatisticsCollector.getInstance().updateCoverageTimeLine();
     }
 
+    /**
+     * Reports the current coverage (branch/statement percentages) to the UI's coverage-over-time chart.
+     */
     protected _emitCoverageUpdate(): void {
-        emitCoverageUpdate(this._iterations, this._archive, this._fitnessFunctions);
+        emitCoverageUpdate(this._iterations);
     }
+
+    /**
+     * Reports a single best/average fitness value to the UI's fitness-over-time chart. Overridden by
+     * many-objective algorithms (e.g. MOSA) to report a value per currently active target instead.
+     */
     protected _emitFitnessUpdate(best: number, average?: number, label?: string): void {
         emitFitnessUpdate(this._iterations, best, average, label);
     }

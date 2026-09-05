@@ -517,6 +517,10 @@ export class StatisticsCollector {
         this._configName = this._unknownConfig;
         this.resetCoverage();
     }
+
+    /* 
+    * Resets branch and statement coverage to ensure these values don't persist on restarting test generation
+    */
     public resetCoverage(): void {
         this._branchCoverage = 0;
         this._statementCoverage = 0;

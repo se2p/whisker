@@ -384,7 +384,7 @@ class SpeciesNetworks {
         });
 
         this._modalCtx.globalAlpha = 0.8;
-        connections.forEach(({source, target, weight}) => {
+        connections.forEach(({s: source, t: target, w: weight}) => {
             const src = nodePos.get(source);
             const tgt = nodePos.get(target);
             if (!src || !tgt) return;
@@ -436,7 +436,7 @@ class SpeciesNetworks {
 
         if (label === null) {
             const THRESHOLD = 6;
-            for (const {source, target, weight} of this._modalConnections) {
+            for (const {s: source, t: target, w: weight} of this._modalConnections) {
                 const src = this._modalNodePos.get(source);
                 const tgt = this._modalNodePos.get(target);
                 if (!src || !tgt) continue;

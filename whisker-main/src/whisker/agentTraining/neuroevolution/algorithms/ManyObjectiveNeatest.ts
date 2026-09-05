@@ -241,119 +241,6 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     /**
      * Prints statistics about the current iteration.
      */
-    protected override _shouldRecordCoveredTopology(key: number): boolean {
-        return this._currentTargets.includes(key);
-    }
-
-    protected _shouldEmitPerTarget(): boolean {
-        return true;
-    }
-
-    /**
-     * Gives many-objective algorithms the same covering-moment fitness point Neatest already emits in
-     * updateArchive(), so a target covered before its first per-round update lands isn't archived with zero data.
-     */
-    protected override _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
-        if (Container.vm) {
-            const score = Number((network.coverageObjectives.get(key) ?? 1).toFixed(4));
-            const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
-            Container.vm.emit('FITNESS_UPDATE', {
-                generation: this._getTopologyGeneration(),
-                best: score,
-                average: score,
-                label,
-                perTarget: [{targetKey: key, label, best: score, average: score}]
-            });
-        }
-        super._emitCoveredNetworkTopology(key, network);
-    }
-
-    protected override _emitNetworkTopology(): void {
-        if (!this._shouldEmitPerTarget()) return;
-        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
-
-        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
-        const perTarget = activeTargets
-            .map(key => {
-                const best = this._population.networks.reduce((a, b) =>
-                    (b.coverageObjectives.get(key) ?? 0) > (a.coverageObjectives.get(key) ?? 0) ? b : a,
-                    this._population.networks[0]
-                );
-                if (!best) return null;
-                const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
-                return {
-                    targetKey: key,
-                    label,
-                    coverageScore: best.coverageObjectives.get(key) ?? 0,
-                    nodes: best.getAllNodes().map(n => n.toJSON()),
-                    connections: best.connections
-                        .filter(c => c.isEnabled)
-                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-                };
-            })
-            .filter(Boolean);
-
-        if (perTarget.length === 0) return;
-        const gen = this._getTopologyGeneration();
-        const snapshot = { generation: gen, perTarget, nodes: perTarget[0].nodes, connections: perTarget[0].connections };
-        this._topologyHistory.set(gen, snapshot);
-        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
-    }
-
-    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
-        if (!Container.vm || population.networks.length === 0) return;
-
-        const champion = population.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, population.networks[0]);
-        let globalBestSpeciesId: number | null = null;
-        const globalSpecies = population.species.map(s => {
-            const best = s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]);
-            if (!best) return null;
-            if (s.networks.includes(champion)) globalBestSpeciesId = s.uID;
-            return {
-                speciesId: s.uID,
-                memberCount: s.networks.length,
-                averageFitness: Number(s.averageFitness.toFixed(4)),
-                nodes: best.getAllNodes().map(n => n.toJSON()),
-                connections: best.connections.filter(c => c.isEnabled)
-                    .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-            };
-        }).filter(Boolean);
-
-        if (globalSpecies.length === 0) return;
-
-        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
-        const perTarget = activeTargets.map(key => {
-            let bestSpeciesId: number | null = null;
-            let bestScore = -1;
-            const perTargetSpecies = population.species.map(s => {
-                if (s.networks.length === 0) return null;
-                const best = s.networks.reduce((a, b) =>
-                    (b.coverageObjectives.get(key) ?? 0) > (a.coverageObjectives.get(key) ?? 0) ? b : a,
-                    s.networks[0]
-                );
-                const score = best.coverageObjectives.get(key) ?? 0;
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestSpeciesId = s.uID;
-                }
-                return {
-                    speciesId: s.uID,
-                    memberCount: s.networks.length,
-                    averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => n.toJSON()),
-                    connections: best.connections.filter(c => c.isEnabled)
-                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-                };
-            }).filter(Boolean);
-            return { targetKey: key, species: perTargetSpecies, bestSpeciesId };
-        });
-
-        const gen = this._getTopologyGeneration();
-        const snapshot = {generation: gen, species: globalSpecies, bestSpeciesId: globalBestSpeciesId, perTarget};
-        this._speciesTopologyHistory.set(gen, snapshot);
-        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
-    }
-
     protected iterationSummary(): void {
         logger.debug(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         logger.debug(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
@@ -374,6 +261,16 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     }
 
     /**
+     * Sets the required hyperparameter.
+     * @param properties the user-defined hyperparameter.
+     */
+    public override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
+        super.setProperties(properties);
+        this._diversityMetric = this._neuroevolutionProperties.diversityMetric;
+    }
+
+
+    /**
      * Some many-objective algorithms (e.g. MIO) change their focused target well within a single "generation"
      * boundary, so batching the species-topology emission with the rest of iterationSummary() would show a stale
      * target's species until the next generation. updateBestIndividualAndStatistics() already runs every round
@@ -385,13 +282,121 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         this._emitFitnessUpdate();
     }
 
+
+    // Methods for reporting data to the UI
+
+    /**
+     * Unlike Neatest, which tracks a single target, many-objective algorithms pursue several targets at
+     * once - report a covered objective only while it was still one of the currently pursued targets.
+     */
+    protected override _shouldRecordCoveredTopology(key: number): boolean {
+        return this._currentTargets.includes(key);
+    }
+
+    /**
+     * Whether _emitNetworkTopology()/_emitSpeciesTopologies() should report a frontier entry per currently
+     * active target. Overridden by MioNeatest to return false, since it reports only the single target it
+     * is currently mutating towards instead of a frontier.
+     */
+    protected _shouldEmitPerTarget(): boolean {
+        return true;
+    }
+
+    /**
+     * Gives many-objective algorithms the same covering-moment fitness point Neatest already emits in
+     * updateArchive(), so a target covered before its first per-round update lands isn't archived with zero data.
+     */
+    protected override _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
+        const score = Number((network.coverageObjectives.get(key) ?? 1).toFixed(4));
+        const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._getTopologyGeneration(),
+            best: score,
+            average: score,
+            label,
+            perTarget: [{ targetKey: key, label, best: score, average: score }]
+        });
+        super._emitCoveredNetworkTopology(key, network);
+    }
+
+    /**
+     * Reports a frontier entry - one representative network's topology per currently active target - to
+     * the UI, rather than a single overall best network.
+     */
+    protected override _emitNetworkTopology(): void {
+        if (!this._shouldEmitPerTarget()) return;
+        if (!this._population || this._population.networks.length === 0) return;
+
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        const perTarget = activeTargets
+            .map(key => {
+                const best = NeatPopulation.getBestForTarget(this._population.networks, key);
+                if (!best) return null;
+                const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+                return {
+                    targetKey: key,
+                    label,
+                    coverageScore: best.coverageObjectives.get(key) ?? 0,
+                    ...best.toTopologyNetwork()
+                };
+            })
+            .filter(s => s !== null);
+
+        if (perTarget.length === 0) return;
+        const gen = this._getTopologyGeneration();
+        const snapshot = { generation: gen, perTarget, nodes: perTarget[0].nodes, connections: perTarget[0].connections };
+        this._topologyHistory.set(gen, snapshot);
+        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
+    }
+
+    /**
+     * Reports every species' representative network topology, plus a per-target breakdown of each species'
+     * best performer on that specific target, since many-objective algorithms pursue several targets at once.
+     */
+    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
+        if (population.networks.length === 0) return;
+
+        const champion = NeatPopulation.getFittest(population.networks);
+        let globalBestSpeciesId: number | null = null;
+        const globalSpecies = population.species.map(s => {
+            const best = s.champion ?? NeatPopulation.getFittest(s.networks);
+            if (!best) return null;
+            if (s.networks.includes(champion)) globalBestSpeciesId = s.uID;
+            return s.toTopologyEntry(best);
+        }).filter(s => s !== null);
+
+        if (globalSpecies.length === 0) return;
+
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        const perTarget = activeTargets.map(key => {
+            let bestSpeciesId: number | null = null;
+            let bestScore = -1;
+            const perTargetSpecies = population.species.map(s => {
+                if (s.networks.length === 0) return null;
+                const best = NeatPopulation.getBestForTarget(s.networks, key);
+                const score = best.coverageObjectives.get(key) ?? 0;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestSpeciesId = s.uID;
+                }
+                return s.toTopologyEntry(best);
+            }).filter(s => s !== null);
+            return { targetKey: key, species: perTargetSpecies, bestSpeciesId };
+        });
+
+        const gen = this._getTopologyGeneration();
+        const snapshot = { generation: gen, species: globalSpecies, bestSpeciesId: globalBestSpeciesId, perTarget };
+        this._speciesTopologyHistory.set(gen, snapshot);
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
+    }
+
     /**
      * Reports best/average fitness towards every currently active (uncovered, reachable) target, rather than a
      * single value - many-objective algorithms pursue several targets at once, so a single "current" fitness value
      * would arbitrarily represent only one of them.
      */
     protected override _emitFitnessUpdate(): void {
-        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+        if (!this._population || this._population.networks.length === 0) return;
         const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
         if (activeTargets.length === 0) return;
 
@@ -417,18 +422,11 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         });
     }
 
+    /**
+     * The shared population advances by generation rather than by search iteration, so use that instead
+     * of this._iterations (see NEAT._getTopologyGeneration()).
+     */
     protected override _getTopologyGeneration(): number {
         return this._population.generation;
     }
-
-    /**
-     * Sets the required hyperparameter.
-     * @param properties the user-defined hyperparameter.
-     */
-    public override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        super.setProperties(properties);
-        this._diversityMetric = this._neuroevolutionProperties.diversityMetric;
-    }
-
 }
-

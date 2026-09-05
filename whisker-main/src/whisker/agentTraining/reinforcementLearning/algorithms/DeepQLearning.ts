@@ -8,7 +8,7 @@ import logger from "../../../../util/logger";
 import {RLTestGenerationAlgorithm} from "./RLTestGenerationAlgorithm";
 import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import {RewardFunction} from "../rewards/RewardFunction";
-import {emitCoverageUpdate} from "../../../utils/Container";
+import {emitCoverageUpdate} from "../../../utils/ReportingEvents";
 
 
 export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
@@ -105,7 +105,7 @@ export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
         if (this._observedEpisodes % this._hyperparameter.evaluationFrequency === 0) {
             await this._evaluate(this._actingNetwork, this._environment, rewardFunction);
             StatisticsCollector.getInstance().updateCoverageTimeLine();
-            emitCoverageUpdate(this._observedEpisodes, this._archive, this._coverageObjectives);
+            emitCoverageUpdate(this._observedEpisodes);
         } else {
             await this.performEpisode(this._environment, this._actingNetwork, rewardFunction, false);
         }

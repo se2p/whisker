@@ -160,6 +160,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             await this._applyLocalSearch(parentPopulation);
             this._iterations++;
             this.updateStatistics();
+            // emit fitness to the UI
             await this._emitFrontierFitnessUpdate(parentPopulation);
         }
 
@@ -319,12 +320,17 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
+        // emit coverage updates to the UI
         this._emitCoverageUpdate();
     }
 
     setFitnessFunction(): void {
         throw new Error('Method not implemented.');
     }
+    /**
+     * Reports best/average fitness-distance towards every currently active (non-optimised) target, rather
+     * than a single value
+     */
     private async _emitFrontierFitnessUpdate(population: C[]): Promise<void> {
         if (!Container.vm || population.length == 0) return;
         const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));

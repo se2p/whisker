@@ -405,81 +405,6 @@ export class MioNeatest extends ManyObjectiveNeatest {
      * Sets the required hyperparameter.
      * @param properties the user-defined hyperparameter.
      */
-    protected override _shouldEmitPerTarget(): boolean { return false; }
-
-    protected override _emitNetworkTopology(): void {
-        if (!Container.vm || this._currentTarget === undefined) return;
-        const candidates = this._archiveUncovered.get(this._currentTarget);
-        const best = candidates && candidates.length > 0
-            ? candidates.reduce((a, b) =>
-                (b.coverageObjectives.get(this._currentTarget) ?? 0) > (a.coverageObjectives.get(this._currentTarget) ?? 0) ? b : a,
-                candidates[0])
-            : this._archive.get(this._currentTarget);
-        if (!best) return;
-        const gen = this._getTopologyGeneration();
-        const snapshot = {
-            generation: gen,
-            nodes: best.getAllNodes().map(n => n.toJSON()),
-            connections: best.connections.filter(c => c.isEnabled).map(c => ({
-                source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4))
-            }))
-        };
-        this._topologyHistory.set(gen, snapshot);
-        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
-    }
-
-    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
-        if (!Container.vm || population.networks.length === 0 || this._currentTarget === undefined) return;
-
-        let bestSpeciesId: number | null = null;
-        let bestScore = -1;
-        const species = population.species.map(s => {
-            if (s.networks.length === 0) return null;
-            const best = s.networks.reduce((a, b) =>
-                (b.coverageObjectives.get(this._currentTarget) ?? 0) > (a.coverageObjectives.get(this._currentTarget) ?? 0) ? b : a,
-                s.networks[0]
-            );
-            const score = best.coverageObjectives.get(this._currentTarget) ?? 0;
-            if (score > bestScore) {
-                bestScore = score;
-                bestSpeciesId = s.uID;
-            }
-            return {
-                speciesId: s.uID,
-                memberCount: s.networks.length,
-                averageFitness: Number(s.averageFitness.toFixed(4)),
-                nodes: best.getAllNodes().map(n => n.toJSON()),
-                connections: best.connections.filter(c => c.isEnabled)
-                    .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-            };
-        }).filter(Boolean);
-
-        if (species.length === 0) return;
-
-        const gen = this._getTopologyGeneration();
-        const snapshot = { generation: gen, species, bestSpeciesId };
-        this._speciesTopologyHistory.set(gen, snapshot);
-        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
-    }
-
-
-    /* override since in mio we are showing the fitness for the single target we are mutating for not the frontier*/
-    protected override _emitFitnessUpdate(): void {
-        if (!Container.vm || this._currentTarget === undefined) return;
-        const scores = this._population.networks.map(n => n.coverageObjectives.get(this._currentTarget) ?? 0);
-        if (scores.length === 0) return;
-        const best = Math.max(...scores);
-        const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-        const label = this._fitnessFunctions.get(this._currentTarget)?.toString() ?? `Objective ${this._currentTarget}`;
-
-        Container.vm.emit('FITNESS_UPDATE', {
-            generation: this._getTopologyGeneration(),
-            best: Number(best.toFixed(4)),
-            average: Number(average.toFixed(4)),
-            label
-        });
-    }
-
     override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         super.setProperties(properties);
         this._mutationOperator = this._neuroevolutionProperties.mutationOperator;
@@ -493,4 +418,71 @@ export class MioNeatest extends ManyObjectiveNeatest {
         this._randomSelectionProbabilityFocusedPhase = this._neuroevolutionProperties.randomSelectionProbabilityFocusedPhase;
     }
 
+    // Methods for reporting data to the UI
+
+    /**
+     * MIO mutates towards a single target at a time, so report only that target rather than a frontier.
+     */
+    protected override _shouldEmitPerTarget(): boolean { return false; }
+
+    /**
+     * Reports the topology of the best network towards the single target MIO is currently mutating
+     * towards.
+     */
+    protected override _emitNetworkTopology(): void {
+        if (this._currentTarget === undefined) return;
+        const candidates = this._archiveUncovered.get(this._currentTarget);
+        const best = candidates && candidates.length > 0
+            ? NeatPopulation.getBestForTarget(candidates, this._currentTarget)
+            : this._archive.get(this._currentTarget);
+        if (!best) return;
+        this._emitNetworkTopologySnapshot(best);
+    }
+
+    /**
+     * Reports every species' representative network topology, picking each species' representative by
+     * coverage score on the single target MIO is currently mutating towards, rather than by overall fitness.
+     */
+    protected override _emitSpeciesTopologies(population: NeatPopulation): void {
+        if (population.networks.length === 0 || this._currentTarget === undefined) return;
+        let bestSpeciesId: number | null = null;
+        let bestScore = -1;
+        const species = population.species.map(s => {
+            if (s.networks.length === 0) return null;
+            const best = NeatPopulation.getBestForTarget(s.networks, this._currentTarget);
+            const score = best.coverageObjectives.get(this._currentTarget) ?? 0;
+            if (score > bestScore) {
+                bestScore = score;
+                bestSpeciesId = s.uID;
+            }
+            return s.toTopologyEntry(best);
+        }).filter(s => s !== null);
+
+        if (species.length === 0) return;
+
+        const gen = this._getTopologyGeneration();
+        const snapshot = { generation: gen, species, bestSpeciesId };
+        this._speciesTopologyHistory.set(gen, snapshot);
+        Container.vm.emit('SPECIES_NETWORK_TOPOLOGY', snapshot);
+    }
+
+
+    /**
+     * Override since in mio we are showing the fitness for the single target we are mutating for not the frontier.
+     */
+    protected override _emitFitnessUpdate(): void {
+        if (this._currentTarget === undefined) return;
+        const scores = this._population.networks.map(n => n.coverageObjectives.get(this._currentTarget) ?? 0);
+        if (scores.length === 0) return;
+        const best = Math.max(...scores);
+        const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        const label = this._fitnessFunctions.get(this._currentTarget)?.toString() ?? `Objective ${this._currentTarget}`;
+
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._getTopologyGeneration(),
+            best: Number(best.toFixed(4)),
+            average: Number(average.toFixed(4)),
+            label
+        });
+    }
 }

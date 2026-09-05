@@ -73,6 +73,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                     this._bestIndividuals = [];
                     this._bestIndividuals.push(bestIndividual);
                 }
+                // Report fitness updates to the UI
                 this._emitFitnessUpdate(bestFitness, undefined, "randomsearch");
             }
 
@@ -100,6 +101,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
+        // Report coverage updates to the UI
         this._emitCoverageUpdate();
     }
 

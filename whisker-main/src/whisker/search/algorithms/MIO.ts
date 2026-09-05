@@ -243,12 +243,14 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
                 await this.applyLocalSearch(chromosome);
+                // Emit fitness updates to the UI
                 this._emitFitnessUpdate(currentHeuristic, undefined, fitnessFunction.toString());
 
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
             this.updateCoverageTimeLine();
+            // Emit coverage updates to the UI
             this._emitCoverageUpdate();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();

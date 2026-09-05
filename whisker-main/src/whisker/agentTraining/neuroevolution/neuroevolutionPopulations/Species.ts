@@ -1,9 +1,10 @@
-import {Randomness} from "../../../utils/Randomness";
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {NeatPopulation} from "./NeatPopulation";
-import {NeatParameter} from "../hyperparameter/NeatParameter";
+import { Randomness } from "../../../utils/Randomness";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { NeatPopulation } from "./NeatPopulation";
+import { NeatParameter } from "../hyperparameter/NeatParameter";
 import Arrays from "../../../utils/Arrays";
 import logger from "../../../../util/logger";
+import { SpeciesTopologyEntry } from "../NetworkTopologyTypes";
 
 export class Species<C extends NeatChromosome> {
 
@@ -401,6 +402,23 @@ export class Species<C extends NeatChromosome> {
      */
     public getSpeciesSize(): number {
         return this.networks.length;
+    }
+
+    /**
+     * Serializes this species for the species-networks/species-topology charts: id, member count, average
+     * fitness, and the given representative network's topology. The representative is passed in rather
+     * than always using this.champion, since callers pick a different one depending on context (e.g. the
+     * network that just covered an objective, or the best performer on one specific target).
+     * @param representative the network whose topology represents this species in the chart.
+     * @return this species' entry for a SpeciesTopologySnapshot.
+     */
+    public toTopologyEntry(representative: C): SpeciesTopologyEntry {
+        return {
+            speciesId: this.uID,
+            memberCount: this.networks.length,
+            averageFitness: Number(this.averageFitness.toFixed(4)),
+            ...representative.toTopologyNetwork()
+        };
     }
 
     get uID(): number {

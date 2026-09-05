@@ -54,6 +54,7 @@ export class Neatest extends NEAT {
      * @returns Mapping of an objective's key to the network capable of reaching the given objective reliably.
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
+        // Sets up the REQUEST_TOPOLOGY_GEN/REQUEST_SPECIES_TOPOLOGY_GEN listeners for this run (see NEAT).
         this._initTopologyHistory();
         this.initialise();
         const totalNumObjectives = this._fitnessFunctions.size;
@@ -204,6 +205,8 @@ export class Neatest extends NEAT {
                 logger.debug(`Covered Objective ${fitnessFunctionKey}:${fitnessFunction}`);
                 coveredNewObjective = true;
                 this._archive.set(fitnessFunctionKey, network);
+                // A network can incidentally cover other objectives while playing towards its current
+                // target; only report the target we are actually tracking, not every incidental one.
                 if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
                     this._emitFitnessUpdate(network.fitness, this._population.averageFitness, 'neatest');
                     this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
@@ -301,26 +304,6 @@ export class Neatest extends NEAT {
         this._emitFitnessUpdate(this._population.bestFitness, this._population.averageFitness, 'neatest');
     }
 
-    protected _shouldRecordCoveredTopology(key: number): boolean {
-        return key === this._targetKey;
-    }
-
-    protected override _emitNetworkTopology(): void {
-        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
-        const best = this._population.networks.reduce(
-            (a, b) => b.fitness > a.fitness ? b : a,
-            this._population.networks[0]
-        );
-        const nodes = best.getAllNodes().map(n => n.toJSON());
-        const connections = best.connections
-            .filter(c => c.isEnabled)
-            .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
-        const gen = this._getTopologyGeneration();
-        const snapshot = {generation: gen, nodes, connections};
-        this._topologyHistory.set(gen, snapshot);
-        Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
-    }
-
     /**
      * Updates the List of the best networks found so far, and the statistics used for reporting.
      */
@@ -402,5 +385,25 @@ export class Neatest extends NEAT {
             }
         }
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
+    }
+
+    // Methods for reporting data to the UI
+
+    /**
+     * Whether a just-covered objective should be reported to the UI as "covered". Neatest only tracks its
+     * one current target at a time, so an incidentally covered objective (see updateArchive()) is not
+     * reported here but only when it matches that target.
+     */
+    protected _shouldRecordCoveredTopology(key: number): boolean {
+        return key === this._targetKey;
+    }
+
+    /**
+     * Reports the population's fittest network's topology to the UI.
+     */
+    protected override _emitNetworkTopology(): void {
+        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+        const best = NeatPopulation.getFittest(this._population.networks);
+        this._emitNetworkTopologySnapshot(best);
     }
 }

@@ -10,6 +10,8 @@ import { NeatChromosome } from "../networks/NeatChromosome";
 import logger from '../../../../util/logger';
 import { NeatParameter } from "../hyperparameter/NeatParameter";
 import { Container } from "../../../utils/Container";
+import { FitnessUpdateData } from "../../../utils/ReportingEvents";
+import { NetworkTopologySnapshot, SpeciesTopologySnapshot, TopologyGenerationRequest } from "../NetworkTopologyTypes";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -28,26 +30,26 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * previously reported generation can be re-served on request (see REQUEST_TOPOLOGY_GEN) without
      * recomputation.
      */
-    protected _topologyHistory: Map<number, object> = new Map();
+    protected _topologyHistory: Map<number, NetworkTopologySnapshot> = new Map();
 
     /**
      * The currently registered listener for REQUEST_TOPOLOGY_GEN events, tracked so it can be removed
      * before a new one is attached, avoiding stacking duplicate listeners on Container.vm.
      */
-    private static _topologyHistoryListener: ((data: { generation: number }) => void) | null = null;
+    private static _topologyHistoryListener: ((data: TopologyGenerationRequest) => void) | null = null;
 
     /**
      * Caches, per generation, the topology snapshot of every species' representative network, so that a
      * previously reported generation can be re-served on request (see REQUEST_SPECIES_TOPOLOGY_GEN)
      * without recomputation.
      */
-    protected _speciesTopologyHistory: Map<number, object> = new Map();
+    protected _speciesTopologyHistory: Map<number, SpeciesTopologySnapshot> = new Map();
 
     /**
      * The currently registered listener for REQUEST_SPECIES_TOPOLOGY_GEN events, tracked so it can be
      * removed before a new one is attached, avoiding stacking duplicate listeners on Container.vm.
      */
-    private static _speciesTopologyHistoryListener: ((data: { generation: number }) => void) | null = null;
+    private static _speciesTopologyHistoryListener: ((data: TopologyGenerationRequest) => void) | null = null;
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -239,13 +241,13 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         if (NEAT._topologyHistoryListener) {
             Container.vm.removeListener('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
         }
-        NEAT._topologyHistoryListener = (data: { generation: number }) => this._onRequestTopologyGen(data);
+        NEAT._topologyHistoryListener = (data: TopologyGenerationRequest) => this._onRequestTopologyGen(data);
         Container.vm.on('REQUEST_TOPOLOGY_GEN', NEAT._topologyHistoryListener);
 
         if (NEAT._speciesTopologyHistoryListener) {
             Container.vm.removeListener('REQUEST_SPECIES_TOPOLOGY_GEN', NEAT._speciesTopologyHistoryListener);
         }
-        NEAT._speciesTopologyHistoryListener = (data: { generation: number }) => this._onRequestSpeciesTopologyGen(data);
+        NEAT._speciesTopologyHistoryListener = (data: TopologyGenerationRequest) => this._onRequestSpeciesTopologyGen(data);
         Container.vm.on('REQUEST_SPECIES_TOPOLOGY_GEN', NEAT._speciesTopologyHistoryListener);
     }
 
@@ -253,7 +255,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Answers a UI request for a past generation's network topology from the cache built up by
      * _emitNetworkTopology(); does nothing if that generation was never recorded.
      */
-    private _onRequestTopologyGen(data: { generation: number }): void {
+    private _onRequestTopologyGen(data: TopologyGenerationRequest): void {
         const snapshot = this._topologyHistory.get(data.generation);
         if (snapshot) {
             Container.vm.emit('NETWORK_TOPOLOGY_HISTORY', snapshot);
@@ -264,7 +266,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Answers a UI request for a past generation's species topologies from the cache built up by
      * _emitSpeciesTopologies(); does nothing if that generation was never recorded.
      */
-    private _onRequestSpeciesTopologyGen(data: { generation: number }): void {
+    private _onRequestSpeciesTopologyGen(data: TopologyGenerationRequest): void {
         const snapshot = this._speciesTopologyHistory.get(data.generation);
         if (snapshot) {
             Container.vm.emit('SPECIES_NETWORK_TOPOLOGY_HISTORY', snapshot);
@@ -280,19 +282,19 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected _emitNetworkTopology(): void {
         if (!Container.vm) return;
         // NEAT stores the overall best at _fitnessFunctions.size+1; Neatest only stores per-objective networks.
-        let best = this._archive.get(this._fitnessFunctions.size + 1);
-        if (!best) {
-            for (const chr of this._archive.values()) {
-                if (!best || chr.fitness > best.fitness) best = chr;
-            }
-        }
+        const networks = [...this._archive.values()];
+        const best = this._archive.get(this._fitnessFunctions.size + 1) ?? NeatPopulation.getFittest(networks);
         if (!best) return;
-        const nodes = best.getAllNodes().map(n => n.toJSON());
-        const connections = best.connections
-            .filter(c => c.isEnabled)
-            .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
+        this._emitNetworkTopologySnapshot(best);
+    }
+
+    /**
+     * Builds a topology snapshot from the given network, caches it by generation, and emits it to the UI.
+     * Shared by every _emitNetworkTopology() override - only how "the network to report" is picked differs.
+     */
+    protected _emitNetworkTopologySnapshot(network: NeatChromosome): void {
         const gen = this._getTopologyGeneration();
-        const snapshot = { generation: gen, nodes, connections };
+        const snapshot = { generation: gen, ...network.toTopologyNetwork() };
         this._topologyHistory.set(gen, snapshot);
         Container.vm.emit('NETWORK_TOPOLOGY', snapshot);
     }
@@ -305,11 +307,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      */
     protected _emitCoveredNetworkTopology(key: number, network: NeatChromosome): void {
         const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
-        const nodes = network.getAllNodes().map(n => n.toJSON());
-        const connections = network.connections
-            .filter(c => c.isEnabled)
-            .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }));
-        Container.vm.emit('NETWORK_TOPOLOGY_COVERED', { objectiveKey: key, label, nodes, connections });
+        Container.vm.emit('NETWORK_TOPOLOGY_COVERED', { objectiveKey: key, label, ...network.toTopologyNetwork() });
     }
 
     /**
@@ -325,30 +323,14 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
                 if (isCoveringSpecies) bestSpeciesId = s.uID;
                 const best = isCoveringSpecies
                     ? coveringNetwork
-                    : (s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]));
+                    : (s.champion ?? NeatPopulation.getFittest(s.networks));
                 if (!best) return null;
-                return {
-                    speciesId: s.uID,
-                    memberCount: s.networks.length,
-                    averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => n.toJSON()),
-                    connections: best.connections
-                        .filter(c => c.isEnabled)
-                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-                };
+                return s.toTopologyEntry(best);
             })
             .filter(s => s !== null);
         if (species.length === 0) {
             bestSpeciesId = 0;
-            species = [{
-                speciesId: 0,
-                memberCount: 1,
-                averageFitness: Number(coveringNetwork.fitness.toFixed(4)),
-                nodes: coveringNetwork.getAllNodes().map(n => n.toJSON()),
-                connections: coveringNetwork.connections
-                    .filter(c => c.isEnabled)
-                    .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-            }];
+            species = [{ speciesId: 0, memberCount: 1, averageFitness: Number(coveringNetwork.fitness.toFixed(4)), ...coveringNetwork.toTopologyNetwork() }];
         }
         Container.vm.emit('SPECIES_NETWORK_TOPOLOGY_COVERED', { objectiveKey: key, label, species, bestSpeciesId });
     }
@@ -358,7 +340,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * MioNeatest to report only the single target it is currently mutating towards.
      */
     protected override _emitFitnessUpdate(best: number, average?: number, label?: string): void {
-        const data: { generation: number; best: number; average?: number; label?: string } = {
+        const data: FitnessUpdateData = {
             generation: this._getTopologyGeneration(),
             best: Number(best.toFixed(4))
         };
@@ -375,22 +357,14 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      */
     protected _emitSpeciesTopologies(population: NeatPopulation): void {
         if (!Container.vm || population.networks.length === 0) return;
-        const champion = population.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, population.networks[0]);
+        const champion = NeatPopulation.getFittest(population.networks);
         let bestSpeciesId: number | null = null;
         const species = population.species
             .map(s => {
-                const best = s.champion ?? s.networks.reduce((a, b) => b.fitness > a.fitness ? b : a, s.networks[0]);
+                const best = s.champion ?? NeatPopulation.getFittest(s.networks);
                 if (!best) return null;
                 if (champion && s.networks.includes(champion)) bestSpeciesId = s.uID;
-                return {
-                    speciesId: s.uID,
-                    memberCount: s.networks.length,
-                    averageFitness: Number(s.averageFitness.toFixed(4)),
-                    nodes: best.getAllNodes().map(n => n.toJSON()),
-                    connections: best.connections
-                        .filter(c => c.isEnabled)
-                        .map(c => ({ source: c.source.uID, target: c.target.uID, weight: Number(c.weight.toFixed(4)) }))
-                };
+                return s.toTopologyEntry(best);
             })
             .filter(s => s !== null);
         if (species.length === 0) return;
