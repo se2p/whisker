@@ -30,6 +30,7 @@ import { StoppingCondition } from "../StoppingCondition";
 import { TestChromosome } from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
 import { emitCoverageUpdate, emitFitnessUpdate } from "../../utils/ReportingEvents";
+import { Container } from "../../utils/Container";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -191,6 +192,73 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      */
     protected _emitFitnessUpdate(best: number, average?: number, label?: string): void {
         emitFitnessUpdate(this._iterations, best, average, label);
+    }
+
+
+    /**
+     * Target keys that have been included in a reported frontier at least once, i.e. shown as "current"
+     * in the fitness chart - only these can meaningfully transition to "covered" there.
+     */
+    private _reportedFrontierTargets = new Set<number>();
+
+    /**
+     * Target keys already reported as covered via _emitFrontierUpdate(), so each is only reported once.
+     */
+    private _reportedCoveredTargets = new Set<number>();
+
+    /**
+     * Reports best/average scores towards several currently active targets at once, rather than a single
+     * value - shared by every algorithm that pursues multiple targets simultaneously (e.g. MOSA, MIO);
+     * only how scores are obtained per target, and whether higher or lower counts as "best", differs.
+     * @param activeTargets keys of the targets to report.
+     * @param getScores returns the scores to aggregate for a given target key.
+     * @param pickBest picks the best score out of a target's scores (e.g. Math.min for distance, Math.max
+     * for a 0-1 heuristic).
+     */
+    protected async _emitFrontierUpdate(activeTargets: number[],
+        getScores: (key: number) => number[] | Promise<number[]>,
+        pickBest: (scores: number[]) => number): Promise<void> {
+        // Only a target that was actually shown as "current" can meaningfully move to "covered" in the
+        // chart - an objective archived before ever appearing in a reported frontier has nothing to move.
+        if (Container.vm) {
+            for (const key of this._reportedFrontierTargets) {
+                if (this._archive.has(key) && !this._reportedCoveredTargets.has(key)) {
+                    this._reportedCoveredTargets.add(key);
+                    Container.vm.emit('OBJECTIVE_COVERED', {
+                        objectiveKey: key,
+                        label: this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`
+                    });
+                }
+            }
+        }
+
+        if (!Container.vm || activeTargets.length === 0) return;
+
+        const perTarget = (await Promise.all(activeTargets.map(async key => {
+            const scores = await getScores(key);
+            if (scores.length === 0) return null;
+            const best = pickBest(scores);
+            const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            const label = this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`;
+            return {
+                targetKey: key,
+                label,
+                best: Number(best.toFixed(4)),
+                average: Number(average.toFixed(4))
+            };
+        }))).filter(entry => entry !== null);
+
+        if (perTarget.length === 0) return;
+        for (const entry of perTarget) {
+            this._reportedFrontierTargets.add(entry.targetKey);
+        }
+        Container.vm.emit('FITNESS_UPDATE', {
+            generation: this._iterations,
+            best: perTarget[0].best,
+            average: perTarget[0].average,
+            label: perTarget[0].label,
+            perTarget
+        });
     }
 
 }

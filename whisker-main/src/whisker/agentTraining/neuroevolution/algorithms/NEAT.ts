@@ -276,8 +276,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     /**
      * Reports the current best network's topology to the UI.
      * Overridden by Neatest (best network of the population it is currently evolving towards its one
-     * target objective), ManyObjectiveNeatest (a frontier entry per target in its set of currently active
-     * targets), and MioNeatest (only the single target it is currently mutating towards).
+     * target objective) and ManyObjectiveNeatest (a frontier entry per target in its set of currently active
+     * targets).
      */
     protected _emitNetworkTopology(): void {
         if (!Container.vm) return;
@@ -336,8 +336,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
     /**
      * Reports a single best/average fitness value to the UI for the fitness-over-time chart. Overridden by
-     * ManyObjectiveNeatest to report a value per currently active target instead of just one, and by
-     * MioNeatest to report only the single target it is currently mutating towards.
+     * ManyObjectiveNeatest to report a value per currently active target instead of just one.
      */
     protected override _emitFitnessUpdate(best: number, average?: number, label?: string): void {
         const data: FitnessUpdateData = {
@@ -351,9 +350,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     /**
      * Reports every species' representative network topology to the UI. Overridden by ManyObjectiveNeatest
-     * to also include a species breakdown per target in its set of currently active targets, and by
-     * MioNeatest to pick each species' representative by the single target it is currently mutating
-     * towards instead of by overall fitness.
+     * to also include a species breakdown per target in its set of currently active targets instead of by overall fitness.
      */
     protected _emitSpeciesTopologies(population: NeatPopulation): void {
         if (!Container.vm || population.networks.length === 0) return;

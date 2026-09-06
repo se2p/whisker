@@ -29,7 +29,6 @@ import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
 import { Chromosome } from "../Chromosome";
-import { Container } from '../../utils/Container';
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -329,38 +328,16 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
     /**
      * Reports best/average fitness-distance towards every currently active (non-optimised) target, rather
-     * than a single value
+     * than a single value. Distance is lower-is-better.
      */
     private async _emitFrontierFitnessUpdate(population: C[]): Promise<void> {
-        if (!Container.vm || population.length == 0) return;
+        if (population.length === 0) return;
         const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
-        if (activeTargets.length === 0) return;
-        const perTarget = await Promise.all(activeTargets.map(async key => {
-            const fitnessFunction = this._fitnessFunctions.get(key)!;
-            let sum = 0;
-            const scores: number[] = [];
-            for (const chromosome of population) {
-                const score = await fitnessFunction.getFitness(chromosome);
-                sum += score;
-                scores.push(score);
-            }
-            const best = Math.min(...scores);
-            const average = sum / scores.length;
-            return {
-                targetKey: key,
-                label: fitnessFunction.toString(),
-                best: Number(best.toFixed(4)),
-                average: Number(average.toFixed(4))
-            };
-        }));
-
-        Container.vm.emit('FITNESS_UPDATE', {
-            generation: this._iterations,
-            best: perTarget[0].best,
-            average: perTarget[0].average,
-            label: perTarget[0].label,
-            perTarget
-        });
+        await this._emitFrontierUpdate(
+            activeTargets,
+            key => Promise.all(population.map(chromosome => this._fitnessFunctions.get(key)!.getFitness(chromosome))),
+            scores => Math.min(...scores)
+        );
     }
 
 

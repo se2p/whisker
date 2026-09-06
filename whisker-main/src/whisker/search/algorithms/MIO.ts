@@ -243,15 +243,14 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
                 await this.applyLocalSearch(chromosome);
-                // Emit fitness updates to the UI
-                this._emitFitnessUpdate(currentHeuristic, undefined, fitnessFunction.toString());
 
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
             this.updateCoverageTimeLine();
-            // Emit coverage updates to the UI
+            // Emit coverage and fitness updates to the UI
             this._emitCoverageUpdate();
+            await this._emitFrontierFitnessUpdate();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
@@ -259,6 +258,19 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`);
         }
         return this._archiveCovered;
+    }
+
+    /**
+     * Reports best/average heuristic value towards every currently uncovered target with at least one
+     * archived candidate, rather than a single value. Heuristic is higher-is-better (range [0, 1]).
+     */
+    private async _emitFrontierFitnessUpdate(): Promise<void> {
+        const activeTargets = [...this._archiveUncovered.keys()];
+        await this._emitFrontierUpdate(
+            activeTargets,
+            key => this._archiveUncovered.get(key).map(tuple => tuple.heuristicValue),
+            scores => Math.max(...scores)
+        );
     }
 
     /**
