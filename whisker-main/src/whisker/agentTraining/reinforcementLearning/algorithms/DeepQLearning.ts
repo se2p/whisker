@@ -106,6 +106,7 @@ export class DeepQLearning extends RLTestGenerationAlgorithm<QNetwork> {
             await this._evaluate(this._actingNetwork, this._environment, rewardFunction);
             StatisticsCollector.getInstance().updateCoverageTimeLine();
             emitCoverageUpdate(this._observedEpisodes);
+            this._emitCdgUpdate();
         } else {
             await this.performEpisode(this._environment, this._actingNetwork, rewardFunction, false);
         }

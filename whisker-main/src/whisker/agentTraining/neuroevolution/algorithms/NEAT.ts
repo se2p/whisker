@@ -130,6 +130,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         this.updateCoverageTimeLine();
         this._emitNetworkTopology();
         this._emitCoverageUpdate();
+        this._emitCdgUpdate();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;

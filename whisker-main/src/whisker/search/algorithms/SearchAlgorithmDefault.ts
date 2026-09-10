@@ -29,8 +29,9 @@ import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import { StoppingCondition } from "../StoppingCondition";
 import { TestChromosome } from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
-import { emitCoverageUpdate, emitFitnessUpdate } from "../../utils/ReportingEvents";
+import { emitCoverageUpdate, emitFitnessUpdate, emitCdgDot } from "../../utils/ReportingEvents";
 import { Container } from "../../utils/Container";
+import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -192,6 +193,32 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      */
     protected _emitFitnessUpdate(best: number, average?: number, label?: string): void {
         emitFitnessUpdate(this._iterations, best, average, label);
+    }
+
+    /**
+     * Maps fitness-function keys to their CDG node ids, dropping any key that isn't backed by a
+     * StatementFitnessFunction. Used by _emitCdgUpdate() overrides to build the "currently targeted" set.
+     * Uses the target node directly rather than getNodeId(), since BranchCoverageFitnessFunction overrides
+     * the latter to append a "-True"/"-False" suffix that matches no CDG node.
+     */
+    protected _mapKeysToNodeIds(keys: Iterable<number>): Set<string> {
+        const nodeIds = new Set<string>();
+        for (const key of keys) {
+            const fitnessFunction = this._fitnessFunctions.get(key);
+            if (fitnessFunction instanceof StatementFitnessFunction) {
+                nodeIds.add(String(fitnessFunction.getTargetNode().id));
+            }
+        }
+        return nodeIds;
+    }
+
+    /**
+     * Reports the CDG to the UI (statement coverage is read from StatisticsCollector by emitCdgDot).
+     * Single-target algorithms override this to mark the one objective they're currently searching for;
+     * many-objective algorithms (e.g. MOSA, MIO) override it to mark their whole active frontier.
+     */
+    protected _emitCdgUpdate(): void {
+        emitCdgDot(Container.cdg, new Set());
     }
 
 

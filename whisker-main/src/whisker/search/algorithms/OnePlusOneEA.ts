@@ -24,6 +24,9 @@ import { ChromosomeGenerator } from '../ChromosomeGenerator';
 import { FitnessFunction } from "../FitnessFunction";
 import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
 import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
+import { Container } from "../../utils/Container";
+import { emitCdgDot } from "../../utils/ReportingEvents";
 import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -94,6 +97,7 @@ ${bestIndividual.toString()}`);
             this.updateCoverageTimeLine();
             // Emit coverage updates to the UI
             this._emitCoverageUpdate();
+            this._emitCdgUpdate();
             // Report fitness updates to the UI
             this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
             StatisticsCollector.getInstance().incrementIterationCount();
@@ -150,5 +154,16 @@ ${bestIndividual.toString()}`);
 
     setLocalSearchOperators(): void {
         throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and the single objective OnePlusOneEA
+     * is currently targeting.
+     */
+    protected override _emitCdgUpdate(): void {
+        const targetedKeys = this._fitnessFunction instanceof StatementFitnessFunction
+            ? new Set([String(this._fitnessFunction.getTargetNode().id)])
+            : new Set<string>();
+        emitCdgDot(Container.cdg, targetedKeys);
     }
 }

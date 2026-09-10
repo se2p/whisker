@@ -103,6 +103,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         this.updateCoverageTimeLine();
         // Report coverage updates to the UI
         this._emitCoverageUpdate();
+        // Report the CDG to the UI - RandomSearch has no target, so nothing is marked as "targeted"
+        this._emitCdgUpdate();
     }
 
     getNumberOfIterations(): number {

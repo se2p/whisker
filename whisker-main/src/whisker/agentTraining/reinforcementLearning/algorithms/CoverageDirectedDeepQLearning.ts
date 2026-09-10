@@ -40,6 +40,7 @@ export class CoverageDirectedDeepQLearning extends DeepQLearning {
             this._initialize();
 
             const currentObjective = this._selectNextObjective();
+            this._currentTargetObjective = currentObjective;
             const objectiveKey = this._getKeyForObjective(currentObjective);
             _prevObjectiveKey = objectiveKey;
             _prevObjectiveLabel = currentObjective.toString();

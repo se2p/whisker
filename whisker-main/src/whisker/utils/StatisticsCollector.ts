@@ -136,6 +136,10 @@ export class StatisticsCollector {
         this._statements = value;
     }
 
+    get statements(): Map<StatementFitnessFunction, number> {
+        return this._statements;
+    }
+
     set branches(value: Map<BranchCoverageFitnessFunction, number>) {
         this._branches = value;
     }
@@ -479,6 +483,14 @@ export class StatisticsCollector {
                 .filter(([, coverCount]) => coverCount >= stableCount)
                 .map(([st]) => st)
         );
+    }
+
+    /**
+     * CDG node ids of every covered statement. Used by the CDG report so it colours nodes and counts
+     * coverage by statement, whether the run's objective is statement or branch coverage.
+     */
+    public getCoveredStatementNodeIds(): Set<string> {
+        return new Set([...this.getCoveredStatements()].map(st => String(st.getTargetNode().id)));
     }
 
     private _isWinningStateCovered(): string {

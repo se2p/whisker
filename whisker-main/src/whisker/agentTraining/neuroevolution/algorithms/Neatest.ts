@@ -9,6 +9,7 @@ import Arrays from "../../../utils/Arrays";
 import { OneOfStoppingCondition } from "../../../search/stoppingconditions/OneOfStoppingCondition";
 import { OptimalSolutionStoppingCondition } from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import { Container } from "../../../utils/Container";
+import { emitCdgDot } from "../../../utils/ReportingEvents";
 import { NeatestParameter } from "../hyperparameter/NeatestParameter";
 import logger from "../../../../util/logger";
 import { TargetObjectiveSelection } from "../misc/TargetObjectiveSelection";
@@ -314,6 +315,7 @@ export class Neatest extends NEAT {
         this.updateCoverageTimeLine();
         this._emitNetworkTopology();
         this._emitCoverageUpdate();
+        this._emitCdgUpdate();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -405,5 +407,15 @@ export class Neatest extends NEAT {
         if (!Container.vm || !this._population || this._population.networks.length === 0) return;
         const best = NeatPopulation.getFittest(this._population.networks);
         this._emitNetworkTopologySnapshot(best);
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and the single objective Neatest is
+     * currently targeting.
+     */
+    protected override _emitCdgUpdate(): void {
+        const target = this._fitnessFunctionMap.get(this._targetKey);
+        const targetedKeys = target ? new Set([String(target.getTargetNode().id)]) : new Set<string>();
+        emitCdgDot(Container.cdg, targetedKeys);
     }
 }

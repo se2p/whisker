@@ -29,6 +29,8 @@ import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
 import { Chromosome } from "../Chromosome";
+import { Container } from "../../utils/Container";
+import { emitCdgDot } from "../../utils/ReportingEvents";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -321,6 +323,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this.updateCoverageTimeLine();
         // emit coverage updates to the UI
         this._emitCoverageUpdate();
+        this._emitCdgUpdate();
     }
 
     setFitnessFunction(): void {
@@ -338,6 +341,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             key => Promise.all(population.map(chromosome => this._fitnessFunctions.get(key)!.getFitness(chromosome))),
             scores => Math.min(...scores)
         );
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and every objective still being
+     * optimised.
+     */
+    protected override _emitCdgUpdate(): void {
+        const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
+        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(activeTargets));
     }
 
 

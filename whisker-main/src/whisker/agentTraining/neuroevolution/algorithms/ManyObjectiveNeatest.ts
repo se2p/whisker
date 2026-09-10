@@ -12,6 +12,7 @@ import logger from "../../../../util/logger";
 import { FitnessFunction } from "../../../search/FitnessFunction";
 import { TestCase } from "../../../core/TestCase";
 import { Container } from "../../../utils/Container";
+import { emitCdgDot } from "../../../utils/ReportingEvents";
 
 
 /**
@@ -428,5 +429,14 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      */
     protected override _getTopologyGeneration(): number {
         return this._population.generation;
+    }
+
+    /**
+    * Reports the CDG to the UI, coloring already covered statements and every objective in the currently
+    * targeted frontier.
+    */
+    protected override _emitCdgUpdate(): void {
+        const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
+        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(activeTargets));
     }
 }

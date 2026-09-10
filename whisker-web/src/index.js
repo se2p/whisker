@@ -72,6 +72,7 @@ const ConsoleLog = require('./components/console-log');
 const CoverageCurve = require('./components/coverage-curve');
 const FitnessChart = require('./components/fitness-chart');
 const SpeciesPopulationChart = require('./components/species-population-chart');
+const CdgGraph = require('./components/cdg-graph');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -924,6 +925,7 @@ const handleOnLoadProjectFile = async function (fileSelect) {
     if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
     if (Whisker.fitnessChart) Whisker.fitnessChart.reset();
     if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.reset();
+    if (Whisker.cdgGraph) Whisker.cdgGraph.reset();
     await Whisker.scratch.loadProject(project);
     const placeholder = document.getElementById('scratch-placeholder');
     if (placeholder) placeholder.style.display = 'none';
@@ -1061,6 +1063,7 @@ const initComponents = function () {
         title: i18next.t('species-pop-chart-title'),
         emptyMessage: i18next.t('species-pop-chart-empty')
     });
+    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'));
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
@@ -1370,6 +1373,7 @@ const initEvents = function () {
                 if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
                 if (Whisker.fitnessChart) Whisker.fitnessChart.startEmpty();
                 if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.startEmpty();
+                if (Whisker.cdgGraph) Whisker.cdgGraph.startEmpty();
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 document.getElementById('whisker-tab-editor').disabled = true;

@@ -2299,11 +2299,109 @@ label {
 }
 
 .network-topology-empty,
-.coverage-curve-empty {
+.coverage-curve-empty,
+.cdg-graph-empty {
     padding: 48px 16px;
     text-align: center;
     font-size: 0.82rem;
     color: #d1d5db;
+}
+
+.cdg-graph-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.cdg-graph-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cdg-graph-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.cdg-graph-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #374151;
+}
+
+.cdg-graph-view-toggle {
+    display: flex;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.cdg-graph-view-btn {
+    border: none;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 3px 10px;
+    cursor: pointer;
+}
+
+.cdg-graph-view-btn:not(:first-child) {
+    border-left: 1px solid #d1d5db;
+}
+
+.cdg-graph-view-btn--active {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.cdg-graph-canvas {
+    width: 100%;
+    height: 420px;
+}
+
+.cdg-graph-canvas--modal {
+    height: 75vh;
+}
+
+.cdg-graph-grid {
+    padding: 16px;
+    max-height: 420px;
+    overflow: auto;
+}
+
+.cdg-graph-grid--modal {
+    max-height: 75vh;
+}
+
+.cdg-graph-heatmap-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.cdg-graph-heatmap-cell {
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    border-radius: 3px;
+}
+
+.cdg-graph-heatmap-cell--dark {
+    color: #ffffff;
 }
 
 .network-topology-card {

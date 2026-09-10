@@ -31,6 +31,8 @@ import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnes
 import Arrays from "../../utils/Arrays";
 import logger from "../../../util/logger";
 import { BranchCoverageFitnessFunction } from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import { Container } from "../../utils/Container";
+import { emitCdgDot } from "../../utils/ReportingEvents";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -250,6 +252,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateCoverageTimeLine();
             // Emit coverage and fitness updates to the UI
             this._emitCoverageUpdate();
+            this._emitCdgUpdate();
             await this._emitFrontierFitnessUpdate();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
@@ -271,6 +274,14 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
             key => this._archiveUncovered.get(key).map(tuple => tuple.heuristicValue),
             scores => Math.max(...scores)
         );
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and every objective with at least
+     * one archived (uncovered) candidate.
+     */
+    protected override _emitCdgUpdate(): void {
+        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(this._archiveUncovered.keys()));
     }
 
     /**

@@ -18,18 +18,18 @@
  *
  */
 
-import {TestGenerator} from './TestGenerator';
-import {TestChromosome} from "../testcase/TestChromosome";
-import {SearchAlgorithm} from "../search/SearchAlgorithm";
-import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
-import {FitnessFunction} from "../search/FitnessFunction";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {Randomness} from "../utils/Randomness";
-import {Container} from "../utils/Container";
-import {emitCoverageUpdate} from "../utils/ReportingEvents";
-import {TestExecutor} from "../testcase/TestExecutor";
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import { TestGenerator } from './TestGenerator';
+import { TestChromosome } from "../testcase/TestChromosome";
+import { SearchAlgorithm } from "../search/SearchAlgorithm";
+import { NotSupportedFunctionException } from "../core/exceptions/NotSupportedFunctionException";
+import { FitnessFunction } from "../search/FitnessFunction";
+import { StatisticsCollector } from "../utils/StatisticsCollector";
+import { WhiskerTestListWithSummary } from "./WhiskerTestListWithSummary";
+import { Randomness } from "../utils/Randomness";
+import { Container } from "../utils/Container";
+import { emitCoverageUpdate, emitCdgDot } from "../utils/ReportingEvents";
+import { TestExecutor } from "../testcase/TestExecutor";
+import { WhiskerSearchConfiguration } from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
 import VMWrapper from "../../vm/vm-wrapper";
 import logger from '../../util/logger';
@@ -147,6 +147,9 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
         StatisticsCollector.getInstance().updateCoverageTimeLine();
         emitCoverageUpdate(this._iterations);
+        // Report the CDG to the UI. RandomTestGenerator has no target, so nothing is marked as
+        // "targeted"; emitCdgDot colours covered vs. uncovered statements from StatisticsCollector.
+        emitCdgDot(Container.cdg, new Set());
     }
 
     getCurrentSolution(): TestChromosome[] {
