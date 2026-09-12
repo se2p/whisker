@@ -21,19 +21,26 @@ class SpeciesPopulationChart {
             emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time',
             expand: i18n.expand || 'Click to expand'
         };
+        this._resetState();
+        this._buildUI(container);
+        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
+        // Only Neatest emits this (single sequential target, species restart on each switch).
+        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
+    }
+
+    _resetState() {
         this._history = [];
         this._speciesOrder = [];
         this._colorMap = new Map();
         this._colorIndex = 0;
-        this._buildUI(container);
-        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
+        this._pastTargets = [];
+        this._selectedKey = 'current';
     }
 
     reset() {
-        this._history = [];
-        this._speciesOrder = [];
-        this._colorMap = new Map();
-        this._colorIndex = 0;
+        this._resetState();
+        this._historySelect.innerHTML = '<option value="current">Current Target</option>';
+        this._historySelect.style.display = 'none';
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._countEl.textContent = '';
@@ -41,10 +48,9 @@ class SpeciesPopulationChart {
     }
 
     startEmpty() {
-        this._history = [];
-        this._speciesOrder = [];
-        this._colorMap = new Map();
-        this._colorIndex = 0;
+        this._resetState();
+        this._historySelect.innerHTML = '<option value="current">Current Target</option>';
+        this._historySelect.style.display = 'none';
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -88,16 +94,34 @@ class SpeciesPopulationChart {
 
         this._modal = new Modal({titleExtraClass: 'species-pop-chart-modal-title'});
         this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.insertAdjacentHTML('afterend', `
+            <select class="network-topology-history-select" id="spc-history-select" style="display:none;">
+                <option value="current">Current Target</option>
+            </select>`);
+        this._historySelect = this._modal.el.querySelector('#spc-history-select');
+        this._historySelect.addEventListener('change', () => {
+            this._selectedKey = this._historySelect.value;
+            const W = this._modalCanvas.parentElement.clientWidth - 32;
+            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey(this._selectedKey));
+        });
         this._modal.bodyEl.innerHTML = '<canvas class="species-pop-chart-modal-canvas"></canvas>';
         this._modalCanvas = this._modal.bodyEl.querySelector('.species-pop-chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
     }
 
+    // Resolves 'current' | objectiveKey to the {history, speciesOrder, colorMap} it should render.
+    _stateForKey(key) {
+        const current = {history: this._history, speciesOrder: this._speciesOrder, colorMap: this._colorMap};
+        if (key === 'current') return current;
+        return this._pastTargets.find(t => String(t.objectiveKey) === key) || current;
+    }
+
     _openModal() {
-        if (!this._history.length) return;
+        if (!this._history.length && this._pastTargets.length === 0) return;
         this._modal.open();
+        this._historySelect.value = this._selectedKey;
         const W = this._modalCanvas.parentElement.clientWidth - 32;
-        this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
+        this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey(this._selectedKey));
     }
 
     _update(data) {
@@ -117,38 +141,63 @@ class SpeciesPopulationChart {
         this._canvas.style.display = '';
         this._countEl.textContent = `${data.species.length}`;
         this._redraw();
-        if (this._modal.isOpen()) {
+        if (this._modal.isOpen() && this._selectedKey === 'current') {
             const W = this._modalCanvas.parentElement.clientWidth - 32;
-            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
+            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey('current'));
         }
+    }
+
+    // Neatest's current target was covered: species restart for the next target, so archive this target's
+    // chart under its objective key instead of letting the live chart keep stacking across the switch.
+    _onTargetCovered(data) {
+        if (this._history.length > 0) {
+            this._pastTargets.push({
+                objectiveKey: data.objectiveKey,
+                history: this._history,
+                speciesOrder: this._speciesOrder,
+                colorMap: this._colorMap
+            });
+            const opt = document.createElement('option');
+            opt.value = String(data.objectiveKey);
+            opt.textContent = `Obj. ${data.objectiveKey}`;
+            opt.title = data.label;
+            this._historySelect.appendChild(opt);
+            this._historySelect.style.display = '';
+        }
+        this._history = [];
+        this._speciesOrder = [];
+        this._colorMap = new Map();
+        this._colorIndex = 0;
+        this._countEl.textContent = '';
+        this._redraw();
     }
 
     _redraw() {
         const W = this._card.clientWidth - 2;
         if (W <= 0) return;
-        this._drawChart(this._canvas, this._ctx, W, CHART_H);
+        this._drawChart(this._canvas, this._ctx, W, CHART_H, this._stateForKey('current'));
     }
 
-    _drawChart(canvas, ctx, W, chartH) {
+    _drawChart(canvas, ctx, W, chartH, {history, speciesOrder, colorMap}) {
         canvas.width = W;
         canvas.height = chartH + PAD_T + PAD_B;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (!this._history.length) return;
+        if (!history.length) return;
 
         const chartX = PAD_L;
         const chartY = PAD_T;
         const chartW = W - PAD_L - PAD_R;
-        const n = this._history.length;
+        const n = history.length;
         const toX = i => chartX + (i / Math.max(n - 1, 1)) * chartW;
         const toY = prop => chartY + chartH - prop * chartH;
 
         // Draw stacked areas bottom-to-top
         const floors = new Array(n).fill(0);
 
-        for (const speciesId of this._speciesOrder) {
-            const color = this._colorMap.get(speciesId);
-            const tops = this._history.map((h, i) => {
+        for (const speciesId of speciesOrder) {
+            const color = colorMap.get(speciesId);
+            const tops = history.map((h, i) => {
                 const count = h.entries.get(speciesId) || 0;
                 const prop = h.total > 0 ? count / h.total : 0;
                 return floors[i] + prop;
@@ -189,8 +238,8 @@ class SpeciesPopulationChart {
         ctx.font = '12px sans-serif';
         ctx.fillStyle = '#9ca3af';
 
-        const firstGen = this._history[0].generation;
-        const lastGen = this._history[n - 1].generation;
+        const firstGen = history[0].generation;
+        const lastGen = history[n - 1].generation;
         const genRange = lastGen - firstGen || 1;
         const tickStep = this._niceStep(genRange / 6);
         const labeled = new Set();
@@ -199,9 +248,9 @@ class SpeciesPopulationChart {
         for (let g = firstGen; g <= lastGen; g += tickStep) {
             const rounded = Math.round(g / tickStep) * tickStep;
             if (labeled.has(rounded)) continue;
-            const idx = this._history.findIndex(h => h.generation >= rounded);
+            const idx = history.findIndex(h => h.generation >= rounded);
             if (idx < 0) continue;
-            ctx.fillText(String(this._history[idx].generation), toX(idx), chartY + chartH + 13);
+            ctx.fillText(String(history[idx].generation), toX(idx), chartY + chartH + 13);
             labeled.add(rounded);
         }
 

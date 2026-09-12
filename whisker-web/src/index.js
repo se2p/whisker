@@ -79,6 +79,14 @@ const logger = require('./logger');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
+// Dashboard cards reset/emptied together whenever a new project is loaded or a search run starts.
+const DASHBOARD_CARDS = [
+    'networkTopology', 'speciesNetworks', 'coverageCurve', 'fitnessChart', 'speciesPopulationChart', 'cdgGraph'
+];
+const resetDashboardCards = () => DASHBOARD_CARDS.forEach(key => Whisker[key] && Whisker[key].reset());
+const startEmptyDashboardCards = (keys = DASHBOARD_CARDS) =>
+    keys.forEach(key => Whisker[key] && Whisker[key].startEmpty());
+
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
 const _sliderToAcceleration = val => (val >= 100 ? '∞' : val <= 0 ? parseFloat((1 + val * 0.05).toFixed(2)) : val);
@@ -920,12 +928,7 @@ const injectTestsFromTestStore = function () {
  */
 const handleOnLoadProjectFile = async function (fileSelect) {
     const project = await fileSelect.loadAsArrayBuffer();
-    if (Whisker.networkTopology) Whisker.networkTopology.reset();
-    if (Whisker.speciesNetworks) Whisker.speciesNetworks.reset();
-    if (Whisker.coverageCurve) Whisker.coverageCurve.reset();
-    if (Whisker.fitnessChart) Whisker.fitnessChart.reset();
-    if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.reset();
-    if (Whisker.cdgGraph) Whisker.cdgGraph.reset();
+    resetDashboardCards();
     await Whisker.scratch.loadProject(project);
     const placeholder = document.getElementById('scratch-placeholder');
     if (placeholder) placeholder.style.display = 'none';
@@ -1369,11 +1372,7 @@ const initEvents = function () {
                 const _selectedConfig = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
                 if (Whisker.networkTopology && _selectedConfig.testGenerator !== 'reinforcementLearning') Whisker.networkTopology.startEmpty();
                 else if (Whisker.networkTopology) Whisker.networkTopology.reset();
-                if (Whisker.speciesNetworks) Whisker.speciesNetworks.startEmpty();
-                if (Whisker.coverageCurve) Whisker.coverageCurve.startEmpty();
-                if (Whisker.fitnessChart) Whisker.fitnessChart.startEmpty();
-                if (Whisker.speciesPopulationChart) Whisker.speciesPopulationChart.startEmpty();
-                if (Whisker.cdgGraph) Whisker.cdgGraph.startEmpty();
+                startEmptyDashboardCards(DASHBOARD_CARDS.filter(key => key !== 'networkTopology'));
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 document.getElementById('whisker-tab-editor').disabled = true;

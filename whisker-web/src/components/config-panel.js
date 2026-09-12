@@ -1,4 +1,4 @@
-const { $ } = require('../web-libs');
+const {$} = require('../web-libs');
 
 // Shared numeric parsers for _updateLearningSetting()'s field table - module-level rather than redefined
 // as closures on every call.
@@ -83,9 +83,15 @@ const _learningSettingsMap = {
 // doesn't pass (in which case the field is left untouched, same as the original per-key branches did).
 const _learningFieldClampers = {
     int: v => toInt(v),
-    prob: v => { const n = clamp01(v); return isNaN(n) ? null : n; },
-    nonneg: v => { const n = clamp0(v); return isNaN(n) ? null : n; },
-    positive: v => { const n = Number(v); return (!isNaN(n) && n > 0) ? n : null; },
+    prob: v => {
+        const n = clamp01(v); return isNaN(n) ? null : n;
+    },
+    nonneg: v => {
+        const n = clamp0(v); return isNaN(n) ? null : n;
+    },
+    positive: v => {
+        const n = Number(v); return (!isNaN(n) && n > 0) ? n : null;
+    },
     raw: v => v
 };
 
@@ -94,33 +100,33 @@ const _learningFieldClampers = {
 // `timeBudget`, `coverageTarget` (each need an isDql branch) and hiddenLayers/network (its own widget)
 // aren't simple enough for this shape and stay hand-written in the two functions.
 const _learningFields = {
-    populationSize: { path: ['populationSize'], clamp: 'int' },
-    activationFunction: { path: ['chromosome', 'activationFunction'], clamp: 'raw', noCreate: true, readCheck: 'truthy' },
-    numberOfSpecies: { path: ['numberOfSpecies'], clamp: 'int' },
-    distanceThreshold: { path: ['compatibility', 'distanceThreshold'], clamp: 'nonneg' },
-    penalizingAge: { path: ['penalizingAge'], clamp: 'int' },
-    switchObjectiveCount: { path: ['switchObjectiveCount'], clamp: 'int' },
-    maxArchiveSize: { path: ['maxArchiveSize'], clamp: 'int' },
-    randomSelectionProbability: { path: ['randomSelectionProbability'], clamp: 'prob' },
-    learningRate: { path: ['training', 'learningRate'], clamp: 'positive' },
-    batchSize: { path: ['training', 'batchSize'], clamp: 'int' },
-    gamma: { path: ['reward', 'gamma'], clamp: 'prob' },
-    epsilonEnd: { path: ['epsilonGreedy', 'epsilonEnd'], clamp: 'prob' },
-    parentsPerSpecies: { path: ['parentsPerSpecies'], clamp: 'prob' },
-    ageSignificance: { path: ['ageSignificance'], clamp: 'nonneg' },
-    distanceModifier: { path: ['compatibility', 'distanceModifier'], clamp: 'nonneg' },
-    disjointCoefficient: { path: ['compatibility', 'disjointCoefficient'], clamp: 'nonneg' },
-    excessCoefficient: { path: ['compatibility', 'excessCoefficient'], clamp: 'nonneg' },
-    weightCoefficient: { path: ['compatibility', 'weightCoefficient'], clamp: 'nonneg' },
-    mutationAddConnection: { path: ['mutation', 'mutationAddConnection'], clamp: 'prob' },
-    mutationAddNode: { path: ['mutation', 'mutationAddNode'], clamp: 'prob' },
-    mutateWeights: { path: ['mutation', 'mutateWeights'], clamp: 'prob' },
-    mutateToggleEnableConnection: { path: ['mutation', 'mutateToggleEnableConnection'], clamp: 'prob' },
-    perturbationPower: { path: ['mutation', 'perturbationPower'], clamp: 'nonneg' },
-    crossoverWithoutMutation: { path: ['crossover', 'crossoverWithoutMutation'], clamp: 'prob' },
-    trainingEpochs: { path: ['training', 'epochs'], clamp: 'int' },
-    trainingFrequency: { path: ['training', 'frequency'], clamp: 'int' },
-    trainingOptimizer: { path: ['training', 'optimizer'], clamp: 'raw', readCheck: 'truthy' }
+    populationSize: {path: ['populationSize'], clamp: 'int'},
+    activationFunction: {path: ['chromosome', 'activationFunction'], clamp: 'raw', noCreate: true, readCheck: 'truthy'},
+    numberOfSpecies: {path: ['numberOfSpecies'], clamp: 'int'},
+    distanceThreshold: {path: ['compatibility', 'distanceThreshold'], clamp: 'nonneg'},
+    penalizingAge: {path: ['penalizingAge'], clamp: 'int'},
+    switchObjectiveCount: {path: ['switchObjectiveCount'], clamp: 'int'},
+    maxArchiveSize: {path: ['maxArchiveSize'], clamp: 'int'},
+    randomSelectionProbability: {path: ['randomSelectionProbability'], clamp: 'prob'},
+    learningRate: {path: ['training', 'learningRate'], clamp: 'positive'},
+    batchSize: {path: ['training', 'batchSize'], clamp: 'int'},
+    gamma: {path: ['reward', 'gamma'], clamp: 'prob'},
+    epsilonEnd: {path: ['epsilonGreedy', 'epsilonEnd'], clamp: 'prob'},
+    parentsPerSpecies: {path: ['parentsPerSpecies'], clamp: 'prob'},
+    ageSignificance: {path: ['ageSignificance'], clamp: 'nonneg'},
+    distanceModifier: {path: ['compatibility', 'distanceModifier'], clamp: 'nonneg'},
+    disjointCoefficient: {path: ['compatibility', 'disjointCoefficient'], clamp: 'nonneg'},
+    excessCoefficient: {path: ['compatibility', 'excessCoefficient'], clamp: 'nonneg'},
+    weightCoefficient: {path: ['compatibility', 'weightCoefficient'], clamp: 'nonneg'},
+    mutationAddConnection: {path: ['mutation', 'mutationAddConnection'], clamp: 'prob'},
+    mutationAddNode: {path: ['mutation', 'mutationAddNode'], clamp: 'prob'},
+    mutateWeights: {path: ['mutation', 'mutateWeights'], clamp: 'prob'},
+    mutateToggleEnableConnection: {path: ['mutation', 'mutateToggleEnableConnection'], clamp: 'prob'},
+    perturbationPower: {path: ['mutation', 'perturbationPower'], clamp: 'nonneg'},
+    crossoverWithoutMutation: {path: ['crossover', 'crossoverWithoutMutation'], clamp: 'prob'},
+    trainingEpochs: {path: ['training', 'epochs'], clamp: 'int'},
+    trainingFrequency: {path: ['training', 'frequency'], clamp: 'int'},
+    trainingOptimizer: {path: ['training', 'optimizer'], clamp: 'raw', readCheck: 'truthy'}
 };
 
 class ConfigPanel {
@@ -234,8 +240,10 @@ class ConfigPanel {
     // Shows the search or learning panel per isLearning and populates it from configStr/path - shared by
     // switchToMode(), applyUploadedConfig() and _selectAlgorithm().
     _activateConfigView(configStr, path, isLearning) {
-        $(this.el).find('#whisker-search-config').toggle(!isLearning);
-        $(this.el).find('#whisker-learning-config').toggle(isLearning);
+        $(this.el).find('#whisker-search-config')
+            .toggle(!isLearning);
+        $(this.el).find('#whisker-learning-config')
+            .toggle(isLearning);
         if (isLearning) {
             const sel = this.el.querySelector('#whisker-learning-config .whisker-algo-select');
             if (sel) sel.value = path;
@@ -309,7 +317,7 @@ class ConfigPanel {
                 if ('maxLength' in cfg.chromosome) cfg.chromosome.maxLength = num;
                 if ('maxSampleLength' in cfg.chromosome) cfg.chromosome.maxSampleLength = num;
             } else if (key === 'coverageTarget') {
-                if (!cfg.fitnessFunction) cfg.fitnessFunction = { type: 'statement', targets: [] };
+                if (!cfg.fitnessFunction) cfg.fitnessFunction = {type: 'statement', targets: []};
                 cfg.fitnessFunction.type = value;
                 this.el.querySelectorAll('.whisker-coverage-btn').forEach(b => b.classList.remove('whisker-coverage-btn--active'));
                 if (btn) btn.classList.add('whisker-coverage-btn--active');
@@ -365,7 +373,7 @@ class ConfigPanel {
                 if (!cfg.localSearch) cfg.localSearch = [];
                 const redIdx = cfg.localSearch.findIndex(s => s.type === 'Reduction');
                 if (value && redIdx === -1) {
-                    cfg.localSearch.push({ type: 'Reduction', probability: 0.3 });
+                    cfg.localSearch.push({type: 'Reduction', probability: 0.3});
                 }
                 if (!value && redIdx !== -1) cfg.localSearch.splice(redIdx, 1);
             } else if (key === 'localSearchExtensionProb') {
@@ -399,9 +407,9 @@ class ConfigPanel {
         document.getElementById('cfg-minimizeAssertions').disabled = !assertionsChecked;
 
         [
-            { type: 'Extension', checkboxId: 'cfg-local-search-extension', rowId: 'cfg-ls-ext-prob', valId: 'cfg-ls-ext-prob-val' },
-            { type: 'Reduction', checkboxId: 'cfg-local-search-reduction', rowId: 'cfg-ls-red-prob', valId: 'cfg-ls-red-prob-val' }
-        ].forEach(({ type, checkboxId, rowId, valId }) => {
+            {type: 'Extension', checkboxId: 'cfg-local-search-extension', rowId: 'cfg-ls-ext-prob', valId: 'cfg-ls-ext-prob-val'},
+            {type: 'Reduction', checkboxId: 'cfg-local-search-reduction', rowId: 'cfg-ls-red-prob', valId: 'cfg-ls-red-prob-val'}
+        ].forEach(({type, checkboxId, rowId, valId}) => {
             const checked = !!(cfg.localSearch && cfg.localSearch.some(s => s.type === type));
             document.getElementById(checkboxId).checked = checked;
             document.getElementById(rowId).classList.toggle('whisker-disabled', !checked);
@@ -453,7 +461,8 @@ class ConfigPanel {
         for (let i = 0; i < field.path.length - 1 && target; i++) {
             target = target[field.path[i]];
         }
-        const value = target ? target[field.path[field.path.length - 1]] : undefined;
+        let value;
+        if (target) value = target[field.path[field.path.length - 1]];
         const ok = field.readCheck === 'truthy' ? !!value : this._isDefined(value);
         if (!ok) return;
         const el = document.getElementById(`cfg-learning-${key}`);

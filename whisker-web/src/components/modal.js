@@ -1,14 +1,13 @@
 // Shared modal chrome for every dashboard card that expands into a larger view (network topology,
-// species networks, fitness/coverage charts, console log, CDG graph). this builds componenets once and exposes just the pieces a
-// component needs to fill in its own content and manage open/close state.
+// species networks, fitness/coverage charts, console log, CDG graph).
 class Modal {
     /**
-     * @param {object} [options]
+     * @param {object} [options] per-component CSS overrides.
      * @param {string} [options.extraClass] extra class(es) on the modal wrapper, for a component's own
      *   CSS overrides (e.g. console-log's taller box).
      * @param {string} [options.titleExtraClass] extra class(es) on the title element.
      */
-    constructor({ extraClass, titleExtraClass } = {}) {
+    constructor({extraClass, titleExtraClass} = {}) {
         this.el = document.createElement('div');
         this.el.className = extraClass ? `modal ${extraClass}` : 'modal';
         this.el.innerHTML = `

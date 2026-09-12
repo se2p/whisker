@@ -5,21 +5,21 @@ const Modal = require('./modal');
 
 // The CDG is a DAG, so a hierarchical layout gives deterministic positions in one pass
 const NETWORK_OPTIONS = {
-    edges: { arrows: 'to', smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5 } },
-    nodes: { shape: 'box', shapeProperties: { borderRadius: 4 }, margin: 6, font: { size: 11 } },
+    edges: {arrows: 'to', smooth: {type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5}},
+    nodes: {shape: 'box', shapeProperties: {borderRadius: 4}, margin: 6, font: {size: 11}},
     physics: false,
     layout: {
         improvedLayout: false,
-        hierarchical: { direction: 'UD', sortMethod: 'hubsize', levelSeparation: 110, nodeSpacing: 180 }
+        hierarchical: {direction: 'UD', sortMethod: 'hubsize', levelSeparation: 110, nodeSpacing: 180}
     },
-    interaction: { dragView: true, zoomView: true }
+    interaction: {dragView: true, zoomView: true}
 };
 
-// Re-rendering on every single iteration is unnecessary 
+// Re-rendering on every single iteration is unnecessary
 const MIN_RENDER_INTERVAL_MS = 500;
 
 // Drives the toggle-button setup/update loop below instead of writing out each button by hand.
-const VIEW_I18N_KEYS = { graph: 'viewGraph', grid: 'viewGrid' };
+const VIEW_I18N_KEYS = {graph: 'viewGraph', grid: 'viewGrid'};
 
 class CdgGraph {
     constructor(container, i18n = {}) {
@@ -33,7 +33,7 @@ class CdgGraph {
         this._lastData = null;
         this._lastRenderTime = 0;
         this._viewMode = 'graph'; // 'graph' | 'grid'
-        this._views = { card: {}, modal: {} }; // each gets {graphEl, gridEl, network} in _buildUI
+        this._views = {card: {}, modal: {}}; // each gets {graphEl, gridEl, network} in _buildUI
         this._buildUI(container);
         window.Whisker.scratch.vm.on('CDG_UPDATE', data => this._update(data));
     }
@@ -60,7 +60,7 @@ class CdgGraph {
     }
 
     updateI18n(i18n) {
-        this._i18n = { ...this._i18n, ...i18n };
+        this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
@@ -160,7 +160,7 @@ class CdgGraph {
     // the card and, if open, the modal.
     _renderVisibleViews() {
         const parsed = vis.parseDOTNetwork(this._lastData.dot);
-        const { covered, total } = this._lastData;
+        const {covered, total} = this._lastData;
         this._titleEl.textContent = `${this._i18n.title} — ${covered}/${total} statements`;
 
         this._renderView('card', parsed);
@@ -187,21 +187,21 @@ class CdgGraph {
     // or targeted does - so later updates patch each node's color/font directly on the existing DataSet
     // instead of calling setData(), which would fully recompute the hierarchical layout from scratch
     // (the main remaining cost at scale, even with physics off) and reset the user's zoom/pan every time.
-    _renderNetwork(element, network, { nodes, edges }) {
+    _renderNetwork(element, network, {nodes, edges}) {
         if (network) {
             const sameTopology = network.body.data.nodes.length === nodes.length;
             if (sameTopology) {
-                network.body.data.nodes.update(nodes.map(n => ({ id: n.id, color: n.color, font: n.font })));
+                network.body.data.nodes.update(nodes.map(n => ({id: n.id, color: n.color, font: n.font})));
             } else {
                 // Topology genuinely changed (shouldn't normally happen) - fall back to a full re-layout.
                 const position = network.getViewPosition();
                 const scale = network.getScale();
-                network.setData({ nodes, edges });
-                network.moveTo({ position, scale, animation: false });
+                network.setData({nodes, edges});
+                network.moveTo({position, scale, animation: false});
             }
             return network;
         }
-        network = new vis.Network(element, { nodes, edges }, NETWORK_OPTIONS);
+        network = new vis.Network(element, {nodes, edges}, NETWORK_OPTIONS);
         network.fit();
         return network;
     }
@@ -209,7 +209,7 @@ class CdgGraph {
     // Renders every CDG node as one colored/glyphed cell (darkgreen+✓ covered, gold+● targeted, light+·
     // neither), wrapped into a compact multi-row grid - a much cheaper, denser alternative to the graph
     // view for very large CDGs, at the cost of not showing the control-dependency edges.
-    _renderGrid(container, { nodes }) {
+    _renderGrid(container, {nodes}) {
         container.innerHTML = '';
         const grid = document.createElement('div');
         grid.className = 'cdg-graph-heatmap-grid';

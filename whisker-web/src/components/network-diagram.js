@@ -1,9 +1,9 @@
 // Shared canvas rendering for NEAT network diagrams (nodes/connections/hover tooltip), used by both
 // network-topology.js and species-networks.js
-const { weightToColor } = require('./network-colors');
+const {weightToColor} = require('./network-colors');
 
 // Keyed by the backend NodeGene.toJSON() letter codes: I=Input, B=Bias, H=Hidden, A=Action/Output
-const NODE_COLORS = { I: '#5b8dd9', B: '#5b8dd9', H: '#7c5cbf', A: '#27ae60' };
+const NODE_COLORS = {I: '#5b8dd9', B: '#5b8dd9', H: '#7c5cbf', A: '#27ae60'};
 const NODE_RADIUS = 10;
 const COL_SPACING = 55;
 const H_PAD = 50;
@@ -22,7 +22,7 @@ function groupNodesIntoColumns(nodes) {
 // Draws {nodes, connections} onto canvas/ctx and returns the node->{x,y,type} position map (needed for
 // hover hit-testing). `width` is the minimum canvas width; `fixedHeight`, if given, is used as-is instead
 // of sizing the canvas to fit the content (used for the network-topology card's capped preview height).
-function drawNetworkDiagram(canvas, ctx, { nodes, connections }, { width, spacing = COL_SPACING, radius = NODE_RADIUS, fixedHeight }) {
+function drawNetworkDiagram(canvas, ctx, {nodes, connections}, {width, spacing = COL_SPACING, radius = NODE_RADIUS, fixedHeight}) {
     const columns = groupNodesIntoColumns(nodes);
     const numCols = columns.length;
     const maxColHeight = Math.max(...columns.map(c => c.length));
@@ -38,12 +38,12 @@ function drawNetworkDiagram(canvas, ctx, { nodes, connections }, { width, spacin
         const x = colX(ci);
         col.forEach((node, ni) => {
             const y = H / 2 + (ni - (col.length - 1) / 2) * spacing;
-            nodePos.set(node.id, { x, y, type: node.t });
+            nodePos.set(node.id, {x, y, type: node.t});
         });
     });
 
     ctx.globalAlpha = 0.8;
-    connections.forEach(({ s: source, t: target, w: weight }) => {
+    connections.forEach(({s: source, t: target, w: weight}) => {
         const src = nodePos.get(source);
         const tgt = nodePos.get(target);
         if (!src || !tgt) return;
@@ -56,7 +56,7 @@ function drawNetworkDiagram(canvas, ctx, { nodes, connections }, { width, spacin
     });
     ctx.globalAlpha = 1;
 
-    nodePos.forEach(({ x, y, type }) => {
+    nodePos.forEach(({x, y, type}) => {
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fillStyle = NODE_COLORS[type] || NODE_COLORS.H;
@@ -84,7 +84,7 @@ function createHoverTooltip() {
 // re-attach it on every re-render.
 function attachHoverTooltip(canvas, tooltip, getData) {
     canvas.addEventListener('mousemove', e => {
-        const { nodePos, nodes, connections } = getData();
+        const {nodePos, nodes, connections} = getData();
         if (!nodePos || !connections) return;
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -108,7 +108,7 @@ function attachHoverTooltip(canvas, tooltip, getData) {
 
         if (label === null) {
             const THRESHOLD = 6;
-            for (const { s: source, t: target, w: weight } of connections) {
+            for (const {s: source, t: target, w: weight} of connections) {
                 const src = nodePos.get(source);
                 const tgt = nodePos.get(target);
                 if (!src || !tgt) continue;
@@ -139,6 +139,13 @@ function attachHoverTooltip(canvas, tooltip, getData) {
 }
 
 module.exports = {
-    NODE_COLORS, NODE_RADIUS, COL_SPACING, H_PAD, V_PAD,
-    groupNodesIntoColumns, drawNetworkDiagram, createHoverTooltip, attachHoverTooltip
+    NODE_COLORS,
+    NODE_RADIUS,
+    COL_SPACING,
+    H_PAD,
+    V_PAD,
+    groupNodesIntoColumns,
+    drawNetworkDiagram,
+    createHoverTooltip,
+    attachHoverTooltip
 };
