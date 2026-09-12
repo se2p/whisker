@@ -1,3 +1,5 @@
+const Modal = require('./modal');
+
 const H_PAD = 40;
 const V_PAD = 20;
 const CURVE_H = 160;
@@ -22,7 +24,7 @@ class CoverageCurve {
         this._canvas.style.display = 'none';
         this._valueSEl.style.display = 'none';
         this._valueBEl.style.display = 'none';
-        this._closeModal();
+        this._modal.close();
     }
 
     startEmpty() {
@@ -39,7 +41,7 @@ class CoverageCurve {
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
-        if (this._modalTitle) this._modalTitle.textContent = this._i18n.title;
+        this._modal.titleEl.textContent = this._i18n.title;
     }
 
     _buildUI(container) {
@@ -72,42 +74,18 @@ class CoverageCurve {
 
         card.addEventListener('click', () => this._openModal());
 
-        this._modal = document.createElement('div');
-        this._modal.className = 'network-topology-modal';
-        this._modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <p class="network-topology-title"></p>
-                    <button class="network-topology-modal-close">✕</button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <canvas class="chart-modal-canvas"></canvas>
-                </div>
-            </div>`;
-        document.body.appendChild(this._modal);
-        this._modalTitle = this._modal.querySelector('.network-topology-title');
-        this._modalTitle.textContent = this._i18n.title;
-        this._modalCanvas = this._modal.querySelector('.chart-modal-canvas');
+        this._modal = new Modal();
+        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.bodyEl.innerHTML = '<canvas class="chart-modal-canvas"></canvas>';
+        this._modalCanvas = this._modal.bodyEl.querySelector('.chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
-
-        this._modal.addEventListener('click', e => {
-            if (e.target === this._modal) this._closeModal();
-        });
-        this._modal.querySelector('.network-topology-modal-close').addEventListener('click', () => this._closeModal());
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
     }
 
     _openModal() {
         if (!this._data.length) return;
-        this._modal.classList.add('network-topology-modal--open');
+        this._modal.open();
         const w = this._modalCanvas.parentElement.clientWidth - 32;
         this._renderToCanvas(this._modalCanvas, this._modalCtx, w);
-    }
-
-    _closeModal() {
-        this._modal.classList.remove('network-topology-modal--open');
     }
 
     _update(data) {
@@ -115,7 +93,7 @@ class CoverageCurve {
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
-        if (this._modal.classList.contains('network-topology-modal--open')) {
+        if (this._modal.isOpen()) {
             const w = this._modalCanvas.parentElement.clientWidth - 32;
             this._renderToCanvas(this._modalCanvas, this._modalCtx, w);
         }

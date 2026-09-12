@@ -1,4 +1,13 @@
-const {$} = require('../web-libs');
+const { $ } = require('../web-libs');
+
+// Shared numeric parsers for _updateLearningSetting()'s field table - module-level rather than redefined
+// as closures on every call.
+const clamp01 = v => Math.min(1, Math.max(0, Number(v)));
+const clamp0 = v => Math.max(0, Number(v));
+const toInt = (v, min = 1) => {
+    const n = Number(v);
+    return (isNaN(n) || n < min) ? null : n;
+};
 
 const _algoSettingsMap = {
     'config/mio.json': [
@@ -70,6 +79,50 @@ const _learningSettingsMap = {
     ]
 };
 
+// Named validators for _LEARNING_FIELDS below - each returns the parsed/clamped value, or null if `value`
+// doesn't pass (in which case the field is left untouched, same as the original per-key branches did).
+const _learningFieldClampers = {
+    int: v => toInt(v),
+    prob: v => { const n = clamp01(v); return isNaN(n) ? null : n; },
+    nonneg: v => { const n = clamp0(v); return isNaN(n) ? null : n; },
+    positive: v => { const n = Number(v); return (!isNaN(n) && n > 0) ? n : null; },
+    raw: v => v
+};
+
+// Declarative shape of every simple learning-config field: where it lives in the config object, and how its value is validated. `noCreate` mirrors the one field (activationFunction) whose parent object
+// This single table drives both _applyLearningField() and _populateLearningField()
+// `timeBudget`, `coverageTarget` (each need an isDql branch) and hiddenLayers/network (its own widget)
+// aren't simple enough for this shape and stay hand-written in the two functions.
+const _learningFields = {
+    populationSize: { path: ['populationSize'], clamp: 'int' },
+    activationFunction: { path: ['chromosome', 'activationFunction'], clamp: 'raw', noCreate: true, readCheck: 'truthy' },
+    numberOfSpecies: { path: ['numberOfSpecies'], clamp: 'int' },
+    distanceThreshold: { path: ['compatibility', 'distanceThreshold'], clamp: 'nonneg' },
+    penalizingAge: { path: ['penalizingAge'], clamp: 'int' },
+    switchObjectiveCount: { path: ['switchObjectiveCount'], clamp: 'int' },
+    maxArchiveSize: { path: ['maxArchiveSize'], clamp: 'int' },
+    randomSelectionProbability: { path: ['randomSelectionProbability'], clamp: 'prob' },
+    learningRate: { path: ['training', 'learningRate'], clamp: 'positive' },
+    batchSize: { path: ['training', 'batchSize'], clamp: 'int' },
+    gamma: { path: ['reward', 'gamma'], clamp: 'prob' },
+    epsilonEnd: { path: ['epsilonGreedy', 'epsilonEnd'], clamp: 'prob' },
+    parentsPerSpecies: { path: ['parentsPerSpecies'], clamp: 'prob' },
+    ageSignificance: { path: ['ageSignificance'], clamp: 'nonneg' },
+    distanceModifier: { path: ['compatibility', 'distanceModifier'], clamp: 'nonneg' },
+    disjointCoefficient: { path: ['compatibility', 'disjointCoefficient'], clamp: 'nonneg' },
+    excessCoefficient: { path: ['compatibility', 'excessCoefficient'], clamp: 'nonneg' },
+    weightCoefficient: { path: ['compatibility', 'weightCoefficient'], clamp: 'nonneg' },
+    mutationAddConnection: { path: ['mutation', 'mutationAddConnection'], clamp: 'prob' },
+    mutationAddNode: { path: ['mutation', 'mutationAddNode'], clamp: 'prob' },
+    mutateWeights: { path: ['mutation', 'mutateWeights'], clamp: 'prob' },
+    mutateToggleEnableConnection: { path: ['mutation', 'mutateToggleEnableConnection'], clamp: 'prob' },
+    perturbationPower: { path: ['mutation', 'perturbationPower'], clamp: 'nonneg' },
+    crossoverWithoutMutation: { path: ['crossover', 'crossoverWithoutMutation'], clamp: 'prob' },
+    trainingEpochs: { path: ['training', 'epochs'], clamp: 'int' },
+    trainingFrequency: { path: ['training', 'frequency'], clamp: 'int' },
+    trainingOptimizer: { path: ['training', 'optimizer'], clamp: 'raw', readCheck: 'truthy' }
+};
+
 class ConfigPanel {
     constructor(element) {
         this.el = element;
@@ -86,8 +139,7 @@ class ConfigPanel {
 
         // Algorithm card selection
         $(el).on('click', '.whisker-algo-card', e => {
-            const card = e.currentTarget;
-            this._selectAlgorithm(card.dataset.configPath, card);
+            this._selectAlgorithm(e.currentTarget.dataset.configPath);
         });
 
         // Global settings inputs
@@ -175,24 +227,25 @@ class ConfigPanel {
     switchToMode(isLearning) {
         const defaultPath = isLearning ? 'config/Neuroevolution/neatest.json' : 'config/mio.json';
         window._whiskerSelectedConfig = window._whiskerConfigMap[defaultPath] || null;
-
-        $(this.el).find('#whisker-search-config')
-            .toggle(!isLearning);
-        $(this.el).find('#whisker-learning-config')
-            .toggle(isLearning);
-
         $('#bbt-toggles').toggle(!isLearning);
+        this._activateConfigView(window._whiskerSelectedConfig, defaultPath, isLearning);
+    }
 
+    // Shows the search or learning panel per isLearning and populates it from configStr/path - shared by
+    // switchToMode(), applyUploadedConfig() and _selectAlgorithm().
+    _activateConfigView(configStr, path, isLearning) {
+        $(this.el).find('#whisker-search-config').toggle(!isLearning);
+        $(this.el).find('#whisker-learning-config').toggle(isLearning);
         if (isLearning) {
             const sel = this.el.querySelector('#whisker-learning-config .whisker-algo-select');
-            if (sel) sel.value = defaultPath;
-            this._populateLearningSettings(window._whiskerSelectedConfig, defaultPath);
+            if (sel) sel.value = path;
+            this._populateLearningSettings(configStr, path);
         } else {
             this.el.querySelectorAll('.whisker-algo-card').forEach(card => {
-                card.classList.toggle('whisker-algo-card--active', card.dataset.configPath === defaultPath);
+                card.classList.toggle('whisker-algo-card--active', card.dataset.configPath === path);
             });
-            this._populateGlobalSettings(window._whiskerSelectedConfig);
-            this._populateAlgoSettings(window._whiskerSelectedConfig, defaultPath);
+            this._populateGlobalSettings(configStr);
+            this._populateAlgoSettings(configStr, path);
         }
     }
 
@@ -224,53 +277,44 @@ class ConfigPanel {
 
         document.getElementById('whisker-tab-search').classList.toggle('active', !isLearning);
         document.getElementById('whisker-tab-learning').classList.toggle('active', isLearning);
-        $(this.el).find('#whisker-search-config')
-            .toggle(!isLearning);
-        $(this.el).find('#whisker-learning-config')
-            .toggle(isLearning);
-
-        if (isLearning) {
-            const sel = this.el.querySelector('#whisker-learning-config .whisker-algo-select');
-            if (sel) sel.value = matchedPath;
-            this._populateLearningSettings(configStr, matchedPath);
-        } else {
-            this.el.querySelectorAll('.whisker-algo-card').forEach(card => {
-                card.classList.toggle('whisker-algo-card--active', card.dataset.configPath === matchedPath);
-            });
-            this._populateGlobalSettings(configStr);
-            this._populateAlgoSettings(configStr, matchedPath);
-        }
+        this._activateConfigView(configStr, matchedPath, isLearning);
     }
 
     // ── Search-based ──────────────────────────────────────────────────────────
 
-    _selectAlgorithm(configPath, clickedCard) {
-        this.el.querySelectorAll('.whisker-algo-card').forEach(c => c.classList.remove('whisker-algo-card--active'));
-        clickedCard.classList.add('whisker-algo-card--active');
+    _selectAlgorithm(configPath) {
         window._whiskerSelectedConfig = window._whiskerConfigMap[configPath] || null;
-        this._populateGlobalSettings(window._whiskerSelectedConfig);
-        this._populateAlgoSettings(window._whiskerSelectedConfig, configPath);
+        this._activateConfigView(window._whiskerSelectedConfig, configPath, false);
+    }
+
+    // Reads the currently selected config, lets `mutate` change it, and writes it back - shared by every
+    // _updateXSetting() method so each only has to say how it mutates, not how to read/guard/write.
+    // No-op (mutate not called) if nothing is selected yet.
+    _updateConfig(mutate) {
+        if (!window._whiskerSelectedConfig) return;
+        const cfg = JSON.parse(window._whiskerSelectedConfig);
+        mutate(cfg);
+        window._whiskerSelectedConfig = JSON.stringify(cfg);
     }
 
     _updateGlobalSetting(key, value, btn) {
-        if (!window._whiskerSelectedConfig) return;
-        const cfg = JSON.parse(window._whiskerSelectedConfig);
-        if (key === 'timeBudget') {
-            const num = Number(value);
-            if (isNaN(num) || num < 1) return;
-            cfg.stoppingCondition.conditions[0].duration = num * 1000;
-        } else if (key === 'maxEvents') {
-            const num = Number(value);
-            if (isNaN(num) || num < 1) return;
-            if ('maxLength' in cfg.chromosome) cfg.chromosome.maxLength = num;
-            if ('maxSampleLength' in cfg.chromosome) cfg.chromosome.maxSampleLength = num;
-        } else if (key === 'coverageTarget') {
-            if (!cfg.fitnessFunction) cfg.fitnessFunction = {type: 'statement', targets: []};
-            cfg.fitnessFunction.type = value;
-            this.el.querySelectorAll('.whisker-coverage-btn').forEach(b => b.classList.remove('whisker-coverage-btn--active'));
-            if (btn) btn.classList.add('whisker-coverage-btn--active');
-        }
-        window._whiskerSelectedConfig = JSON.stringify(cfg);
+        this._updateConfig(cfg => {
+            if (key === 'timeBudget') {
+                const num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                cfg.stoppingCondition.conditions[0].duration = num * 1000;
+            } else if (key === 'maxEvents') {
+                const num = Number(value);
+                if (isNaN(num) || num < 1) return;
+                if ('maxLength' in cfg.chromosome) cfg.chromosome.maxLength = num;
+                if ('maxSampleLength' in cfg.chromosome) cfg.chromosome.maxSampleLength = num;
+            } else if (key === 'coverageTarget') {
+                if (!cfg.fitnessFunction) cfg.fitnessFunction = { type: 'statement', targets: [] };
+                cfg.fitnessFunction.type = value;
+                this.el.querySelectorAll('.whisker-coverage-btn').forEach(b => b.classList.remove('whisker-coverage-btn--active'));
+                if (btn) btn.classList.add('whisker-coverage-btn--active');
+            }
+        });
     }
 
     _populateGlobalSettings(configStr) {
@@ -303,40 +347,39 @@ class ConfigPanel {
     }
 
     _updateAlgoSetting(key, value) {
-        if (!window._whiskerSelectedConfig) return;
-        const cfg = JSON.parse(window._whiskerSelectedConfig);
-        if (key === 'minimize' || key === 'assertions' || key === 'minimizeAssertions') {
-            cfg[key] = value;
-        } else if (key === 'localSearchExtension') {
-            if (!cfg.localSearch) cfg.localSearch = [];
-            const extIdx = cfg.localSearch.findIndex(s => s.type === 'Extension');
-            if (value && extIdx === -1) {
-                cfg.localSearch.push({
-                    type: 'Extension',
-                    probability: 0.3,
-                    newEventProbability: 0.5
-                });
+        this._updateConfig(cfg => {
+            if (key === 'minimize' || key === 'assertions' || key === 'minimizeAssertions') {
+                cfg[key] = value;
+            } else if (key === 'localSearchExtension') {
+                if (!cfg.localSearch) cfg.localSearch = [];
+                const extIdx = cfg.localSearch.findIndex(s => s.type === 'Extension');
+                if (value && extIdx === -1) {
+                    cfg.localSearch.push({
+                        type: 'Extension',
+                        probability: 0.3,
+                        newEventProbability: 0.5
+                    });
+                }
+                if (!value && extIdx !== -1) cfg.localSearch.splice(extIdx, 1);
+            } else if (key === 'localSearchReduction') {
+                if (!cfg.localSearch) cfg.localSearch = [];
+                const redIdx = cfg.localSearch.findIndex(s => s.type === 'Reduction');
+                if (value && redIdx === -1) {
+                    cfg.localSearch.push({ type: 'Reduction', probability: 0.3 });
+                }
+                if (!value && redIdx !== -1) cfg.localSearch.splice(redIdx, 1);
+            } else if (key === 'localSearchExtensionProb') {
+                const prob = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(prob) || !cfg.localSearch) return;
+                const entry = cfg.localSearch.find(s => s.type === 'Extension');
+                if (entry) entry.probability = prob;
+            } else if (key === 'localSearchReductionProb') {
+                const prob = Math.min(1, Math.max(0, Number(value)));
+                if (isNaN(prob) || !cfg.localSearch) return;
+                const entry = cfg.localSearch.find(s => s.type === 'Reduction');
+                if (entry) entry.probability = prob;
             }
-            if (!value && extIdx !== -1) cfg.localSearch.splice(extIdx, 1);
-        } else if (key === 'localSearchReduction') {
-            if (!cfg.localSearch) cfg.localSearch = [];
-            const redIdx = cfg.localSearch.findIndex(s => s.type === 'Reduction');
-            if (value && redIdx === -1) {
-                cfg.localSearch.push({type: 'Reduction', probability: 0.3});
-            }
-            if (!value && redIdx !== -1) cfg.localSearch.splice(redIdx, 1);
-        } else if (key === 'localSearchExtensionProb') {
-            const prob = Math.min(1, Math.max(0, Number(value)));
-            if (isNaN(prob) || !cfg.localSearch) return;
-            const entry = cfg.localSearch.find(s => s.type === 'Extension');
-            if (entry) entry.probability = prob;
-        } else if (key === 'localSearchReductionProb') {
-            const prob = Math.min(1, Math.max(0, Number(value)));
-            if (isNaN(prob) || !cfg.localSearch) return;
-            const entry = cfg.localSearch.find(s => s.type === 'Reduction');
-            if (entry) entry.probability = prob;
-        }
-        window._whiskerSelectedConfig = JSON.stringify(cfg);
+        });
     }
 
     _populateAlgoSettings(configStr, configPath) {
@@ -354,18 +397,18 @@ class ConfigPanel {
         document.getElementById('cfg-minimizeAssertions').checked = !!cfg.minimizeAssertions;
         document.getElementById('cfg-row-minimizeAssertions').classList.toggle('whisker-disabled', !assertionsChecked);
         document.getElementById('cfg-minimizeAssertions').disabled = !assertionsChecked;
-        const extChecked = !!(cfg.localSearch && cfg.localSearch.some(s => s.type === 'Extension'));
-        document.getElementById('cfg-local-search-extension').checked = extChecked;
-        document.getElementById('cfg-ls-ext-prob').classList.toggle('whisker-disabled', !extChecked);
-        document.getElementById('cfg-ls-ext-prob-val').disabled = !extChecked;
-        const extEntry = cfg.localSearch && cfg.localSearch.find(s => s.type === 'Extension');
-        if (extEntry) document.getElementById('cfg-ls-ext-prob-val').value = extEntry.probability;
-        const redChecked = !!(cfg.localSearch && cfg.localSearch.some(s => s.type === 'Reduction'));
-        document.getElementById('cfg-local-search-reduction').checked = redChecked;
-        document.getElementById('cfg-ls-red-prob').classList.toggle('whisker-disabled', !redChecked);
-        document.getElementById('cfg-ls-red-prob-val').disabled = !redChecked;
-        const redEntry = cfg.localSearch && cfg.localSearch.find(s => s.type === 'Reduction');
-        if (redEntry) document.getElementById('cfg-ls-red-prob-val').value = redEntry.probability;
+
+        [
+            { type: 'Extension', checkboxId: 'cfg-local-search-extension', rowId: 'cfg-ls-ext-prob', valId: 'cfg-ls-ext-prob-val' },
+            { type: 'Reduction', checkboxId: 'cfg-local-search-reduction', rowId: 'cfg-ls-red-prob', valId: 'cfg-ls-red-prob-val' }
+        ].forEach(({ type, checkboxId, rowId, valId }) => {
+            const checked = !!(cfg.localSearch && cfg.localSearch.some(s => s.type === type));
+            document.getElementById(checkboxId).checked = checked;
+            document.getElementById(rowId).classList.toggle('whisker-disabled', !checked);
+            document.getElementById(valId).disabled = !checked;
+            const entry = cfg.localSearch && cfg.localSearch.find(s => s.type === type);
+            if (entry) document.getElementById(valId).value = entry.probability;
+        });
     }
 
     // ── Learning-based ────────────────────────────────────────────────────────
@@ -376,158 +419,74 @@ class ConfigPanel {
         this._populateLearningSettings(window._whiskerSelectedConfig, configPath);
         const cfg = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
         const isDql = cfg.testGenerator === 'reinforcementLearning';
-        const ntCard = document.querySelector('.network-topology-card');
-        if (ntCard) ntCard.style.display = isDql ? 'none' : '';
-        const snCard = document.querySelector('.species-networks-card');
-        if (snCard) snCard.style.display = isDql ? 'none' : '';
-        const spcCard = document.querySelector('.species-pop-chart-card');
-        if (spcCard) spcCard.style.display = isDql ? 'none' : '';
+        ['.network-topology-card', '.species-networks-card', '.species-pop-chart-card'].forEach(selector => {
+            const card = document.querySelector(selector);
+            if (card) card.style.display = isDql ? 'none' : '';
+        });
+    }
+
+    // Writes value into cfg at the field's path (creating parents unless noCreate), per _learningFields.
+    // No-ops if the key isn't a table field or the value doesn't validate. Returns whether it was a field.
+    _applyLearningField(cfg, key, value) {
+        const field = _learningFields[key];
+        if (!field) return false;
+        const clamped = _learningFieldClampers[field.clamp](value);
+        if (clamped === null) return true;
+        let target = cfg;
+        for (let i = 0; i < field.path.length - 1; i++) {
+            const segment = field.path[i];
+            if (!target[segment]) {
+                if (field.noCreate) return true;
+                target[segment] = {};
+            }
+            target = target[segment];
+        }
+        target[field.path[field.path.length - 1]] = clamped;
+        return true;
+    }
+
+    // Reads the field's value out of cfg and, if it passes readCheck, sets it on its input/select.
+    _populateLearningField(cfg, key) {
+        const field = _learningFields[key];
+        if (!field) return;
+        let target = cfg;
+        for (let i = 0; i < field.path.length - 1 && target; i++) {
+            target = target[field.path[i]];
+        }
+        const value = target ? target[field.path[field.path.length - 1]] : undefined;
+        const ok = field.readCheck === 'truthy' ? !!value : this._isDefined(value);
+        if (!ok) return;
+        const el = document.getElementById(`cfg-learning-${key}`);
+        if (el) el.value = value;
     }
 
     _updateLearningSetting(key, value) {
-        if (!window._whiskerSelectedConfig) return;
-        const cfg = JSON.parse(window._whiskerSelectedConfig);
-        const clamp01 = v => Math.min(1, Math.max(0, Number(v)));
-        const clamp0 = v => Math.max(0, Number(v));
-        const int = (v, min = 1) => {
-            const n = Number(v); return (isNaN(n) || n < min) ? null : n;
-        };
-        const isDql = this._isDefined(cfg.stoppingCondition.conditions) === false;
-        const mutationKeys = [
-            'mutationAddConnection',
-            'mutationAddNode',
-            'mutateWeights',
-            'mutateToggleEnableConnection'
-        ];
-
-        if (key === 'timeBudget') {
-            const n = int(value);
-            if (n === null) return;
-            if (isDql) {
-                cfg.stoppingCondition.duration = n * 1000;
+        this._updateConfig(cfg => {
+            const isDql = this._isDefined(cfg.stoppingCondition.conditions) === false;
+            if (key === 'timeBudget') {
+                const n = toInt(value);
+                if (n === null) return;
+                if (isDql) {
+                    cfg.stoppingCondition.duration = n * 1000;
+                } else {
+                    cfg.stoppingCondition.conditions[1].duration = n * 1000;
+                }
+            } else if (key === 'coverageTarget') {
+                if (isDql) {
+                    if (!cfg.coverageObjective) cfg.coverageObjective = {};
+                    cfg.coverageObjective.type = value;
+                } else {
+                    if (!cfg.fitnessFunction) cfg.fitnessFunction = {};
+                    cfg.fitnessFunction.type = value;
+                }
+                document.getElementById('cfg-learning-coverage-statement')
+                    .classList.toggle('whisker-coverage-btn--active', value === 'statement');
+                document.getElementById('cfg-learning-coverage-branch')
+                    .classList.toggle('whisker-coverage-btn--active', value === 'branch');
             } else {
-                cfg.stoppingCondition.conditions[1].duration = n * 1000;
+                this._applyLearningField(cfg, key, value);
             }
-        } else if (key === 'populationSize') {
-            const n = int(value); if (n !== null) cfg.populationSize = n;
-        } else if (key === 'activationFunction') {
-            if (cfg.chromosome) cfg.chromosome.activationFunction = value;
-        } else if (key === 'numberOfSpecies') {
-            const n = int(value); if (n !== null) cfg.numberOfSpecies = n;
-        } else if (key === 'distanceThreshold') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.compatibility) cfg.compatibility = {};
-                cfg.compatibility.distanceThreshold = n;
-            }
-        } else if (key === 'penalizingAge') {
-            const n = int(value); if (n !== null) cfg.penalizingAge = n;
-        } else if (key === 'switchObjectiveCount') {
-            const n = int(value); if (n !== null) cfg.switchObjectiveCount = n;
-        } else if (key === 'maxArchiveSize') {
-            const n = int(value); if (n !== null) cfg.maxArchiveSize = n;
-        } else if (key === 'randomSelectionProbability') {
-            const n = clamp01(value); if (!isNaN(n)) cfg.randomSelectionProbability = n;
-        } else if (key === 'learningRate') {
-            const n = Number(value);
-            if (!isNaN(n) && n > 0) {
-                if (!cfg.training) cfg.training = {};
-                cfg.training.learningRate = n;
-            }
-        } else if (key === 'batchSize') {
-            const n = int(value);
-            if (n !== null) {
-                if (!cfg.training) cfg.training = {};
-                cfg.training.batchSize = n;
-            }
-        } else if (key === 'gamma') {
-            const n = clamp01(value);
-            if (!isNaN(n)) {
-                if (!cfg.reward) cfg.reward = {};
-                cfg.reward.gamma = n;
-            }
-        } else if (key === 'epsilonEnd') {
-            const n = clamp01(value);
-            if (!isNaN(n)) {
-                if (!cfg.epsilonGreedy) cfg.epsilonGreedy = {};
-                cfg.epsilonGreedy.epsilonEnd = n;
-            }
-        } else if (key === 'parentsPerSpecies') {
-            const n = clamp01(value); if (!isNaN(n)) cfg.parentsPerSpecies = n;
-        } else if (key === 'ageSignificance') {
-            const n = clamp0(value); if (!isNaN(n)) cfg.ageSignificance = n;
-        } else if (key === 'distanceModifier') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.compatibility) cfg.compatibility = {};
-                cfg.compatibility.distanceModifier = n;
-            }
-        } else if (key === 'disjointCoefficient') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.compatibility) cfg.compatibility = {};
-                cfg.compatibility.disjointCoefficient = n;
-            }
-        } else if (key === 'excessCoefficient') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.compatibility) cfg.compatibility = {};
-                cfg.compatibility.excessCoefficient = n;
-            }
-        } else if (key === 'weightCoefficient') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.compatibility) cfg.compatibility = {};
-                cfg.compatibility.weightCoefficient = n;
-            }
-        } else if (mutationKeys.includes(key)) {
-            const n = clamp01(value);
-            if (!isNaN(n)) {
-                if (!cfg.mutation) cfg.mutation = {};
-                cfg.mutation[key] = n;
-            }
-        } else if (key === 'perturbationPower') {
-            const n = clamp0(value);
-            if (!isNaN(n)) {
-                if (!cfg.mutation) cfg.mutation = {};
-                cfg.mutation.perturbationPower = n;
-            }
-        } else if (key === 'crossoverWithoutMutation') {
-            const n = clamp01(value);
-            if (!isNaN(n)) {
-                if (!cfg.crossover) cfg.crossover = {};
-                cfg.crossover.crossoverWithoutMutation = n;
-            }
-        } else if (key === 'trainingEpochs') {
-            const n = int(value);
-            if (n !== null) {
-                if (!cfg.training) cfg.training = {};
-                cfg.training.epochs = n;
-            }
-        } else if (key === 'trainingFrequency') {
-            const n = int(value);
-            if (n !== null) {
-                if (!cfg.training) cfg.training = {};
-                cfg.training.frequency = n;
-            }
-        } else if (key === 'trainingOptimizer') {
-            if (!cfg.training) cfg.training = {};
-            cfg.training.optimizer = value;
-        } else if (key === 'coverageTarget') {
-            const learningIsDql = this._isDefined(cfg.stoppingCondition.conditions) === false;
-            if (learningIsDql) {
-                if (!cfg.coverageObjective) cfg.coverageObjective = {};
-                cfg.coverageObjective.type = value;
-            } else {
-                if (!cfg.fitnessFunction) cfg.fitnessFunction = {};
-                cfg.fitnessFunction.type = value;
-            }
-            document.getElementById('cfg-learning-coverage-statement')
-                .classList.toggle('whisker-coverage-btn--active', value === 'statement');
-            document.getElementById('cfg-learning-coverage-branch')
-                .classList.toggle('whisker-coverage-btn--active', value === 'branch');
-        }
-        window._whiskerSelectedConfig = JSON.stringify(cfg);
+        });
     }
 
     _populateLearningSettings(configStr, configPath) {
@@ -539,129 +498,16 @@ class ConfigPanel {
         if (!configStr) return;
         const cfg = JSON.parse(configStr);
         const isDql = configPath === _dqlPath;
+
         const durationMs = isDql ? cfg.stoppingCondition.duration : cfg.stoppingCondition.conditions[1].duration;
         document.getElementById('cfg-learning-timeBudget').value = durationMs / 1000;
-        if (this._isDefined(cfg.populationSize)) {
-            document.getElementById('cfg-learning-populationSize').value = cfg.populationSize;
-        }
-        if (cfg.chromosome && cfg.chromosome.activationFunction) {
-            document.getElementById('cfg-learning-activationFunction').value =
-                cfg.chromosome.activationFunction;
-        }
-        if (this._isDefined(cfg.switchObjectiveCount)) {
-            document.getElementById('cfg-learning-switchObjectiveCount').value =
-                cfg.switchObjectiveCount;
-        }
-        if (this._isDefined(cfg.maxArchiveSize)) {
-            document.getElementById('cfg-learning-maxArchiveSize').value = cfg.maxArchiveSize;
-        }
-        if (this._isDefined(cfg.randomSelectionProbability)) {
-            document.getElementById('cfg-learning-randomSelectionProbability').value =
-                cfg.randomSelectionProbability;
-        }
-        if (cfg.training) {
-            if (this._isDefined(cfg.training.learningRate)) {
-                document.getElementById('cfg-learning-learningRate').value = cfg.training.learningRate;
-            }
-            if (this._isDefined(cfg.training.batchSize)) {
-                document.getElementById('cfg-learning-batchSize').value = cfg.training.batchSize;
-            }
-            if (this._isDefined(cfg.training.epochs)) {
-                document.getElementById('cfg-learning-trainingEpochs').value = cfg.training.epochs;
-            }
-            if (this._isDefined(cfg.training.frequency)) {
-                document.getElementById('cfg-learning-trainingFrequency').value = cfg.training.frequency;
-            }
-            if (cfg.training.optimizer) {
-                document.getElementById('cfg-learning-trainingOptimizer').value = cfg.training.optimizer;
-            }
-        }
+
+        Object.keys(_learningFields).forEach(key => this._populateLearningField(cfg, key));
+
         if (cfg.network && cfg.network.hiddenLayers) {
             this._renderHiddenLayers(cfg.network.hiddenLayers);
         }
-        if (cfg.reward && this._isDefined(cfg.reward.gamma)) {
-            document.getElementById('cfg-learning-gamma').value = cfg.reward.gamma;
-        }
-        if (
-            cfg.epsilonGreedy &&
-            this._isDefined(cfg.epsilonGreedy.epsilonEnd)
-        ) {
-            document.getElementById('cfg-learning-epsilonEnd').value = cfg.epsilonGreedy.epsilonEnd;
-        }
-        if (cfg.mutation) {
-            if (
-                this._isDefined(cfg.mutation.mutationAddConnection)
-            ) {
-                document.getElementById('cfg-learning-mutationAddConnection').value =
-                    cfg.mutation.mutationAddConnection;
-            }
-            if (this._isDefined(cfg.mutation.mutationAddNode)) {
-                document.getElementById('cfg-learning-mutationAddNode').value = cfg.mutation.mutationAddNode;
-            }
-            if (this._isDefined(cfg.mutation.mutateWeights)) {
-                document.getElementById('cfg-learning-mutateWeights').value = cfg.mutation.mutateWeights;
-            }
-            if (this._isDefined(cfg.mutation.perturbationPower)) {
-                document.getElementById('cfg-learning-perturbationPower').value = cfg.mutation.perturbationPower;
-            }
-            if (
-                this._isDefined(cfg.mutation.mutateToggleEnableConnection)
-            ) {
-                document.getElementById('cfg-learning-mutateToggleEnableConnection').value =
-                    cfg.mutation.mutateToggleEnableConnection;
-            }
-        }
-        if (
-            cfg.crossover &&
-            this._isDefined(cfg.crossover.crossoverWithoutMutation)
-        ) {
-            document.getElementById('cfg-learning-crossoverWithoutMutation').value =
-                cfg.crossover.crossoverWithoutMutation;
-        }
-        if (this._isDefined(cfg.numberOfSpecies)) {
-            document.getElementById('cfg-learning-numberOfSpecies').value = cfg.numberOfSpecies;
-        }
-        if (this._isDefined(cfg.parentsPerSpecies)) {
-            document.getElementById('cfg-learning-parentsPerSpecies').value = cfg.parentsPerSpecies;
-        }
-        if (this._isDefined(cfg.ageSignificance)) {
-            document.getElementById('cfg-learning-ageSignificance').value = cfg.ageSignificance;
-        }
-        if (this._isDefined(cfg.penalizingAge)) {
-            document.getElementById('cfg-learning-penalizingAge').value = cfg.penalizingAge;
-        }
-        if (cfg.compatibility) {
-            if (
-                this._isDefined(cfg.compatibility.distanceThreshold)
-            ) {
-                document.getElementById('cfg-learning-distanceThreshold').value =
-                    cfg.compatibility.distanceThreshold;
-            }
-            if (
-                this._isDefined(cfg.compatibility.distanceModifier)
-            ) {
-                document.getElementById('cfg-learning-distanceModifier').value =
-                    cfg.compatibility.distanceModifier;
-            }
-            if (
-                this._isDefined(cfg.compatibility.disjointCoefficient)
-            ) {
-                document.getElementById('cfg-learning-disjointCoefficient').value =
-                    cfg.compatibility.disjointCoefficient;
-            }
-            if (
-                this._isDefined(cfg.compatibility.excessCoefficient)
-            ) {
-                document.getElementById('cfg-learning-excessCoefficient').value =
-                    cfg.compatibility.excessCoefficient;
-            }
-            if (
-                this._isDefined(cfg.compatibility.weightCoefficient)
-            ) {
-                document.getElementById('cfg-learning-weightCoefficient').value =
-                    cfg.compatibility.weightCoefficient;
-            }
-        }
+
         const coverageType = isDql ?
             (cfg.coverageObjective && cfg.coverageObjective.type) :
             (cfg.fitnessFunction && cfg.fitnessFunction.type);

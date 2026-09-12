@@ -1,3 +1,5 @@
+const Modal = require('./modal');
+
 const PAD_L = 8;
 const PAD_R = 8;
 const PAD_T = 8;
@@ -35,7 +37,7 @@ class SpeciesPopulationChart {
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._countEl.textContent = '';
-        this._closeModal();
+        this._modal.close();
     }
 
     startEmpty() {
@@ -46,7 +48,7 @@ class SpeciesPopulationChart {
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
-        this._closeModal();
+        this._modal.close();
     }
 
     updateI18n(i18n) {
@@ -54,7 +56,7 @@ class SpeciesPopulationChart {
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
-        if (this._modalTitleEl) this._modalTitleEl.textContent = this._i18n.title;
+        this._modal.titleEl.textContent = this._i18n.title;
     }
 
     _buildUI(container) {
@@ -84,44 +86,18 @@ class SpeciesPopulationChart {
 
         card.addEventListener('click', () => this._openModal());
 
-        // Modal
-        this._modal = document.createElement('div');
-        this._modal.className = 'network-topology-modal';
-        this._modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <p class="network-topology-title species-pop-chart-modal-title"></p>
-                    <button class="network-topology-modal-close" id="spc-modal-close">✕</button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <canvas class="species-pop-chart-modal-canvas"></canvas>
-                </div>
-            </div>`;
-        document.body.appendChild(this._modal);
-
-        this._modalCanvas = this._modal.querySelector('.species-pop-chart-modal-canvas');
+        this._modal = new Modal({titleExtraClass: 'species-pop-chart-modal-title'});
+        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.bodyEl.innerHTML = '<canvas class="species-pop-chart-modal-canvas"></canvas>';
+        this._modalCanvas = this._modal.bodyEl.querySelector('.species-pop-chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
-        this._modalTitleEl = this._modal.querySelector('.species-pop-chart-modal-title');
-        this._modalTitleEl.textContent = this._i18n.title;
-
-        this._modal.querySelector('#spc-modal-close').addEventListener('click', () => this._closeModal());
-        this._modal.addEventListener('click', e => {
-            if (e.target === this._modal) this._closeModal();
-        });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
     }
 
     _openModal() {
         if (!this._history.length) return;
-        this._modal.classList.add('network-topology-modal--open');
+        this._modal.open();
         const W = this._modalCanvas.parentElement.clientWidth - 32;
         this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
-    }
-
-    _closeModal() {
-        this._modal.classList.remove('network-topology-modal--open');
     }
 
     _update(data) {
@@ -141,7 +117,7 @@ class SpeciesPopulationChart {
         this._canvas.style.display = '';
         this._countEl.textContent = `${data.species.length}`;
         this._redraw();
-        if (this._modal.classList.contains('network-topology-modal--open')) {
+        if (this._modal.isOpen()) {
             const W = this._modalCanvas.parentElement.clientWidth - 32;
             this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H);
         }

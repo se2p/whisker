@@ -1,3 +1,5 @@
+const Modal = require('./modal');
+
 const MAX_MESSAGES = 500;
 
 class ConsoleLog {
@@ -25,7 +27,7 @@ class ConsoleLog {
     updateI18n(i18n) {
         this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
-        if (this._modalTitleEl) this._modalTitleEl.textContent = this._i18n.title;
+        this._modal.titleEl.textContent = this._i18n.title;
         this._updateFilterLabels();
     }
 
@@ -79,47 +81,28 @@ class ConsoleLog {
             this._openModal();
         });
 
-        // Modal
-        this._modal = document.createElement('div');
-        this._modal.className = 'network-topology-modal console-log-modal';
-        this._modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <p class="network-topology-title console-log-modal-title"></p>
-                    <button class="network-topology-modal-close" id="cl-modal-close">✕</button>
-                </div>
-                <div class="console-log-filter-bar console-log-modal-filter-bar">
-                    <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label"></span></button>
-                    <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
-                    <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
-                    <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
-                    <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <div class="console-log-output console-log-modal-output"></div>
-                </div>
-            </div>`;
-        document.body.appendChild(this._modal);
+        this._modal = new Modal({extraClass: 'console-log-modal', titleExtraClass: 'console-log-modal-title'});
+        this._modal.titleEl.textContent = this._i18n.title;
+        // Filter bar sits above the scrollable body (as a sibling within the box, same as the card's own
+        // filter bar sits above its output), not inside bodyEl - it shouldn't scroll away with the log.
+        this._modal.bodyEl.insertAdjacentHTML('beforebegin', `
+            <div class="console-log-filter-bar console-log-modal-filter-bar">
+                <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label"></span></button>
+                <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
+            </div>`);
+        this._modal.bodyEl.innerHTML = '<div class="console-log-output console-log-modal-output"></div>';
+        this._modalOutput = this._modal.bodyEl.querySelector('.console-log-modal-output');
 
-        this._modalOutput = this._modal.querySelector('.console-log-modal-output');
-        this._modalTitleEl = this._modal.querySelector('.console-log-modal-title');
-        this._modalTitleEl.textContent = this._i18n.title;
-
-        this._modal.querySelector('#cl-modal-close').addEventListener('click', () => this._closeModal());
-        this._modal.addEventListener('click', e => {
-            if (e.target === this._modal) this._closeModal();
-        });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
-
-        this._modal.querySelectorAll('.console-log-filter-btn').forEach(btn => {
+        this._modal.el.querySelectorAll('.console-log-filter-btn').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
                 this._setFilter(btn.dataset.filter);
             });
         });
-        this._modal.querySelector('.console-log-clear-btn').addEventListener('click', e => {
+        this._modal.el.querySelector('.console-log-clear-btn').addEventListener('click', e => {
             e.stopPropagation();
             this.clear();
         });
@@ -128,14 +111,9 @@ class ConsoleLog {
     }
 
     _openModal() {
-        this._modal.classList.add('network-topology-modal--open');
+        this._modal.open();
         this._rebuildModalOutput();
-        const body = this._modal.querySelector('.network-topology-modal-body');
-        body.scrollTop = body.scrollHeight;
-    }
-
-    _closeModal() {
-        this._modal.classList.remove('network-topology-modal--open');
+        this._modal.bodyEl.scrollTop = this._modal.bodyEl.scrollHeight;
     }
 
     _rebuildModalOutput() {
@@ -148,7 +126,7 @@ class ConsoleLog {
     }
 
     _updateFilterLabels() {
-        [this._card, this._modal].forEach(el => {
+        [this._card, this._modal && this._modal.el].forEach(el => {
             if (!el) return;
             el.querySelectorAll('.console-log-filter-btn').forEach(btn => {
                 const label = btn.querySelector('.console-log-filter-label');
@@ -159,7 +137,7 @@ class ConsoleLog {
 
     _setFilter(filter) {
         this._filter = filter;
-        [this._card, this._modal].forEach(el => {
+        [this._card, this._modal && this._modal.el].forEach(el => {
             if (!el) return;
             el.querySelectorAll('.console-log-filter-btn').forEach(btn => {
                 btn.classList.toggle('console-log-filter-btn--active', btn.dataset.filter === filter);
@@ -251,12 +229,11 @@ class ConsoleLog {
         this._output.appendChild(line);
         this._output.scrollTop = this._output.scrollHeight;
 
-        if (this._modal && this._modal.classList.contains('network-topology-modal--open')) {
+        if (this._modal && this._modal.isOpen()) {
             const modalLine = this._createLine(type, text);
             modalLine.style.display = visible ? '' : 'none';
             this._modalOutput.appendChild(modalLine);
-            const body = this._modal.querySelector('.network-topology-modal-body');
-            body.scrollTop = body.scrollHeight;
+            this._modal.bodyEl.scrollTop = this._modal.bodyEl.scrollHeight;
         }
     }
 }

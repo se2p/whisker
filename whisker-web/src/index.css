@@ -2427,7 +2427,7 @@ label {
     background: #f9fafb;
 }
 
-.network-topology-title {
+.modal-title {
     margin: 0;
     font-size: 15px;
     font-weight: 600;
@@ -2474,7 +2474,7 @@ label {
     color: #9ca3af;
 }
 
-.network-topology-modal {
+.modal {
     display: none;
     position: fixed;
     inset: 0;
@@ -2484,11 +2484,11 @@ label {
     justify-content: center;
 }
 
-.network-topology-modal--open {
+.modal--open {
     display: flex;
 }
 
-.network-topology-modal-box {
+.modal-box {
     background: #ffffff;
     border-radius: 12px;
     overflow: hidden;
@@ -2500,13 +2500,13 @@ label {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-.network-topology-modal-body {
+.modal-body {
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
 }
 
-.network-topology-modal-header {
+.modal-header {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2541,7 +2541,7 @@ label {
     box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.12);
 }
 
-.network-topology-modal-close {
+.modal-close {
     background: none;
     border: none;
     font-size: 16px;
@@ -2551,7 +2551,7 @@ label {
     border-radius: 4px;
 }
 
-.network-topology-modal-close:hover {
+.modal-close:hover {
     background: #f3f4f6;
     color: #111827;
 }
@@ -2737,11 +2737,11 @@ label {
     color: #374151;
 }
 
-.console-log-modal .network-topology-modal-box {
+.console-log-modal .modal-box {
     height: 80vh;
 }
 
-.console-log-modal .network-topology-modal-body {
+.console-log-modal .modal-body {
     background: #0d1117;
 }
 

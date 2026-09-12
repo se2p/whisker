@@ -1,27 +1,25 @@
 // vis-network is already a project dependency and ships a DOT parser, so no extra dependency or
 // webpack configuration is needed to render the CDG_UPDATE dot string sent by the backend.
 const vis = require('vis-network');
+const Modal = require('./modal');
 
-// The CDG is a DAG, so a hierarchical layout gives deterministic positions in one pass, without running
-// vis-network's force-directed physics simulation or its "improvedLayout" pre-clustering heuristic - both
-// are what made large (~300+ node) graphs lag, since CDG_UPDATE fires every search iteration and would
-// otherwise re-trigger them on every single render.
+// The CDG is a DAG, so a hierarchical layout gives deterministic positions in one pass
 const NETWORK_OPTIONS = {
-    edges: {arrows: 'to', smooth: {type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5}},
-    nodes: {shape: 'box', shapeProperties: {borderRadius: 4}, margin: 6, font: {size: 11}},
+    edges: { arrows: 'to', smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5 } },
+    nodes: { shape: 'box', shapeProperties: { borderRadius: 4 }, margin: 6, font: { size: 11 } },
     physics: false,
     layout: {
         improvedLayout: false,
-        // nodeSpacing is center-to-center distance between same-level nodes; it needs to clear each box's
-        // actual rendered width (label + margin), not just look generously large in isolation.
-        hierarchical: {direction: 'UD', sortMethod: 'hubsize', levelSeparation: 110, nodeSpacing: 180}
+        hierarchical: { direction: 'UD', sortMethod: 'hubsize', levelSeparation: 110, nodeSpacing: 180 }
     },
-    interaction: {dragView: true, zoomView: true}
+    interaction: { dragView: true, zoomView: true }
 };
 
-// Re-rendering on every single iteration is unnecessary - nobody can read a graph redrawing dozens of
-// times a second - and, for large graphs, is itself a real cost - skip renders that arrive faster than this.
+// Re-rendering on every single iteration is unnecessary 
 const MIN_RENDER_INTERVAL_MS = 500;
+
+// Drives the toggle-button setup/update loop below instead of writing out each button by hand.
+const VIEW_I18N_KEYS = { graph: 'viewGraph', grid: 'viewGrid' };
 
 class CdgGraph {
     constructor(container, i18n = {}) {
@@ -34,9 +32,8 @@ class CdgGraph {
         };
         this._lastData = null;
         this._lastRenderTime = 0;
-        this._network = null;
-        this._modalNetwork = null;
         this._viewMode = 'graph'; // 'graph' | 'grid'
+        this._views = { card: {}, modal: {} }; // each gets {graphEl, gridEl, network} in _buildUI
         this._buildUI(container);
         window.Whisker.scratch.vm.on('CDG_UPDATE', data => this._update(data));
     }
@@ -46,19 +43,16 @@ class CdgGraph {
         this._lastRenderTime = 0;
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.style.display = '';
-        this._graphEl.style.display = 'none';
-        this._gridEl.style.display = 'none';
-        this._gridEl.innerHTML = '';
-        this._modalGridEl.innerHTML = '';
-        if (this._network) {
-            this._network.destroy();
-            this._network = null;
+        for (const view of Object.values(this._views)) {
+            view.graphEl.style.display = 'none';
+            view.gridEl.style.display = 'none';
+            view.gridEl.innerHTML = '';
+            if (view.network) {
+                view.network.destroy();
+                view.network = null;
+            }
         }
-        if (this._modalNetwork) {
-            this._modalNetwork.destroy();
-            this._modalNetwork = null;
-        }
-        this._closeModal();
+        this._modal.close();
     }
 
     startEmpty() {
@@ -66,13 +60,14 @@ class CdgGraph {
     }
 
     updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
+        this._i18n = { ...this._i18n, ...i18n };
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
-        if (this._modalTitle) this._modalTitle.textContent = this._i18n.title;
-        this._graphToggleBtn.textContent = this._i18n.viewGraph;
-        this._gridToggleBtn.textContent = this._i18n.viewGrid;
+        this._modal.titleEl.textContent = this._i18n.title;
+        for (const [mode, btn] of Object.entries(this._toggleButtons)) {
+            btn.textContent = this._i18n[VIEW_I18N_KEYS[mode]];
+        }
     }
 
     _buildUI(container) {
@@ -97,81 +92,53 @@ class CdgGraph {
         this._card = card;
         this._titleEl = card.querySelector('.cdg-graph-title');
         this._emptyEl = card.querySelector('.cdg-graph-empty');
-        this._graphEl = card.querySelector('.cdg-graph-canvas');
-        this._gridEl = card.querySelector('.cdg-graph-grid');
         this._titleEl.textContent = this._i18n.title;
         this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._views.card.graphEl = card.querySelector('.cdg-graph-canvas');
+        this._views.card.gridEl = card.querySelector('.cdg-graph-grid');
+        this._views.card.network = null;
 
-        this._graphToggleBtn = card.querySelector('.cdg-graph-view-btn--graph');
-        this._gridToggleBtn = card.querySelector('.cdg-graph-view-btn--grid');
-        this._graphToggleBtn.textContent = this._i18n.viewGraph;
-        this._gridToggleBtn.textContent = this._i18n.viewGrid;
-        this._graphToggleBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            this._setViewMode('graph');
-        });
-        this._gridToggleBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            this._setViewMode('grid');
-        });
+        this._toggleButtons = {};
+        for (const mode of Object.keys(VIEW_I18N_KEYS)) {
+            const btn = card.querySelector(`.cdg-graph-view-btn--${mode}`);
+            btn.textContent = this._i18n[VIEW_I18N_KEYS[mode]];
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                this._setViewMode(mode);
+            });
+            this._toggleButtons[mode] = btn;
+        }
         this._updateToggleButtons();
 
         card.addEventListener('click', () => this._openModal());
 
-        // Reuses the same modal chrome/CSS as network-topology and coverage-curve.
-        this._modal = document.createElement('div');
-        this._modal.className = 'network-topology-modal';
-        this._modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <p class="network-topology-title"></p>
-                    <button class="network-topology-modal-close">✕</button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <div class="cdg-graph-canvas cdg-graph-canvas--modal"></div>
-                    <div class="cdg-graph-grid cdg-graph-grid--modal"></div>
-                </div>
-            </div>`;
-        document.body.appendChild(this._modal);
-        this._modalTitle = this._modal.querySelector('.network-topology-title');
-        this._modalTitle.textContent = this._i18n.title;
-        this._modalGraphEl = this._modal.querySelector('.cdg-graph-canvas--modal');
-        this._modalGridEl = this._modal.querySelector('.cdg-graph-grid--modal');
-
-        this._modal.addEventListener('click', e => {
-            if (e.target === this._modal) this._closeModal();
-        });
-        this._modal.querySelector('.network-topology-modal-close').addEventListener('click', () => this._closeModal());
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
+        this._modal = new Modal();
+        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.bodyEl.innerHTML = `
+            <div class="cdg-graph-canvas cdg-graph-canvas--modal"></div>
+            <div class="cdg-graph-grid cdg-graph-grid--modal"></div>`;
+        this._views.modal.graphEl = this._modal.bodyEl.querySelector('.cdg-graph-canvas--modal');
+        this._views.modal.gridEl = this._modal.bodyEl.querySelector('.cdg-graph-grid--modal');
+        this._views.modal.network = null;
     }
 
     _setViewMode(mode) {
         if (this._viewMode === mode) return;
         this._viewMode = mode;
         this._updateToggleButtons();
-        if (this._lastData) {
-            this._renderCurrentView(this._graphEl, this._gridEl, this._network, m => (this._network = m));
-            if (this._modal.classList.contains('network-topology-modal--open')) {
-                this._renderCurrentView(this._modalGraphEl, this._modalGridEl, this._modalNetwork, m => (this._modalNetwork = m));
-            }
-        }
+        if (this._lastData) this._renderVisibleViews();
     }
 
     _updateToggleButtons() {
-        this._graphToggleBtn.classList.toggle('cdg-graph-view-btn--active', this._viewMode === 'graph');
-        this._gridToggleBtn.classList.toggle('cdg-graph-view-btn--active', this._viewMode === 'grid');
+        for (const [mode, btn] of Object.entries(this._toggleButtons)) {
+            btn.classList.toggle('cdg-graph-view-btn--active', this._viewMode === mode);
+        }
     }
 
     _openModal() {
         if (!this._lastData) return;
-        this._modal.classList.add('network-topology-modal--open');
-        this._renderCurrentView(this._modalGraphEl, this._modalGridEl, this._modalNetwork, m => (this._modalNetwork = m));
-    }
-
-    _closeModal() {
-        this._modal.classList.remove('network-topology-modal--open');
+        this._modal.open();
+        this._renderView('modal', vis.parseDOTNetwork(this._lastData.dot));
     }
 
     _update(data) {
@@ -185,29 +152,33 @@ class CdgGraph {
             return;
         }
         this._lastRenderTime = now;
-
-        this._renderCurrentView(this._graphEl, this._gridEl, this._network, m => (this._network = m));
-        if (this._modal.classList.contains('network-topology-modal--open')) {
-            this._renderCurrentView(this._modalGraphEl, this._modalGridEl, this._modalNetwork, m => (this._modalNetwork = m));
-        }
+        this._renderVisibleViews();
     }
 
-    // Shows/hides the graph vs. grid container for the active view mode and renders into whichever is shown.
-    // Parses the dot string once here (both renderers need it) and updates the title from the payload's
-    // statement counts (CDG nodes are statements, so the count is always statement coverage).
-    _renderCurrentView(graphEl, gridEl, network, setNetwork) {
+    // Parses the dot string once (every visible view needs it) and updates the title from the payload's
+    // statement counts (CDG nodes are statements, so the count is always statement coverage), then renders
+    // the card and, if open, the modal.
+    _renderVisibleViews() {
         const parsed = vis.parseDOTNetwork(this._lastData.dot);
-        const {covered, total} = this._lastData;
+        const { covered, total } = this._lastData;
         this._titleEl.textContent = `${this._i18n.title} — ${covered}/${total} statements`;
 
+        this._renderView('card', parsed);
+        if (this._modal.isOpen()) this._renderView('modal', parsed);
+    }
+
+    // Shows/hides the graph vs. grid container for the given view (card or modal) and renders into
+    // whichever is active.
+    _renderView(key, parsed) {
+        const view = this._views[key];
         if (this._viewMode === 'graph') {
-            gridEl.style.display = 'none';
-            graphEl.style.display = '';
-            setNetwork(this._renderNetwork(graphEl, network, parsed));
+            view.gridEl.style.display = 'none';
+            view.graphEl.style.display = '';
+            view.network = this._renderNetwork(view.graphEl, view.network, parsed);
         } else {
-            graphEl.style.display = 'none';
-            gridEl.style.display = '';
-            this._renderGrid(gridEl, parsed);
+            view.graphEl.style.display = 'none';
+            view.gridEl.style.display = '';
+            this._renderGrid(view.gridEl, parsed);
         }
     }
 
@@ -216,21 +187,21 @@ class CdgGraph {
     // or targeted does - so later updates patch each node's color/font directly on the existing DataSet
     // instead of calling setData(), which would fully recompute the hierarchical layout from scratch
     // (the main remaining cost at scale, even with physics off) and reset the user's zoom/pan every time.
-    _renderNetwork(element, network, {nodes, edges}) {
+    _renderNetwork(element, network, { nodes, edges }) {
         if (network) {
             const sameTopology = network.body.data.nodes.length === nodes.length;
             if (sameTopology) {
-                network.body.data.nodes.update(nodes.map(n => ({id: n.id, color: n.color, font: n.font})));
+                network.body.data.nodes.update(nodes.map(n => ({ id: n.id, color: n.color, font: n.font })));
             } else {
                 // Topology genuinely changed (shouldn't normally happen) - fall back to a full re-layout.
                 const position = network.getViewPosition();
                 const scale = network.getScale();
-                network.setData({nodes, edges});
-                network.moveTo({position, scale, animation: false});
+                network.setData({ nodes, edges });
+                network.moveTo({ position, scale, animation: false });
             }
             return network;
         }
-        network = new vis.Network(element, {nodes, edges}, NETWORK_OPTIONS);
+        network = new vis.Network(element, { nodes, edges }, NETWORK_OPTIONS);
         network.fit();
         return network;
     }
@@ -238,7 +209,7 @@ class CdgGraph {
     // Renders every CDG node as one colored/glyphed cell (darkgreen+✓ covered, gold+● targeted, light+·
     // neither), wrapped into a compact multi-row grid - a much cheaper, denser alternative to the graph
     // view for very large CDGs, at the cost of not showing the control-dependency edges.
-    _renderGrid(container, {nodes}) {
+    _renderGrid(container, { nodes }) {
         container.innerHTML = '';
         const grid = document.createElement('div');
         grid.className = 'cdg-graph-heatmap-grid';

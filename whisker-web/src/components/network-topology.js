@@ -1,16 +1,8 @@
-const {weightToColor} = require('./network-colors');
-
-// Keyed by the backend NodeGene.toJSON() letter codes: I=Input, B=Bias, H=Hidden, A=Action/Output
-const NODE_COLORS = {
-    I: '#5b8dd9',
-    B: '#5b8dd9',
-    H: '#7c5cbf',
-    A: '#27ae60'
-};
-const NODE_RADIUS = 10;
-const COL_SPACING = 55;
-const H_PAD = 50;
-const V_PAD = 20;
+const Modal = require('./modal');
+const {
+    NODE_RADIUS, COL_SPACING, V_PAD,
+    groupNodesIntoColumns, drawNetworkDiagram, createHoverTooltip, attachHoverTooltip
+} = require('./network-diagram');
 const PREVIEW_H = 300;
 
 class NetworkTopology {
@@ -43,12 +35,10 @@ class NetworkTopology {
         this._i18n = {...this._i18n, ...i18n};
         const card = this.container.querySelector('.network-topology-card');
         if (card) card.title = this._i18n.expand;
-        this.container.querySelectorAll('.network-topology-title').forEach(el => {
+        this.container.querySelectorAll('.modal-title').forEach(el => {
             el.textContent = this._i18n.title;
         });
-        this.modal.querySelectorAll('.network-topology-title').forEach(el => {
-            el.textContent = this._i18n.title;
-        });
+        if (this.modal) this.modal.titleEl.textContent = this._i18n.title;
         if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
         if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
     }
@@ -75,7 +65,7 @@ class NetworkTopology {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = '';
         this.canvas.style.display = 'none';
-        this._closeModal();
+        this.modal.close();
     }
 
     startEmpty() {
@@ -96,7 +86,7 @@ class NetworkTopology {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._emptyEl.style.display = 'none';
         this.canvas.style.display = '';
-        this._closeModal();
+        this.modal.close();
     }
 
     _buildUI() {
@@ -107,7 +97,7 @@ class NetworkTopology {
         card.innerHTML = `
             <div class="network-topology-header">
                 <select class="network-topology-generation" id="nt-generation"></select>
-                <p class="network-topology-title">${this._i18n.title}</p>
+                <p class="modal-title">${this._i18n.title}</p>
                 <span style="flex:1;"></span>
                 <div class="network-topology-current-group" id="nt-current-group" style="display:none;">
                     <span class="network-topology-current-label">Frontier</span>
@@ -152,40 +142,29 @@ class NetworkTopology {
             }
         });
 
-        // Modal
-        this.modal = document.createElement('div');
-        this.modal.className = 'network-topology-modal';
-        this.modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <span class="network-topology-generation" id="nt-modal-generation"></span>
-                    <p class="network-topology-title">${this._i18n.title}</p>
-                    <select class="network-topology-history-select" id="nt-history-select">
-                        <option value="current">${this._i18n.currentTarget}</option>
-                    </select>
-                    <button class="network-topology-modal-close" id="nt-modal-close">✕</button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <canvas id="network-topology-modal-canvas"></canvas>
-                </div>
-            </div>`;
-        document.body.appendChild(this.modal);
-        this.modalCanvas = this.modal.querySelector('#network-topology-modal-canvas');
+        this.modal = new Modal();
+        // The generation label sits before the title, the history select after it, both inside the shared
+        // header - inserted around titleEl rather than the modal dictating this header's extra controls.
+        this.modal.titleEl.insertAdjacentHTML('beforebegin',
+            '<span class="network-topology-generation" id="nt-modal-generation"></span>');
+        this.modal.titleEl.textContent = this._i18n.title;
+        this.modal.titleEl.insertAdjacentHTML('afterend', `
+            <select class="network-topology-history-select" id="nt-history-select">
+                <option value="current">${this._i18n.currentTarget}</option>
+            </select>`);
+        this.modal.bodyEl.innerHTML = '<canvas id="network-topology-modal-canvas"></canvas>';
+        this.modalCanvas = this.modal.bodyEl.querySelector('#network-topology-modal-canvas');
         this.modalCtx = this.modalCanvas.getContext('2d');
-        this.modalGenLabel = this.modal.querySelector('#nt-modal-generation');
+        this.modalGenLabel = this.modal.el.querySelector('#nt-modal-generation');
 
-        this._tooltip = document.createElement('div');
-        this._tooltip.className = 'nt-weight-tooltip';
-        document.body.appendChild(this._tooltip);
+        this._tooltip = createHoverTooltip();
         this._modalNodePos = null;
         this._modalConnections = null;
         this._modalNodes = null;
-
-        this.modalCanvas.addEventListener('mousemove', e => this._onModalMouseMove(e));
-        this.modalCanvas.addEventListener('mouseleave', () => {
-            this._tooltip.style.display = 'none';
-        });
-        this._historySelect = this.modal.querySelector('#nt-history-select');
+        attachHoverTooltip(this.modalCanvas, this._tooltip, () => ({
+            nodePos: this._modalNodePos, nodes: this._modalNodes, connections: this._modalConnections
+        }));
+        this._historySelect = this.modal.el.querySelector('#nt-history-select');
         this._historySelect.addEventListener('change', () => {
             const val = this._historySelect.value;
             const modalW = this.modalCanvas.parentElement.clientWidth - 32;
@@ -230,18 +209,11 @@ class NetworkTopology {
         });
 
         card.addEventListener('click', () => this._openModal());
-        this.modal.addEventListener('click', e => {
-            if (e.target === this.modal) this._closeModal();
-        });
-        this.modal.querySelector('#nt-modal-close').addEventListener('click', () => this._closeModal());
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
     }
 
     _openModal() {
         if (!this._lastData) return;
-        this.modal.classList.add('network-topology-modal--open');
+        this.modal.open();
         const modalW = this.modalCanvas.parentElement.clientWidth - 32;
 
         if (this._selectedGen !== 'latest' && this._lastHistorySnapshot) {
@@ -317,10 +289,6 @@ class NetworkTopology {
         }
     }
 
-    _closeModal() {
-        this.modal.classList.remove('network-topology-modal--open');
-    }
-
     _render(data) {
         this._lastData = data;
         this._emptyEl.style.display = 'none';
@@ -348,7 +316,7 @@ class NetworkTopology {
 
         this._renderSnapshot(data);
 
-        if (this.modal.classList.contains('network-topology-modal--open') && this._selectedKey === 'current') {
+        if (this.modal.isOpen() && this._selectedKey === 'current') {
             this._openModal();
         }
     }
@@ -377,7 +345,7 @@ class NetworkTopology {
     _renderHistorySnapshot(data) {
         this._lastHistorySnapshot = data;
         this._renderSnapshot(data);
-        if (this.modal.classList.contains('network-topology-modal--open')) {
+        if (this.modal.isOpen()) {
             this._openModal();
         }
     }
@@ -409,12 +377,7 @@ class NetworkTopology {
     }
 
     _maxColHeight(nodes) {
-        const hiddenNodes = nodes.filter(n => n.t === 'H');
-        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.d))];
-        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.d === d));
-        const inputNodes = nodes.filter(n => n.t === 'I' || n.t === 'B');
-        const outputNodes = nodes.filter(n => n.t === 'A');
-        return Math.max(...[inputNodes, ...hiddenCols, outputNodes].map(c => c.length));
+        return Math.max(...groupNodesIntoColumns(nodes).map(c => c.length));
     }
 
     _setGenLabelText(genLabel, text) {
@@ -433,111 +396,12 @@ class NetworkTopology {
         const {generation, nodes, connections} = data;
         this._setGenLabelText(genLabel, `${this._i18n.generation} ${generation}`);
 
-        const inputNodes = nodes.filter(n => n.t === 'I' || n.t === 'B');
-        const hiddenNodes = nodes.filter(n => n.t === 'H');
-        const outputNodes = nodes.filter(n => n.t === 'A');
-        const hiddenDepths = [...new Set(hiddenNodes.map(n => n.d))].sort((a, b) => a - b);
-        const hiddenCols = hiddenDepths.map(d => hiddenNodes.filter(n => n.d === d));
-        const columns = [inputNodes, ...hiddenCols, outputNodes];
-        const numCols = columns.length;
-        const maxColHeight = Math.max(...columns.map(c => c.length));
-
-        const H = fixedH || maxColHeight * spacing + V_PAD * 2;
-        canvas.width = Math.max(W, numCols * 40 + H_PAD * 2);
-        canvas.height = H;
-
-        ctx.clearRect(0, 0, canvas.width, H);
-
-        const colX = i => H_PAD + i * ((canvas.width - H_PAD * 2) / Math.max(numCols - 1, 1));
-        const nodePos = new Map();
-        columns.forEach((col, ci) => {
-            const x = colX(ci);
-            col.forEach((node, ni) => {
-                const y = H / 2 + (ni - (col.length - 1) / 2) * spacing;
-                nodePos.set(node.id, {x, y, type: node.t});
-            });
-        });
-
-        // Connections
-        ctx.globalAlpha = 0.8;
-        connections.forEach(({s: source, t: target, w: weight}) => {
-            const src = nodePos.get(source);
-            const tgt = nodePos.get(target);
-            if (!src || !tgt) return;
-            ctx.beginPath();
-            ctx.moveTo(src.x, src.y);
-            ctx.lineTo(tgt.x, tgt.y);
-            ctx.strokeStyle = weightToColor(weight);
-            ctx.lineWidth = Math.max(1.5, Math.min(4, Math.abs(weight) * 0.8));
-            ctx.stroke();
-        });
-        ctx.globalAlpha = 1;
-
-        // Nodes
-        nodePos.forEach(({x, y, type}) => {
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = NODE_COLORS[type] || NODE_COLORS.H;
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.lineWidth = Math.max(1, radius * 0.2);
-            ctx.stroke();
-        });
+        const nodePos = drawNetworkDiagram(canvas, ctx, data, {width: W, spacing, radius, fixedHeight: fixedH});
 
         if (canvas === this.modalCanvas) {
             this._modalNodePos = nodePos;
             this._modalConnections = connections;
             this._modalNodes = nodes;
-        }
-    }
-
-    _onModalMouseMove(e) {
-        if (!this._modalNodePos || !this._modalConnections) return;
-        const rect = this.modalCanvas.getBoundingClientRect();
-        const scaleX = this.modalCanvas.width / rect.width;
-        const scaleY = this.modalCanvas.height / rect.height;
-        const mx = (e.clientX - rect.left) * scaleX;
-        const my = (e.clientY - rect.top) * scaleY;
-
-        // Check nodes first
-        let label = null;
-        for (const node of (this._modalNodes || [])) {
-            const pos = this._modalNodePos.get(node.id);
-            if (!pos) continue;
-            const dx = mx - pos.x; const dy = my - pos.y;
-            if (dx * dx + dy * dy <= NODE_RADIUS * NODE_RADIUS) {
-                if (node.t === 'I') label = `${node.sprite} · ${node.feature}`;
-                else if (node.t === 'B') label = 'Bias';
-                else if (node.t === 'A') label = node.event || null;
-                else label = node.aF || '';
-                break;
-            }
-        }
-
-        // Fall back to connection weight
-        if (label === null) {
-            const THRESHOLD = 6;
-            for (const {s: source, t: target, w: weight} of this._modalConnections) {
-                const src = this._modalNodePos.get(source);
-                const tgt = this._modalNodePos.get(target);
-                if (!src || !tgt) continue;
-                const dx = tgt.x - src.x; const dy = tgt.y - src.y;
-                const lenSq = dx * dx + dy * dy;
-                const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((mx - src.x) * dx + (my - src.y) * dy) / lenSq));
-                const px = src.x + t * dx - mx; const py = src.y + t * dy - my;
-                if (px * px + py * py <= THRESHOLD * THRESHOLD) {
-                    label = weight.toFixed(4); break;
-                }
-            }
-        }
-
-        if (label === null) {
-            this._tooltip.style.display = 'none';
-        } else {
-            this._tooltip.textContent = label;
-            this._tooltip.style.display = 'block';
-            this._tooltip.style.left = `${e.clientX + 12}px`;
-            this._tooltip.style.top = `${e.clientY - 24}px`;
         }
     }
 }

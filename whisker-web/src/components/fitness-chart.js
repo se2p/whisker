@@ -1,3 +1,5 @@
+const Modal = require('./modal');
+
 const H_PAD = 44;
 const V_PAD = 20;
 const CHART_H = 180;
@@ -37,7 +39,7 @@ class FitnessChart {
         this._valueEl.textContent = '';
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._rebuildHistorySelect();
-        this._closeModal();
+        this._modal.close();
     }
 
     startEmpty() {
@@ -60,7 +62,7 @@ class FitnessChart {
         this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
-        if (this._modalTitle) this._modalTitle.textContent = this._i18n.title;
+        this._modal.titleEl.textContent = this._i18n.title;
         if (this._historySelect) this._rebuildHistorySelect();
     }
 
@@ -107,43 +109,19 @@ class FitnessChart {
 
         card.addEventListener('click', () => this._openModal());
 
-        this._modal = document.createElement('div');
-        this._modal.className = 'network-topology-modal';
-        this._modal.innerHTML = `
-            <div class="network-topology-modal-box">
-                <div class="network-topology-modal-header">
-                    <p class="network-topology-title"></p>
-                    <button class="network-topology-modal-close">✕</button>
-                </div>
-                <div class="network-topology-modal-body">
-                    <canvas class="chart-modal-canvas"></canvas>
-                </div>
-            </div>`;
-        document.body.appendChild(this._modal);
-        this._modalTitle = this._modal.querySelector('.network-topology-title');
-        this._modalTitle.textContent = this._i18n.title;
-        this._modalCanvas = this._modal.querySelector('.chart-modal-canvas');
+        this._modal = new Modal();
+        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.bodyEl.innerHTML = '<canvas class="chart-modal-canvas"></canvas>';
+        this._modalCanvas = this._modal.bodyEl.querySelector('.chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
-
-        this._modal.addEventListener('click', e => {
-            if (e.target === this._modal) this._closeModal();
-        });
-        this._modal.querySelector('.network-topology-modal-close').addEventListener('click', () => this._closeModal());
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this._closeModal();
-        });
     }
 
     _openModal() {
         const data = this._currentData || this._data;
         if (!data.length) return;
-        this._modal.classList.add('network-topology-modal--open');
+        this._modal.open();
         const w = this._modalCanvas.parentElement.clientWidth - 32;
         this._renderToCanvas(data, this._modalCanvas, this._modalCtx, w);
-    }
-
-    _closeModal() {
-        this._modal.classList.remove('network-topology-modal--open');
     }
 
     _onTargetCovered(event) {
@@ -262,7 +240,7 @@ class FitnessChart {
         this._currentData = data;
         const W = this._card.clientWidth - 2;
         if (W > 0) this._renderToCanvas(data, this._canvas, this._ctx, W);
-        if (this._modal.classList.contains('network-topology-modal--open')) {
+        if (this._modal.isOpen()) {
             const w = this._modalCanvas.parentElement.clientWidth - 32;
             this._renderToCanvas(data, this._modalCanvas, this._modalCtx, w);
         }
