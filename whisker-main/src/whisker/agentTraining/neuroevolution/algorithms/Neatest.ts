@@ -86,6 +86,8 @@ export class Neatest extends NEAT {
                     && remainingTargets.length > 0) {
                     this._switchedObjectives.add(currentTarget);
                     logger.debug("Switching Target " + currentTarget.getNodeId() + " due to missing improvement.");
+                    Container.vm?.emit('SPECIES_TARGET_ABANDONED',
+                        {objectiveKey: this._targetKey, label: currentTarget.toString()});
                     break;
                 }
 

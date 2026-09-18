@@ -26,6 +26,11 @@ class FitnessChart {
         window.Whisker.scratch.vm.on('FITNESS_UPDATE', data => this._update(data));
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
         window.Whisker.scratch.vm.on('OBJECTIVE_COVERED', data => this._onTargetCovered(data));
+        // A skipped (uncovered) target is dropped
+        window.Whisker.scratch.vm.on('SPECIES_TARGET_ABANDONED', () => {
+            this._data = [];
+            this._applySelection();
+        });
     }
 
     reset() {
