@@ -1,4 +1,5 @@
 const Modal = require('./modal');
+const {createHoverTooltip} = require('./network-diagram');
 
 const PAD_L = 8;
 const PAD_R = 8;
@@ -20,8 +21,12 @@ class SpeciesPopulationChart {
             title: i18n.title || 'Species Population',
             emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time',
             expand: i18n.expand || 'Click to expand',
-            currentTarget: i18n.currentTarget || 'Current Target'
+            currentTarget: i18n.currentTarget || 'Current Target',
+            speciesCount: i18n.speciesCount || 'Number of Species',
+            species: i18n.species || 'Species',
+            members: i18n.members || 'members'
         };
+        this._layouts = new WeakMap();
         this._resetState();
         this._buildUI(container);
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
@@ -37,7 +42,9 @@ class SpeciesPopulationChart {
         this._colorMap = new Map();
         this._colorIndex = 0;
         this._pastTargets = [];
+        this._firstGeneration = 0;
         this._selectedKey = 'current';
+        this._count = null;
     }
 
     reset() {
@@ -67,6 +74,11 @@ class SpeciesPopulationChart {
         this._card.title = this._i18n.expand;
         this._modal.titleEl.textContent = this._i18n.title;
         this._historySelect.options[0].textContent = this._i18n.currentTarget;
+        this._renderCount();
+    }
+
+    _renderCount() {
+        this._countEl.textContent = this._count ? `${this._i18n.speciesCount}: ${this._count}` : '';
     }
 
     _buildUI(container) {
@@ -111,6 +123,50 @@ class SpeciesPopulationChart {
         this._modal.bodyEl.innerHTML = '<canvas class="species-pop-chart-modal-canvas"></canvas>';
         this._modalCanvas = this._modal.bodyEl.querySelector('.species-pop-chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
+
+        this._tooltip = createHoverTooltip();
+        [this._canvas, this._modalCanvas].forEach(canvas => this._attachHover(canvas));
+    }
+
+    // Shows "Species N: M members" for the stacked band under the cursor, using the geometry
+    // _drawChart recorded for this canvas.
+    _attachHover(canvas) {
+        canvas.addEventListener('mousemove', e => {
+            const layout = this._layouts.get(canvas);
+            if (!layout) return this._hideTooltip();
+            const {chartX, chartY, chartW, chartH, history, speciesOrder} = layout;
+            const rect = canvas.getBoundingClientRect();
+            const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+            if (mx < chartX || mx > chartX + chartW || my < chartY || my > chartY + chartH) {
+                return this._hideTooltip();
+            }
+
+            const n = history.length;
+            const entry = history[n === 1 ? 0 : Math.round(((mx - chartX) / chartW) * (n - 1))];
+            const fromBottom = 1 - (my - chartY) / chartH;
+            let floor = 0;
+            for (const speciesId of speciesOrder) {
+                const count = entry.entries.get(speciesId) || 0;
+                const share = entry.total > 0 ? count / entry.total : 0;
+                if (count > 0 && fromBottom >= floor && fromBottom < floor + share) {
+                    this._tooltip.textContent = `${this._i18n.species} ${speciesId}: ${count} ${this._i18n.members}`;
+                    this._tooltip.style.display = 'block';
+                    const tipW = this._tooltip.offsetWidth;
+                    const left = e.clientX + 12 + tipW > window.innerWidth ? e.clientX - tipW - 8 : e.clientX + 12;
+                    this._tooltip.style.left = `${left}px`;
+                    this._tooltip.style.top = `${e.clientY - 24}px`;
+                    return;
+                }
+                floor += share;
+            }
+            this._hideTooltip();
+        });
+        canvas.addEventListener('mouseleave', () => this._hideTooltip());
+    }
+
+    _hideTooltip() {
+        this._tooltip.style.display = 'none';
     }
 
     // Resolves 'current' | objectiveKey to the {history, speciesOrder, colorMap} it should render.
@@ -140,10 +196,13 @@ class SpeciesPopulationChart {
                 this._speciesOrder.push(s.speciesId);
             }
         }
-        this._history.push({generation: data.generation, entries, total});
+        // Neatest's generation counter runs across targets, so each target's chart counts from its first snapshot.
+        if (!this._history.length) this._firstGeneration = data.generation;
+        this._history.push({generation: data.generation - this._firstGeneration, entries, total});
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
-        this._countEl.textContent = `${data.species.length}`;
+        this._count = data.species.length;
+        this._renderCount();
         this._redraw();
         if (this._modal.isOpen() && this._selectedKey === 'current') {
             const W = this._modalCanvas.parentElement.clientWidth - 32;
@@ -176,7 +235,8 @@ class SpeciesPopulationChart {
         this._speciesOrder = [];
         this._colorMap = new Map();
         this._colorIndex = 0;
-        this._countEl.textContent = '';
+        this._count = null;
+        this._renderCount();
         this._redraw();
     }
 
@@ -190,6 +250,7 @@ class SpeciesPopulationChart {
         canvas.width = W;
         canvas.height = chartH + PAD_T + PAD_B;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this._layouts.delete(canvas);
 
         if (!history.length) return;
 
@@ -199,6 +260,7 @@ class SpeciesPopulationChart {
         const n = history.length;
         const toX = i => chartX + (i / Math.max(n - 1, 1)) * chartW;
         const toY = prop => chartY + chartH - prop * chartH;
+        this._layouts.set(canvas, {chartX, chartY, chartW, chartH, history, speciesOrder});
 
         // Draw stacked areas bottom-to-top
         const floors = new Array(n).fill(0);
@@ -257,7 +319,7 @@ class SpeciesPopulationChart {
             const rounded = Math.round(g / tickStep) * tickStep;
             if (labeled.has(rounded)) continue;
             const idx = history.findIndex(h => h.generation >= rounded);
-            if (idx < 0) continue;
+            if (idx < 0 || idx === n - 1) continue;
             ctx.fillText(String(history[idx].generation), toX(idx), chartY + chartH + 13);
             labeled.add(rounded);
         }

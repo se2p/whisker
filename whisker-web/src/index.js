@@ -1026,6 +1026,26 @@ const initComponents = function () {
         error: i18next.t('console-log-error'),
         warn: i18next.t('console-log-warn')
     });
+    Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('coverage-curve-title'),
+        generation: i18next.t('generation'),
+        emptyMessage: i18next.t('coverage-curve-empty'),
+        expand: i18next.t('click-to-expand')
+    });
+    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'), {
+        expand: i18next.t('click-to-expand')
+    });
+    Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'), {
+        title: i18next.t('fitness-chart-title'),
+        best: i18next.t('fitness-chart-best'),
+        average: i18next.t('fitness-chart-average'),
+        emptyMessage: i18next.t('fitness-chart-empty'),
+        expand: i18next.t('click-to-expand'),
+        labelNeatest: i18next.t('current-target'),
+        currentTarget: i18next.t('current-target'),
+        frontierTargets: i18next.t('frontier-targets'),
+        previousTargets: i18next.t('previous-targets')
+    });
     Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('network-topology-title'),
         generation: i18next.t('generation'),
@@ -1047,32 +1067,16 @@ const initComponents = function () {
         frontierTargets: i18next.t('frontier-targets'),
         previousTargets: i18next.t('previous-targets')
     });
-    Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
-        title: i18next.t('coverage-curve-title'),
-        generation: i18next.t('generation'),
-        emptyMessage: i18next.t('coverage-curve-empty'),
-        expand: i18next.t('click-to-expand')
-    });
-    Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'), {
-        title: i18next.t('fitness-chart-title'),
-        best: i18next.t('fitness-chart-best'),
-        average: i18next.t('fitness-chart-average'),
-        emptyMessage: i18next.t('fitness-chart-empty'),
-        expand: i18next.t('click-to-expand'),
-        labelNeatest: i18next.t('current-target'),
-        currentTarget: i18next.t('current-target'),
-        frontierTargets: i18next.t('frontier-targets'),
-        previousTargets: i18next.t('previous-targets')
-    });
     Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-pop-chart-title'),
         emptyMessage: i18next.t('species-pop-chart-empty'),
         expand: i18next.t('click-to-expand'),
-        currentTarget: i18next.t('current-target')
+        currentTarget: i18next.t('current-target'),
+        speciesCount: i18next.t('config-num-species'),
+        species: i18next.t('species-networks-species'),
+        members: i18next.t('species-networks-members')
     });
-    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'), {
-        expand: i18next.t('click-to-expand')
-    });
+
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
@@ -1493,7 +1497,10 @@ const _updateLang = () => {
             title: i18next.t('species-pop-chart-title'),
             emptyMessage: i18next.t('species-pop-chart-empty'),
             expand: i18next.t('click-to-expand'),
-            currentTarget: i18next.t('current-target')
+            currentTarget: i18next.t('current-target'),
+            speciesCount: i18next.t('config-num-species'),
+            species: i18next.t('species-networks-species'),
+            members: i18next.t('species-networks-members')
         });
     }
     if (Whisker.cdgGraph) {
