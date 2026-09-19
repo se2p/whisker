@@ -64,11 +64,11 @@ class FitnessChart {
     updateI18n(i18n) {
         this._i18n = {...this._i18n, ...i18n};
         this._titleEl.textContent = this._i18n.title;
-        this._subtitleEl.textContent = this._i18n.labelNeatest;
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
         this._modal.titleEl.textContent = this._i18n.title;
-        if (this._historySelect) this._rebuildHistorySelect();
+        this._rebuildHistorySelect();
+        this._applySelection();
     }
 
     _buildUI(container) {
@@ -153,6 +153,7 @@ class FitnessChart {
         }
         if (this._selectedKey !== 'current') return;
         this._data.push(data);
+        this._subtitleEl.textContent = data.label || this._i18n.labelNeatest;
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -226,7 +227,8 @@ class FitnessChart {
             title = entry ? entry.label : '';
         } else {
             data = this._data;
-            title = this._i18n.labelNeatest;
+            const latest = data[data.length - 1];
+            title = (latest && latest.label) || this._i18n.labelNeatest;
         }
 
         const runStarted = data.length > 0;

@@ -75,7 +75,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         if (await this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
             // Report here too, since an instantly covered target skips the loop below entirely.
-            this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
+            this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction.toString());
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
@@ -99,7 +99,7 @@ ${bestIndividual.toString()}`);
             this._emitCoverageUpdate();
             this._emitCdgUpdate();
             // Report fitness updates to the UI
-            this._emitFitnessUpdate(bestFitness, undefined, 'oneplusone');
+            this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction.toString());
             StatisticsCollector.getInstance().incrementIterationCount();
         }
         logger.debug("1+1 EA completed at " + Date.now());

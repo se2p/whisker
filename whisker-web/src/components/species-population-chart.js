@@ -19,7 +19,8 @@ class SpeciesPopulationChart {
         this._i18n = {
             title: i18n.title || 'Species Population',
             emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time',
-            expand: i18n.expand || 'Click to expand'
+            expand: i18n.expand || 'Click to expand',
+            currentTarget: i18n.currentTarget || 'Current Target'
         };
         this._resetState();
         this._buildUI(container);
@@ -51,7 +52,7 @@ class SpeciesPopulationChart {
 
     startEmpty() {
         this._resetState();
-        this._historySelect.innerHTML = '<option value="current">Current Target</option>';
+        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
         this._historySelect.style.display = 'none';
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
@@ -65,6 +66,7 @@ class SpeciesPopulationChart {
         this._emptyEl.textContent = this._i18n.emptyMessage;
         this._card.title = this._i18n.expand;
         this._modal.titleEl.textContent = this._i18n.title;
+        this._historySelect.options[0].textContent = this._i18n.currentTarget;
     }
 
     _buildUI(container) {
@@ -98,7 +100,7 @@ class SpeciesPopulationChart {
         this._modal.titleEl.textContent = this._i18n.title;
         this._modal.titleEl.insertAdjacentHTML('afterend', `
             <select class="network-topology-history-select" id="spc-history-select" style="display:none;">
-                <option value="current">Current Target</option>
+                <option value="current">${this._i18n.currentTarget}</option>
             </select>`);
         this._historySelect = this._modal.el.querySelector('#spc-history-select');
         this._historySelect.addEventListener('change', () => {

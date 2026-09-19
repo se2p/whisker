@@ -204,7 +204,8 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
         Container.vm.emit('FITNESS_UPDATE', {
             generation: this._observedEpisodes,
             best: Number(this._overallMaxReward.toFixed(4)),
-            average: Number(this._averageReward.toFixed(4))
+            average: Number(this._averageReward.toFixed(4)),
+            label: this._currentTargetObjective?.toString()
         });
 
         this._updateArchive(agent);

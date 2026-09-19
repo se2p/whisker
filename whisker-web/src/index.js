@@ -1028,45 +1028,51 @@ const initComponents = function () {
     });
     Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('network-topology-title'),
-        generation: i18next.t('network-topology-generation'),
-        expand: i18next.t('network-topology-expand'),
+        generation: i18next.t('generation'),
+        expand: i18next.t('click-to-expand'),
         emptyMessage: i18next.t('network-topology-empty'),
-        currentTarget: i18next.t('network-topology-current-target'),
-        frontierTargets: i18next.t('network-topology-frontier-targets'),
-        previousTargets: i18next.t('network-topology-previous-targets')
+        currentTarget: i18next.t('current-target'),
+        frontierTargets: i18next.t('frontier-targets'),
+        previousTargets: i18next.t('previous-targets')
     });
     Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-networks-title'),
-        generation: i18next.t('species-networks-generation'),
+        generation: i18next.t('generation'),
         species: i18next.t('species-networks-species'),
         members: i18next.t('species-networks-members'),
         bestNetwork: i18next.t('species-networks-best-network'),
-        expand: i18next.t('species-networks-expand'),
+        expand: i18next.t('click-to-expand'),
         emptyMessage: i18next.t('species-networks-empty'),
-        currentTarget: i18next.t('species-networks-current-target'),
-        frontierTargets: i18next.t('species-networks-frontier-targets'),
-        previousTargets: i18next.t('species-networks-previous-targets')
+        currentTarget: i18next.t('current-target'),
+        frontierTargets: i18next.t('frontier-targets'),
+        previousTargets: i18next.t('previous-targets')
     });
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('coverage-curve-title'),
-        generation: i18next.t('coverage-curve-generation'),
-        emptyMessage: i18next.t('coverage-curve-empty')
+        generation: i18next.t('generation'),
+        emptyMessage: i18next.t('coverage-curve-empty'),
+        expand: i18next.t('click-to-expand')
     });
     Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('fitness-chart-title'),
         best: i18next.t('fitness-chart-best'),
         average: i18next.t('fitness-chart-average'),
         emptyMessage: i18next.t('fitness-chart-empty'),
-        labelNeatest: i18next.t('fitness-chart-label-neatest'),
-        currentTarget: i18next.t('fitness-chart-current-target'),
-        frontierTargets: i18next.t('fitness-chart-frontier-targets'),
-        previousTargets: i18next.t('fitness-chart-previous-targets')
+        expand: i18next.t('click-to-expand'),
+        labelNeatest: i18next.t('current-target'),
+        currentTarget: i18next.t('current-target'),
+        frontierTargets: i18next.t('frontier-targets'),
+        previousTargets: i18next.t('previous-targets')
     });
     Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'), {
         title: i18next.t('species-pop-chart-title'),
-        emptyMessage: i18next.t('species-pop-chart-empty')
+        emptyMessage: i18next.t('species-pop-chart-empty'),
+        expand: i18next.t('click-to-expand'),
+        currentTarget: i18next.t('current-target')
     });
-    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'));
+    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'), {
+        expand: i18next.t('click-to-expand')
+    });
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
@@ -1439,33 +1445,34 @@ const _updateLang = () => {
     if (Whisker.networkTopology) {
         Whisker.networkTopology.updateI18n({
             title: i18next.t('network-topology-title'),
-            generation: i18next.t('network-topology-generation'),
-            expand: i18next.t('network-topology-expand'),
+            generation: i18next.t('generation'),
+            expand: i18next.t('click-to-expand'),
             emptyMessage: i18next.t('network-topology-empty'),
-            currentTarget: i18next.t('network-topology-current-target'),
-            frontierTargets: i18next.t('network-topology-frontier-targets'),
-            previousTargets: i18next.t('network-topology-previous-targets')
+            currentTarget: i18next.t('current-target'),
+            frontierTargets: i18next.t('frontier-targets'),
+            previousTargets: i18next.t('previous-targets')
         });
     }
     if (Whisker.speciesNetworks) {
         Whisker.speciesNetworks.updateI18n({
             title: i18next.t('species-networks-title'),
-            generation: i18next.t('species-networks-generation'),
+            generation: i18next.t('generation'),
             species: i18next.t('species-networks-species'),
             members: i18next.t('species-networks-members'),
             bestNetwork: i18next.t('species-networks-best-network'),
-            expand: i18next.t('species-networks-expand'),
+            expand: i18next.t('click-to-expand'),
             emptyMessage: i18next.t('species-networks-empty'),
-            currentTarget: i18next.t('species-networks-current-target'),
-            frontierTargets: i18next.t('species-networks-frontier-targets'),
-            previousTargets: i18next.t('species-networks-previous-targets')
+            currentTarget: i18next.t('current-target'),
+            frontierTargets: i18next.t('frontier-targets'),
+            previousTargets: i18next.t('previous-targets')
         });
     }
     if (Whisker.coverageCurve) {
         Whisker.coverageCurve.updateI18n({
             title: i18next.t('coverage-curve-title'),
-            generation: i18next.t('coverage-curve-generation'),
-            emptyMessage: i18next.t('coverage-curve-empty')
+            generation: i18next.t('generation'),
+            emptyMessage: i18next.t('coverage-curve-empty'),
+            expand: i18next.t('click-to-expand')
         });
     }
     if (Whisker.fitnessChart) {
@@ -1474,17 +1481,23 @@ const _updateLang = () => {
             best: i18next.t('fitness-chart-best'),
             average: i18next.t('fitness-chart-average'),
             emptyMessage: i18next.t('fitness-chart-empty'),
-            labelNeatest: i18next.t('fitness-chart-label-neatest'),
-            currentTarget: i18next.t('fitness-chart-current-target'),
-            frontierTargets: i18next.t('fitness-chart-frontier-targets'),
-            previousTargets: i18next.t('fitness-chart-previous-targets')
+            expand: i18next.t('click-to-expand'),
+            labelNeatest: i18next.t('current-target'),
+            currentTarget: i18next.t('current-target'),
+            frontierTargets: i18next.t('frontier-targets'),
+            previousTargets: i18next.t('previous-targets')
         });
     }
     if (Whisker.speciesPopulationChart) {
         Whisker.speciesPopulationChart.updateI18n({
             title: i18next.t('species-pop-chart-title'),
-            emptyMessage: i18next.t('species-pop-chart-empty')
+            emptyMessage: i18next.t('species-pop-chart-empty'),
+            expand: i18next.t('click-to-expand'),
+            currentTarget: i18next.t('current-target')
         });
+    }
+    if (Whisker.cdgGraph) {
+        Whisker.cdgGraph.updateI18n({expand: i18next.t('click-to-expand')});
     }
     $('.lang-btn').removeClass('lang-btn-active');
     $(`.lang-btn[data-lng="${i18next.language}"]`).addClass('lang-btn-active');

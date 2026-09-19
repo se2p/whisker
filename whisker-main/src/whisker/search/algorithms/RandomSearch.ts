@@ -74,7 +74,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                     this._bestIndividuals.push(bestIndividual);
                 }
                 // Report fitness updates to the UI
-                this._emitFitnessUpdate(bestFitness, undefined, "randomsearch");
+                this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction?.toString());
             }
 
             this.updateStatistics();

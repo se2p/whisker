@@ -117,7 +117,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             population = nextGeneration;
             this._iterations++;
-            this._emitFitnessUpdate(this._bestFitness, undefined, "simplega");
+            this._emitFitnessUpdate(this._bestFitness, undefined, this._fitnessFunction.toString());
             this.updateStatistics();
         }
 
