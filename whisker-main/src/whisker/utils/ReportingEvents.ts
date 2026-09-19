@@ -60,12 +60,12 @@ export function emitCdgDot(cdg: ControlDependenceGraph, targetedKeys: Set<string
 
     const edges = [];
     const nodes = [];
-    // Entry/Exit/start are structural bookkeeping nodes the graph builder adds for its own traversal -
-    // they have no associated Scratch block and are never a real coverage target, so they shouldn't be
-    // colored as "uncovered" - but they're kept (in a neutral color) since removing them would also
-    // remove the edges routing through them, fragmenting the tree into disconnected pieces.
+    // Entry/start are structural bookkeeping nodes with no Scratch block and are never a real coverage target,
+    // so they are kept in a neutral color (removing them would fragment the tree). The leaf Exit node is hidden.
     const isStructuralNode = (n: GraphNode) => !n.block;
+    const isExitNode = (n: GraphNode) => n.id === 'Exit';
     for (const node of cdg.getSortedNodes()) {
+        if (isExitNode(node)) continue;
         if (isStructuralNode(node)) {
             nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="lightgray",fontcolor="black"];`);
         } else if (targetedKeys.has(node.id)) {
@@ -76,7 +76,11 @@ export function emitCdgDot(cdg: ControlDependenceGraph, targetedKeys: Set<string
             nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="red",fontcolor="white"];`);
         }
         for (const succ of cdg.successors(node.id)) {
-            edges.push(`\t"${node.toString()}" -> "${succ.toString()}";`);
+            if (isExitNode(succ)) continue;
+            // The CDG stores Entry as a successor of start; draw it as start's parent instead.
+            edges.push(succ.id === 'Entry'
+                ? `\t"${succ.toString()}" -> "${node.toString()}";`
+                : `\t"${node.toString()}" -> "${succ.toString()}";`);
         }
     }
     const renderedEdges = edges.join('\n');
