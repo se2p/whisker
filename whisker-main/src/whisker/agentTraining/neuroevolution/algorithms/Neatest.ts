@@ -213,7 +213,7 @@ export class Neatest extends NEAT {
                 // target; only report the target we are actually tracking, not every incidental one.
                 if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
                     this._emitFitnessUpdate(network.fitness, this._population.averageFitness,
-                        this._fitnessFunctionMap.get(this._targetKey).toString());
+                        fitnessFunction.toString());
                     this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
                     this._emitCoveredSpeciesTopology(fitnessFunctionKey, this._population, network);
                 }
@@ -307,7 +307,7 @@ export class Neatest extends NEAT {
         logger.debug("\n-----------------------------------------------------\n");
         this._emitSpeciesTopologies(this._population);
         this._emitFitnessUpdate(this._population.bestFitness, this._population.averageFitness,
-            this._fitnessFunctionMap.get(this._targetKey).toString());
+            this._fitnessFunctionMap.get(this._targetKey)?.toString());
     }
 
     /**
