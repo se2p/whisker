@@ -1,6 +1,8 @@
 const Modal = require('./modal');
 const {drawNetworkDiagram, createHoverTooltip, attachHoverTooltip} = require('./network-diagram');
 const {i18n} = require('../index');
+const {fillTargetSelect} = require('./target-select');
+const {GenerationSelect} = require('./generation-select');
 
 class SpeciesNetworks {
     constructor(container) {
@@ -10,17 +12,20 @@ class SpeciesNetworks {
         this._history = [];
         this._perTargetData = [];
         this._selectedKey = 'current';
-        this._knownGenerations = [];
-        this._selectedGen = 'latest';
         this._lastHistorySnapshot = null;
         this._buildUI();
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._render(data));
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => this._onCovered(data));
+        window.Whisker.scratch.vm.on('SPECIES_TARGET_ABANDONED', () => {
+            this._gens.dropCurrent();
+            this._gens.rebuild(this._selectedKey);
+        });
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_HISTORY', data => this._renderHistorySnapshot(data));
     }
 
     // Re-renders the text that is built in JS (rows, dropdown, labels); the static text is data-i18n.
     updateI18n() {
+        this._gens.rebuild(this._selectedKey);
         if (this._lastData) this._render(this._lastData);
         else this._rebuildHistorySelect();
     }
@@ -35,10 +40,8 @@ class SpeciesNetworks {
         this._history = [];
         this._perTargetData = [];
         this._selectedKey = 'current';
-        this._knownGenerations = [];
-        this._selectedGen = 'latest';
         this._lastHistorySnapshot = null;
-        this._genLabel.innerHTML = '';
+        this._gens.reset();
         this._listEl.innerHTML = '';
         this._emptyEl.style.display = '';
         this._listEl.style.display = 'none';
@@ -52,10 +55,8 @@ class SpeciesNetworks {
         this._history = [];
         this._perTargetData = [];
         this._selectedKey = 'current';
-        this._knownGenerations = [];
-        this._selectedGen = 'latest';
         this._lastHistorySnapshot = null;
-        this._genLabel.innerHTML = '';
+        this._gens.reset();
         this._listEl.innerHTML = '';
         this._emptyEl.style.display = 'none';
         this._listEl.style.display = '';
@@ -82,6 +83,7 @@ class SpeciesNetworks {
             </div>`;
         this.container.appendChild(this._card);
         this._genLabel = this._card.querySelector('#sn-generation');
+        this._gens = new GenerationSelect(this._genLabel);
         this._emptyEl = this._card.querySelector('.species-networks-empty');
         this._listEl = this._card.querySelector('.species-networks-list');
         this._historySelect = this._card.querySelector('#sn-history-select');
@@ -91,8 +93,8 @@ class SpeciesNetworks {
 
         this._genLabel.addEventListener('click', e => e.stopPropagation());
         this._genLabel.addEventListener('change', () => {
-            this._selectedGen = this._genLabel.value;
-            if (this._selectedGen === 'latest') {
+            this._gens.selected = this._genLabel.value;
+            if (this._gens.selected === 'latest') {
                 this._lastHistorySnapshot = null;
                 if (this._lastData) {
                     this._perTargetData = this._lastData.perTarget || [];
@@ -101,13 +103,16 @@ class SpeciesNetworks {
                 }
             } else {
                 window.Whisker.scratch.vm.emit('REQUEST_SPECIES_TOPOLOGY_GEN',
-                    {generation: parseInt(this._selectedGen, 10)});
+                    {generation: parseInt(this._gens.selected, 10)});
             }
             this._modal.close();
         });
 
         this._historySelect.addEventListener('change', () => {
             this._selectedKey = this._historySelect.value;
+            this._gens.selected = 'latest';
+            this._lastHistorySnapshot = null;
+            this._gens.rebuild(this._selectedKey);
             this._applySelection();
             this._modal.close();
         });
@@ -132,8 +137,9 @@ class SpeciesNetworks {
 
     _render(data) {
         this._lastData = data;
-        this._trackGeneration(data.generation);
-        if (this._selectedGen !== 'latest') return;
+        const activeKeys = (data.perTarget || []).map(t => t.targetKey);
+        if (this._gens.track(data.generation, activeKeys)) this._gens.rebuild(this._selectedKey);
+        if (this._gens.selected !== 'latest') return;
         this._perTargetData = data.perTarget || [];
         this._rebuildHistorySelect();
         this._applySelection();
@@ -146,79 +152,21 @@ class SpeciesNetworks {
         this._applySelection();
     }
 
-    _trackGeneration(gen) {
-        if (this._knownGenerations.includes(gen)) return;
-        this._knownGenerations.push(gen);
-        if (this._knownGenerations.length === 1) {
-            this._genLabel.innerHTML = `<option value="latest">${i18n.t('generation')} ${gen}</option>`;
-        } else {
-            const latestOpt = this._genLabel.querySelector('option[value="latest"]');
-            if (latestOpt) latestOpt.textContent = `${i18n.t('generation')} ${gen}`;
-            const prevGen = this._knownGenerations[this._knownGenerations.length - 2];
-            const prevOpt = document.createElement('option');
-            prevOpt.value = String(prevGen);
-            prevOpt.textContent = `${i18n.t('generation')} ${prevGen}`;
-            this._genLabel.insertBefore(prevOpt, latestOpt);
-        }
-    }
-
     _activeData() {
-        return this._selectedGen === 'latest' ? this._lastData : this._lastHistorySnapshot;
+        return this._gens.selected === 'latest' ? this._lastData : this._lastHistorySnapshot;
     }
 
     _setGenLabelText(text) {
-        if (this._selectedGen !== 'latest') return;
+        if (this._gens.selected !== 'latest') return;
         const latestOpt = this._genLabel.querySelector('option[value="latest"]');
         if (latestOpt) latestOpt.textContent = text;
     }
 
     _rebuildHistorySelect() {
-        const prevValue = this._historySelect.value;
-        this._historySelect.innerHTML = '';
-        if (this._perTargetData.length > 0) {
-            const frontierGroup = document.createElement('optgroup');
-            frontierGroup.label = i18n.t('frontier-targets');
-            this._perTargetData.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = `frontier:${t.targetKey}`;
-                opt.textContent = `Obj. ${t.targetKey}`;
-                if (t.label) opt.title = t.label;
-                frontierGroup.appendChild(opt);
-            });
-            this._historySelect.appendChild(frontierGroup);
-        } else {
-            const opt = document.createElement('option');
-            opt.value = 'current';
-            opt.textContent = i18n.t('current-target');
-            this._historySelect.appendChild(opt);
-        }
-        if (this._history.length > 0) {
-            const coveredParent = this._perTargetData.length > 0 ?
-                document.createElement('optgroup') : this._historySelect;
-            if (coveredParent !== this._historySelect) {
-                coveredParent.label = i18n.t('previous-targets');
-            }
-            this._history.forEach(h => {
-                const opt = document.createElement('option');
-                opt.value = `covered:${h.objectiveKey}`;
-                opt.textContent = `Obj. ${h.objectiveKey}`;
-                opt.title = h.label;
-                coveredParent.appendChild(opt);
-            });
-            if (coveredParent !== this._historySelect) {
-                this._historySelect.appendChild(coveredParent);
-            }
-        }
-
-        const values = Array.from(this._historySelect.options).map(o => o.value);
-        if (values.includes(prevValue)) {
-            this._historySelect.value = prevValue;
-        } else if (this._perTargetData.length > 0) {
-            this._historySelect.value = `frontier:${this._perTargetData[0].targetKey}`;
-        } else {
-            this._historySelect.value = 'current';
-        }
-        this._selectedKey = this._historySelect.value;
+        this._selectedKey = fillTargetSelect(this._historySelect, {
+            frontier: this._perTargetData.map(t => ({key: t.targetKey, label: t.label})),
+            previous: this._history.map(h => ({key: h.objectiveKey, label: h.label}))
+        });
     }
 
     _applySelection() {
@@ -236,6 +184,13 @@ class SpeciesNetworks {
                 speciesList = entry.species;
                 generationLabel = active ? active.generation : '';
                 bestSpeciesId = entry.bestSpeciesId;
+            }
+        } else if (key.startsWith('covered:') && this._gens.selected !== 'latest') {
+            // A past generation picked for that objective
+            if (active) {
+                speciesList = active.species;
+                generationLabel = active.generation;
+                bestSpeciesId = active.bestSpeciesId;
             }
         } else if (key.startsWith('covered:')) {
             const targetKey = parseInt(key.split(':')[1], 10);
@@ -291,8 +246,12 @@ class SpeciesNetworks {
     }
 
     _onCovered(data) {
+        // In a single-target run, the generations seen so far were spent on the target that was just covered.
+        // Many-objective runs share their generations between targets, so they keep the whole list.
+        if (this._perTargetData.length === 0) this._gens.saveTarget(data.objectiveKey);
         this._history.push(data);
         this._rebuildHistorySelect();
+        this._gens.rebuild(this._selectedKey);
         this._applySelection();
     }
 

@@ -128,7 +128,16 @@ class CdgGraph {
     _openModal() {
         if (!this._lastData) return;
         this._modal.open();
-        this._renderView('modal', vis.parseDOTNetwork(this._lastData.dot));
+        this._renderView('modal', this._parseLastData());
+    }
+
+    // Once every statement is covered nothing can still be a target, so a node the backend left marked as
+    // targeted (yellow) is just the last one covered and is shown as covered (green).
+    _parseLastData() {
+        const {dot, covered, total} = this._lastData;
+        const isFullyCovered = total > 0 && covered === total;
+        return vis.parseDOTNetwork(isFullyCovered ?
+            dot.replace(/fillcolor="yellow",fontcolor="black"/g, 'fillcolor="darkgreen",fontcolor="white"') : dot);
     }
 
     _update(data) {
@@ -149,7 +158,7 @@ class CdgGraph {
     // statement counts (CDG nodes are statements, so the count is always statement coverage), then renders
     // the card and, if open, the modal.
     _renderVisibleViews() {
-        const parsed = vis.parseDOTNetwork(this._lastData.dot);
+        const parsed = this._parseLastData();
         const {covered, total} = this._lastData;
         this._titleEl.textContent = `${TEXT.title} — ${covered}/${total} statements`;
 

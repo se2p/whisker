@@ -1,5 +1,6 @@
 const Modal = require('./modal');
 const {i18n} = require('../index');
+const {fillTargetSelect} = require('./target-select');
 
 const H_PAD = 44;
 const V_PAD = 20;
@@ -142,55 +143,10 @@ class FitnessChart {
     }
 
     _rebuildHistorySelect() {
-        const prevValue = this._historySelect.value;
-        this._historySelect.innerHTML = '';
-
-        if (this._perTargetSeries.size > 0) {
-            const frontierGroup = document.createElement('optgroup');
-            frontierGroup.label = i18n.t('frontier-targets');
-            [...this._perTargetSeries.keys()].forEach(key => {
-                const opt = document.createElement('option');
-                opt.value = `frontier:${key}`;
-                opt.textContent = `Obj. ${key}`;
-                const label = this._perTargetLabels.get(key);
-                if (label) opt.title = label;
-                frontierGroup.appendChild(opt);
-            });
-            this._historySelect.appendChild(frontierGroup);
-        } else {
-            const opt = document.createElement('option');
-            opt.value = 'current';
-            opt.textContent = i18n.t('current-target');
-            this._historySelect.appendChild(opt);
-        }
-
-        if (this._history.length > 0) {
-            const coveredParent = this._perTargetSeries.size > 0 ?
-                document.createElement('optgroup') : this._historySelect;
-            if (coveredParent !== this._historySelect) {
-                coveredParent.label = i18n.t('previous-targets');
-            }
-            this._history.forEach(h => {
-                const opt = document.createElement('option');
-                opt.value = `covered:${h.objectiveKey}`;
-                opt.textContent = `Obj. ${h.objectiveKey}`;
-                opt.title = h.label;
-                coveredParent.appendChild(opt);
-            });
-            if (coveredParent !== this._historySelect) {
-                this._historySelect.appendChild(coveredParent);
-            }
-        }
-
-        const values = Array.from(this._historySelect.options).map(o => o.value);
-        if (values.includes(prevValue)) {
-            this._historySelect.value = prevValue;
-        } else if (this._perTargetSeries.size > 0) {
-            this._historySelect.value = `frontier:${[...this._perTargetSeries.keys()][0]}`;
-        } else {
-            this._historySelect.value = 'current';
-        }
-        this._selectedKey = this._historySelect.value;
+        this._selectedKey = fillTargetSelect(this._historySelect, {
+            frontier: [...this._perTargetSeries.keys()].map(key => ({key, label: this._perTargetLabels.get(key)})),
+            previous: this._history.map(h => ({key: h.objectiveKey, label: h.label}))
+        });
     }
 
     _applySelection() {

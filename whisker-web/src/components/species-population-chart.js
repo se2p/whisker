@@ -23,8 +23,8 @@ class SpeciesPopulationChart {
         this._buildUI(container);
         this.updateI18n();
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
-        // Only Neatest emits this (single sequential target, species restart on each switch).
-        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
+        // Only Neatest emits these (single sequential target, species restart on each switch)
+        window.Whisker.scratch.vm.on('SPECIES_TARGET_COVERED', data => this._onTargetCovered(data));
         // A skipped (uncovered) target is dropped
         window.Whisker.scratch.vm.on('SPECIES_TARGET_ABANDONED', () => this._clearLive());
     }

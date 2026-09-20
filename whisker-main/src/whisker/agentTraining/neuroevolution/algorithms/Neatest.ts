@@ -73,6 +73,8 @@ export class Neatest extends NEAT {
                 // Stop if we managed to cover the current target objective.
                 if (this._archive.has(this._targetKey)) {
                     logger.debug(`Covered Target Objective ${this._targetKey}:${currentTarget}`);
+                    Container.vm?.emit('SPECIES_TARGET_COVERED',
+                        {objectiveKey: this._targetKey, label: currentTarget.toString()});
                     break;
                 }
 
