@@ -3,14 +3,7 @@ const Modal = require('./modal');
 const MAX_MESSAGES = 500;
 
 class ConsoleLog {
-    constructor(container, i18n = {}) {
-        this._i18n = {
-            title: i18n.title || 'Console Logs',
-            all: i18n.all || 'All',
-            info: i18n.info || 'Info',
-            error: i18n.error || 'Error',
-            warn: i18n.warn || 'Warn'
-        };
+    constructor(container) {
         this._messages = [];
         this._filter = 'all';
         this._collapsed = false;
@@ -24,27 +17,20 @@ class ConsoleLog {
         if (this._modalOutput) this._modalOutput.innerHTML = '';
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._titleEl.textContent = this._i18n.title;
-        this._modal.titleEl.textContent = this._i18n.title;
-        this._updateFilterLabels();
-    }
-
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'console-log-card';
         card.innerHTML = `
             <div class="console-log-header">
-                <span class="console-log-title"></span>
+                <span class="console-log-title" data-i18n="console-log-title"></span>
                 <button class="console-log-collapse-btn" aria-label="collapse">&#8963;</button>
                 <span class="console-log-expand-hint">⤢</span>
             </div>
             <div class="console-log-filter-bar">
-                <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label" data-i18n="console-log-all"></span></button>
+                <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label" data-i18n="console-log-info"></span></button>
+                <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label" data-i18n="console-log-error"></span></button>
+                <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label" data-i18n="console-log-warn"></span></button>
                 <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
             </div>
             <div class="console-log-output"></div>`;
@@ -52,11 +38,7 @@ class ConsoleLog {
 
         this._card = card;
         this._output = card.querySelector('.console-log-output');
-        this._titleEl = card.querySelector('.console-log-title');
         this._collapseBtn = card.querySelector('.console-log-collapse-btn');
-
-        this._titleEl.textContent = this._i18n.title;
-        this._updateFilterLabels();
 
         card.querySelectorAll('.console-log-filter-btn').forEach(btn => {
             btn.addEventListener('click', e => {
@@ -82,15 +64,15 @@ class ConsoleLog {
         });
 
         this._modal = new Modal({extraClass: 'console-log-modal', titleExtraClass: 'console-log-modal-title'});
-        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.setAttribute('data-i18n', 'console-log-title');
         // Filter bar sits above the scrollable body (as a sibling within the box, same as the card's own
         // filter bar sits above its output), not inside bodyEl - it shouldn't scroll away with the log.
         this._modal.bodyEl.insertAdjacentHTML('beforebegin', `
             <div class="console-log-filter-bar console-log-modal-filter-bar">
-                <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label"></span></button>
-                <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label"></span></button>
+                <button class="console-log-filter-btn console-log-filter-btn--active" data-filter="all"><span class="console-log-filter-label" data-i18n="console-log-all"></span></button>
+                <button class="console-log-filter-btn" data-filter="info"><i class="fas fa-info-circle"></i> <span class="console-log-filter-label" data-i18n="console-log-info"></span></button>
+                <button class="console-log-filter-btn" data-filter="error"><i class="fas fa-times-circle"></i> <span class="console-log-filter-label" data-i18n="console-log-error"></span></button>
+                <button class="console-log-filter-btn" data-filter="warn"><i class="fas fa-exclamation-triangle"></i> <span class="console-log-filter-label" data-i18n="console-log-warn"></span></button>
                 <button class="console-log-clear-btn"><i class="fas fa-trash"></i></button>
             </div>`);
         this._modal.bodyEl.innerHTML = '<div class="console-log-output console-log-modal-output"></div>';
@@ -106,8 +88,6 @@ class ConsoleLog {
             e.stopPropagation();
             this.clear();
         });
-
-        this._updateFilterLabels();
     }
 
     _openModal() {
@@ -122,16 +102,6 @@ class ConsoleLog {
             const line = this._createLine(type, text);
             line.style.display = (this._filter === 'all' || this._filter === type) ? '' : 'none';
             this._modalOutput.appendChild(line);
-        });
-    }
-
-    _updateFilterLabels() {
-        [this._card, this._modal && this._modal.el].forEach(el => {
-            if (!el) return;
-            el.querySelectorAll('.console-log-filter-btn').forEach(btn => {
-                const label = btn.querySelector('.console-log-filter-label');
-                if (label) label.textContent = this._i18n[btn.dataset.filter] || btn.dataset.filter;
-            });
         });
     }
 

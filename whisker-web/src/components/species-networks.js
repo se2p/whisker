@@ -1,21 +1,10 @@
 const Modal = require('./modal');
 const {drawNetworkDiagram, createHoverTooltip, attachHoverTooltip} = require('./network-diagram');
+const {i18n} = require('../index');
 
 class SpeciesNetworks {
-    constructor(container, i18n = {}) {
+    constructor(container) {
         this.container = container;
-        this._i18n = {
-            title: i18n.title || 'Species Networks',
-            generation: i18n.generation || 'Generation',
-            species: i18n.species || 'Species',
-            members: i18n.members || 'members',
-            bestNetwork: i18n.bestNetwork || 'Best Network',
-            expand: i18n.expand || 'Click to expand',
-            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see per-species networks',
-            currentTarget: i18n.currentTarget || 'Current',
-            frontierTargets: i18n.frontierTargets || 'Current Targets',
-            previousTargets: i18n.previousTargets || 'Previous Targets'
-        };
         this._lastData = null;
         this._openSpecies = null;
         this._history = [];
@@ -30,14 +19,10 @@ class SpeciesNetworks {
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_HISTORY', data => this._renderHistorySnapshot(data));
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._card.querySelectorAll('.species-networks-title').forEach(el => {
-            el.textContent = this._i18n.title;
-        });
-        if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
+    // Re-renders the text that is built in JS (rows, dropdown, labels); the static text is data-i18n.
+    updateI18n() {
         if (this._lastData) this._render(this._lastData);
-        else if (this._historySelect) this._rebuildHistorySelect();
+        else this._rebuildHistorySelect();
     }
 
     refresh() {
@@ -85,12 +70,12 @@ class SpeciesNetworks {
         this._card.innerHTML = `
             <div class="species-networks-header">
                 <select class="network-topology-generation" id="sn-generation"></select>
-                <p class="species-networks-title">${this._i18n.title}</p>
+                <p class="species-networks-title" data-i18n="species-networks-title"></p>
                 <select class="network-topology-history-select" id="sn-history-select">
-                    <option value="current">${this._i18n.currentTarget}</option>
+                    <option value="current">${i18n.t('current-target')}</option>
                 </select>
             </div>
-            <div class="species-networks-empty"></div>
+            <div class="species-networks-empty" data-i18n="species-networks-empty"></div>
             <div class="species-networks-list" style="display:none;"></div>
             <div class="species-networks-preview" id="sn-preview" style="display:none;">
                 <canvas id="sn-preview-canvas"></canvas>
@@ -98,7 +83,6 @@ class SpeciesNetworks {
         this.container.appendChild(this._card);
         this._genLabel = this._card.querySelector('#sn-generation');
         this._emptyEl = this._card.querySelector('.species-networks-empty');
-        this._emptyEl.textContent = this._i18n.emptyMessage;
         this._listEl = this._card.querySelector('.species-networks-list');
         this._historySelect = this._card.querySelector('#sn-history-select');
         this._previewEl = this._card.querySelector('#sn-preview');
@@ -166,14 +150,14 @@ class SpeciesNetworks {
         if (this._knownGenerations.includes(gen)) return;
         this._knownGenerations.push(gen);
         if (this._knownGenerations.length === 1) {
-            this._genLabel.innerHTML = `<option value="latest">${this._i18n.generation} ${gen}</option>`;
+            this._genLabel.innerHTML = `<option value="latest">${i18n.t('generation')} ${gen}</option>`;
         } else {
             const latestOpt = this._genLabel.querySelector('option[value="latest"]');
-            if (latestOpt) latestOpt.textContent = `${this._i18n.generation} ${gen}`;
+            if (latestOpt) latestOpt.textContent = `${i18n.t('generation')} ${gen}`;
             const prevGen = this._knownGenerations[this._knownGenerations.length - 2];
             const prevOpt = document.createElement('option');
             prevOpt.value = String(prevGen);
-            prevOpt.textContent = `${this._i18n.generation} ${prevGen}`;
+            prevOpt.textContent = `${i18n.t('generation')} ${prevGen}`;
             this._genLabel.insertBefore(prevOpt, latestOpt);
         }
     }
@@ -193,7 +177,7 @@ class SpeciesNetworks {
         this._historySelect.innerHTML = '';
         if (this._perTargetData.length > 0) {
             const frontierGroup = document.createElement('optgroup');
-            frontierGroup.label = this._i18n.frontierTargets;
+            frontierGroup.label = i18n.t('frontier-targets');
             this._perTargetData.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = `frontier:${t.targetKey}`;
@@ -205,14 +189,14 @@ class SpeciesNetworks {
         } else {
             const opt = document.createElement('option');
             opt.value = 'current';
-            opt.textContent = this._i18n.currentTarget;
+            opt.textContent = i18n.t('current-target');
             this._historySelect.appendChild(opt);
         }
         if (this._history.length > 0) {
             const coveredParent = this._perTargetData.length > 0 ?
                 document.createElement('optgroup') : this._historySelect;
             if (coveredParent !== this._historySelect) {
-                coveredParent.label = this._i18n.previousTargets;
+                coveredParent.label = i18n.t('previous-targets');
             }
             this._history.forEach(h => {
                 const opt = document.createElement('option');
@@ -285,7 +269,7 @@ class SpeciesNetworks {
 
     _renderList(species, generationLabel, bestSpeciesId = null) {
         if (typeof generationLabel === 'number') {
-            this._setGenLabelText(`${this._i18n.generation} ${generationLabel}`);
+            this._setGenLabelText(`${i18n.t('generation')} ${generationLabel}`);
         }
         this._listEl.innerHTML = '';
         for (const sp of species) {
@@ -293,12 +277,12 @@ class SpeciesNetworks {
             row.className = 'species-networks-row';
             const isBest = bestSpeciesId !== null && sp.speciesId === bestSpeciesId;
             if (isBest) row.classList.add('species-networks-row--best');
-            row.title = this._i18n.expand;
+            row.title = i18n.t('click-to-expand');
             const nodeCount = sp.nodes.length;
             const connCount = sp.connections.length;
             row.innerHTML = `
-                <span class="species-networks-row-label">${this._i18n.species} ${sp.speciesId}</span>
-                <span class="species-networks-row-members">${sp.memberCount} ${this._i18n.members}</span>
+                <span class="species-networks-row-label">${i18n.t('species-networks-species')} ${sp.speciesId}</span>
+                <span class="species-networks-row-members">${sp.memberCount} ${i18n.t('species-networks-members')}</span>
                 <span class="species-networks-row-stats">Best network — ${nodeCount} nodes · ${connCount} connections</span>
                 <span class="species-networks-expand-hint">⤢</span>`;
             row.addEventListener('click', () => this._openModal(sp, generationLabel));
@@ -315,7 +299,7 @@ class SpeciesNetworks {
     _openModal(species, generation) {
         this._openSpecies = species;
         this._modal.open();
-        this._modalTitle.textContent = `${this._i18n.species} ${species.speciesId} - ${this._i18n.bestNetwork}`;
+        this._modalTitle.textContent = `${i18n.t('species-networks-species')} ${species.speciesId} - ${i18n.t('species-networks-best-network')}`;
         const w = this._modalCanvas.parentElement.clientWidth - 32;
         this._renderToCanvas(species, generation, w);
     }
@@ -323,7 +307,7 @@ class SpeciesNetworks {
     _renderToCanvas(species, generation, W) {
         const {nodes, connections} = species;
         this._modalGen.textContent = typeof generation === 'number' ?
-            `${this._i18n.generation} ${generation}` :
+            `${i18n.t('generation')} ${generation}` :
             String(generation);
 
         const nodePos = drawNetworkDiagram(this._modalCanvas, this._modalCtx, species, {width: W});

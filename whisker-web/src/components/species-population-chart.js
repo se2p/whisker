@@ -1,5 +1,6 @@
 const Modal = require('./modal');
 const {createHoverTooltip} = require('./network-diagram');
+const {i18n} = require('../index');
 
 const PAD_L = 8;
 const PAD_R = 8;
@@ -16,19 +17,11 @@ const PALETTE = [
 ];
 
 class SpeciesPopulationChart {
-    constructor(container, i18n = {}) {
-        this._i18n = {
-            title: i18n.title || 'Species Population',
-            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see species over time',
-            expand: i18n.expand || 'Click to expand',
-            currentTarget: i18n.currentTarget || 'Current Target',
-            speciesCount: i18n.speciesCount || 'Number of Species',
-            species: i18n.species || 'Species',
-            members: i18n.members || 'members'
-        };
+    constructor(container) {
         this._layouts = new WeakMap();
         this._resetState();
         this._buildUI(container);
+        this.updateI18n();
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
         // Only Neatest emits this (single sequential target, species restart on each switch).
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
@@ -49,7 +42,7 @@ class SpeciesPopulationChart {
 
     reset() {
         this._resetState();
-        this._historySelect.innerHTML = '<option value="current">Current Target</option>';
+        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
         this._historySelect.style.display = 'none';
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
@@ -59,7 +52,7 @@ class SpeciesPopulationChart {
 
     startEmpty() {
         this._resetState();
-        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
+        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
         this._historySelect.style.display = 'none';
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
@@ -67,52 +60,44 @@ class SpeciesPopulationChart {
         this._modal.close();
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-        this._card.title = this._i18n.expand;
-        this._modal.titleEl.textContent = this._i18n.title;
-        this._historySelect.options[0].textContent = this._i18n.currentTarget;
+    // Refreshes the text that is built in JS (dropdown entry, species count); the static text is data-i18n.
+    updateI18n() {
+        this._historySelect.options[0].textContent = i18n.t('current-target');
         this._renderCount();
     }
 
     _renderCount() {
-        this._countEl.textContent = this._count ? `${this._i18n.speciesCount}: ${this._count}` : '';
+        this._countEl.textContent = this._count ? `${i18n.t('config-num-species')}: ${this._count}` : '';
     }
 
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'species-pop-chart-card';
         card.style.display = 'none';
-        card.title = this._i18n.expand;
+        card.setAttribute('data-i18n', '[title]click-to-expand');
         card.innerHTML = `
             <div class="species-pop-chart-header">
-                <span class="species-pop-chart-title"></span>
+                <span class="species-pop-chart-title" data-i18n="species-pop-chart-title"></span>
                 <span class="species-pop-chart-count"></span>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
-            <div class="species-pop-chart-empty"></div>
+            <div class="species-pop-chart-empty" data-i18n="species-pop-chart-empty"></div>
             <canvas class="species-pop-chart-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
 
         this._card = card;
-        this._titleEl = card.querySelector('.species-pop-chart-title');
         this._countEl = card.querySelector('.species-pop-chart-count');
         this._emptyEl = card.querySelector('.species-pop-chart-empty');
         this._canvas = card.querySelector('.species-pop-chart-canvas');
         this._ctx = this._canvas.getContext('2d');
 
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-
         card.addEventListener('click', () => this._openModal());
 
         this._modal = new Modal({titleExtraClass: 'species-pop-chart-modal-title'});
-        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.setAttribute('data-i18n', 'species-pop-chart-title');
         this._modal.titleEl.insertAdjacentHTML('afterend', `
             <select class="network-topology-history-select" id="spc-history-select" style="display:none;">
-                <option value="current">${this._i18n.currentTarget}</option>
+                <option value="current"></option>
             </select>`);
         this._historySelect = this._modal.el.querySelector('#spc-history-select');
         this._historySelect.addEventListener('change', () => {
@@ -150,7 +135,7 @@ class SpeciesPopulationChart {
                 const count = entry.entries.get(speciesId) || 0;
                 const share = entry.total > 0 ? count / entry.total : 0;
                 if (count > 0 && fromBottom >= floor && fromBottom < floor + share) {
-                    this._tooltip.textContent = `${this._i18n.species} ${speciesId}: ${count} ${this._i18n.members}`;
+                    this._tooltip.textContent = `${i18n.t('species-networks-species')} ${speciesId}: ${count} ${i18n.t('species-networks-members')}`;
                     this._tooltip.style.display = 'block';
                     const tipW = this._tooltip.offsetWidth;
                     const left = e.clientX + 12 + tipW > window.innerWidth ? e.clientX - tipW - 8 : e.clientX + 12;

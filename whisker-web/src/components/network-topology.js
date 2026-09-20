@@ -3,20 +3,12 @@ const {
     NODE_RADIUS, COL_SPACING, V_PAD,
     groupNodesIntoColumns, drawNetworkDiagram, createHoverTooltip, attachHoverTooltip
 } = require('./network-diagram');
+const {i18n} = require('../index');
 const PREVIEW_H = 300;
 
 class NetworkTopology {
-    constructor(container, i18n = {}) {
+    constructor(container) {
         this.container = container;
-        this._i18n = {
-            title: i18n.title || 'Network Topology',
-            generation: i18n.generation || 'Generation',
-            expand: i18n.expand || 'Click to expand',
-            emptyMessage: i18n.emptyMessage || 'Start a learning algorithm to see the network topology',
-            currentTarget: i18n.currentTarget || 'Current Target',
-            frontierTargets: i18n.frontierTargets || 'Current Targets',
-            previousTargets: i18n.previousTargets || 'Previous Targets'
-        };
         this._lastData = null;
         this._history = [];
         this._selectedKey = 'current';
@@ -31,16 +23,9 @@ class NetworkTopology {
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_HISTORY', data => this._renderHistorySnapshot(data));
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        const card = this.container.querySelector('.network-topology-card');
-        if (card) card.title = this._i18n.expand;
-        this.container.querySelectorAll('.modal-title').forEach(el => {
-            el.textContent = this._i18n.title;
-        });
-        if (this.modal) this.modal.titleEl.textContent = this._i18n.title;
-        if (this._emptyEl) this._emptyEl.textContent = this._i18n.emptyMessage;
-        if (this._historySelect) this._historySelect.options[0].textContent = this._i18n.currentTarget;
+    // Refreshes the text that is built in JS (dropdown entry); the static text is data-i18n.
+    updateI18n() {
+        this._historySelect.options[0].textContent = i18n.t('current-target');
     }
 
     refresh() {
@@ -56,7 +41,7 @@ class NetworkTopology {
         this._selectedGen = 'latest';
         this._knownGenerations = [];
         this._lastHistorySnapshot = null;
-        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
+        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
         this._historySelect.style.display = '';
         this._historySelect.value = 'current';
         this._currentSelect.innerHTML = '';
@@ -77,7 +62,7 @@ class NetworkTopology {
         this._selectedGen = 'latest';
         this._knownGenerations = [];
         this._lastHistorySnapshot = null;
-        this._historySelect.innerHTML = `<option value="current">${this._i18n.currentTarget}</option>`;
+        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
         this._historySelect.value = 'current';
         this._currentSelect.innerHTML = '';
         this._currentGroup.style.display = 'none';
@@ -92,12 +77,12 @@ class NetworkTopology {
     _buildUI() {
         const card = document.createElement('div');
         card.className = 'network-topology-card';
-        card.title = this._i18n.expand;
+        card.setAttribute('data-i18n', '[title]click-to-expand');
         card.style.display = 'none';
         card.innerHTML = `
             <div class="network-topology-header">
                 <select class="network-topology-generation" id="nt-generation"></select>
-                <p class="modal-title">${this._i18n.title}</p>
+                <p class="modal-title" data-i18n="network-topology-title"></p>
                 <span style="flex:1;"></span>
                 <div class="network-topology-current-group" id="nt-current-group" style="display:none;">
                     <span class="network-topology-current-label">Frontier</span>
@@ -105,7 +90,7 @@ class NetworkTopology {
                 </div>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
-            <div class="network-topology-empty"></div>
+            <div class="network-topology-empty" data-i18n="network-topology-empty"></div>
             <canvas id="network-topology-canvas" style="display:none;"></canvas>`;
         this.container.appendChild(card);
         this._card = card;
@@ -113,7 +98,6 @@ class NetworkTopology {
         this.ctx = this.canvas.getContext('2d');
         this.genLabel = card.querySelector('#nt-generation');
         this._emptyEl = card.querySelector('.network-topology-empty');
-        this._emptyEl.textContent = this._i18n.emptyMessage;
         this._currentGroup = card.querySelector('#nt-current-group');
         this._currentGroup.addEventListener('click', e => e.stopPropagation());
         this.genLabel.addEventListener('click', e => e.stopPropagation());
@@ -147,10 +131,10 @@ class NetworkTopology {
         // header - inserted around titleEl rather than the modal dictating this header's extra controls.
         this.modal.titleEl.insertAdjacentHTML('beforebegin',
             '<span class="network-topology-generation" id="nt-modal-generation"></span>');
-        this.modal.titleEl.textContent = this._i18n.title;
+        this.modal.titleEl.setAttribute('data-i18n', 'network-topology-title');
         this.modal.titleEl.insertAdjacentHTML('afterend', `
             <select class="network-topology-history-select" id="nt-history-select">
-                <option value="current">${this._i18n.currentTarget}</option>
+                <option value="current">${i18n.t('current-target')}</option>
             </select>`);
         this.modal.bodyEl.innerHTML = '<canvas id="network-topology-modal-canvas"></canvas>';
         this.modalCanvas = this.modal.bodyEl.querySelector('#network-topology-modal-canvas');
@@ -266,7 +250,7 @@ class NetworkTopology {
     _rebuildModalSelectPerTarget() {
         this._historySelect.innerHTML = '';
         const frontierGroup = document.createElement('optgroup');
-        frontierGroup.label = this._i18n.frontierTargets;
+        frontierGroup.label = i18n.t('frontier-targets');
         this._perTargetData.forEach(t => {
             const opt = document.createElement('option');
             opt.value = `frontier:${t.targetKey}`;
@@ -277,7 +261,7 @@ class NetworkTopology {
         this._historySelect.appendChild(frontierGroup);
         if (this._history.length > 0) {
             const coveredGroup = document.createElement('optgroup');
-            coveredGroup.label = this._i18n.previousTargets;
+            coveredGroup.label = i18n.t('previous-targets');
             this._history.forEach(h => {
                 const opt = document.createElement('option');
                 opt.value = `covered:${h.objectiveKey}`;
@@ -299,14 +283,14 @@ class NetworkTopology {
         if (!this._knownGenerations.includes(gen)) {
             this._knownGenerations.push(gen);
             if (this._knownGenerations.length === 1) {
-                this.genLabel.innerHTML = `<option value="latest">${this._i18n.generation} ${gen}</option>`;
+                this.genLabel.innerHTML = `<option value="latest">${i18n.t('generation')} ${gen}</option>`;
             } else {
                 const latestOpt = this.genLabel.querySelector('option[value="latest"]');
-                if (latestOpt) latestOpt.textContent = `${this._i18n.generation} ${gen}`;
+                if (latestOpt) latestOpt.textContent = `${i18n.t('generation')} ${gen}`;
                 const prevGen = this._knownGenerations[this._knownGenerations.length - 2];
                 const prevOpt = document.createElement('option');
                 prevOpt.value = String(prevGen);
-                prevOpt.textContent = `${this._i18n.generation} ${prevGen}`;
+                prevOpt.textContent = `${i18n.t('generation')} ${prevGen}`;
                 this.genLabel.insertBefore(prevOpt, latestOpt);
             }
         }
@@ -394,7 +378,7 @@ class NetworkTopology {
     // fixedH is optional — if omitted the canvas grows to fit the content
     _renderToCanvas(data, canvas, ctx, genLabel, W, spacing, radius, fixedH) {
         const {generation, nodes, connections} = data;
-        this._setGenLabelText(genLabel, `${this._i18n.generation} ${generation}`);
+        this._setGenLabelText(genLabel, `${i18n.t('generation')} ${generation}`);
 
         const nodePos = drawNetworkDiagram(canvas, ctx, data, {width: W, spacing, radius, fixedHeight: fixedH});
 

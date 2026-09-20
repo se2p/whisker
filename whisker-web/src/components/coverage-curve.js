@@ -6,13 +6,7 @@ const CURVE_H = 160;
 const X_LABEL_H = 20;
 
 class CoverageCurve {
-    constructor(container, i18n = {}) {
-        this._i18n = {
-            title: i18n.title || 'Coverage',
-            generation: i18n.generation || 'Generation',
-            emptyMessage: i18n.emptyMessage || 'Start a search to see coverage over time',
-            expand: i18n.expand || 'Click to expand'
-        };
+    constructor(container) {
         this._data = [];
         this._buildUI(container);
         window.Whisker.scratch.vm.on('COVERAGE_UPDATE', data => this._update(data));
@@ -36,28 +30,20 @@ class CoverageCurve {
         this._redraw();
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-        this._card.title = this._i18n.expand;
-        this._modal.titleEl.textContent = this._i18n.title;
-    }
-
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'coverage-curve-card';
-        card.title = this._i18n.expand;
+        card.setAttribute('data-i18n', '[title]click-to-expand');
         card.innerHTML = `
             <div class="coverage-curve-header">
-                <span class="coverage-curve-title"></span>
+                <span class="coverage-curve-title" data-i18n="coverage-curve-title"></span>
                 <span class="coverage-curve-value">
                     <span class="coverage-curve-value-s" style="display:none;"></span>
                     <span class="coverage-curve-value-b" style="display:none;"></span>
                 </span>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
-            <div class="coverage-curve-empty"></div>
+            <div class="coverage-curve-empty" data-i18n="coverage-curve-empty"></div>
             <canvas class="coverage-curve-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
 
@@ -69,13 +55,10 @@ class CoverageCurve {
         this._canvas = card.querySelector('.coverage-curve-canvas');
         this._ctx = this._canvas.getContext('2d');
 
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-
         card.addEventListener('click', () => this._openModal());
 
         this._modal = new Modal();
-        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.setAttribute('data-i18n', 'coverage-curve-title');
         this._modal.bodyEl.innerHTML = '<canvas class="chart-modal-canvas"></canvas>';
         this._modalCanvas = this._modal.bodyEl.querySelector('.chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');

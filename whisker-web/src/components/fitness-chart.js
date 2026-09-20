@@ -1,28 +1,19 @@
 const Modal = require('./modal');
+const {i18n} = require('../index');
 
 const H_PAD = 44;
 const V_PAD = 20;
 const CHART_H = 180;
 
 class FitnessChart {
-    constructor(container, i18n = {}) {
-        this._i18n = {
-            title: i18n.title || 'Fitness Over Time',
-            best: i18n.best || 'Best',
-            average: i18n.average || 'Average',
-            emptyMessage: i18n.emptyMessage || 'Start a NEAT algorithm to see fitness over time',
-            labelNeatest: i18n.labelNeatest || 'Current objective',
-            currentTarget: i18n.currentTarget || 'Current Target',
-            frontierTargets: i18n.frontierTargets || 'Current Targets',
-            previousTargets: i18n.previousTargets || 'Previous Targets',
-            expand: i18n.expand || 'Click to expand'
-        };
+    constructor(container) {
         this._data = [];
         this._history = [];
         this._perTargetSeries = new Map();
         this._perTargetLabels = new Map();
         this._selectedKey = 'current';
         this._buildUI(container);
+        this.updateI18n();
         window.Whisker.scratch.vm.on('FITNESS_UPDATE', data => this._update(data));
         window.Whisker.scratch.vm.on('NETWORK_TOPOLOGY_COVERED', data => this._onTargetCovered(data));
         window.Whisker.scratch.vm.on('OBJECTIVE_COVERED', data => this._onTargetCovered(data));
@@ -42,7 +33,7 @@ class FitnessChart {
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._valueEl.textContent = '';
-        this._subtitleEl.textContent = this._i18n.labelNeatest;
+        this._subtitleEl.textContent = i18n.t('current-target');
         this._rebuildHistorySelect();
         this._modal.close();
     }
@@ -54,19 +45,15 @@ class FitnessChart {
         this._perTargetLabels = new Map();
         this._selectedKey = 'current';
         this._valueEl.textContent = '';
-        this._subtitleEl.textContent = this._i18n.labelNeatest;
+        this._subtitleEl.textContent = i18n.t('current-target');
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._rebuildHistorySelect();
         this._redraw();
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-        this._card.title = this._i18n.expand;
-        this._modal.titleEl.textContent = this._i18n.title;
+    // Refreshes the text that is built in JS (dropdown entries, subtitle); the static text is data-i18n.
+    updateI18n() {
         this._rebuildHistorySelect();
         this._applySelection();
     }
@@ -74,11 +61,11 @@ class FitnessChart {
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'fitness-chart-card';
-        card.title = this._i18n.expand;
+        card.setAttribute('data-i18n', '[title]click-to-expand');
         card.innerHTML = `
             <div class="fitness-chart-header">
                 <div class="fitness-chart-title-group">
-                    <span class="fitness-chart-title"></span>
+                    <span class="fitness-chart-title" data-i18n="fitness-chart-title"></span>
                     <span class="fitness-chart-subtitle"></span>
                 </div>
                 <div class="fitness-chart-right-group">
@@ -89,22 +76,17 @@ class FitnessChart {
                     <span class="network-topology-expand-hint">⤢</span>
                 </div>
             </div>
-            <div class="fitness-chart-empty"></div>
+            <div class="fitness-chart-empty" data-i18n="fitness-chart-empty"></div>
             <canvas class="fitness-chart-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
 
         this._card = card;
-        this._titleEl = card.querySelector('.fitness-chart-title');
         this._subtitleEl = card.querySelector('.fitness-chart-subtitle');
         this._valueEl = card.querySelector('.fitness-chart-value');
         this._emptyEl = card.querySelector('.fitness-chart-empty');
         this._canvas = card.querySelector('.fitness-chart-canvas');
         this._ctx = this._canvas.getContext('2d');
         this._historySelect = card.querySelector('.fitness-chart-history-select');
-
-        this._titleEl.textContent = this._i18n.title;
-        this._subtitleEl.textContent = this._i18n.labelNeatest;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
 
         this._historySelect.addEventListener('click', e => e.stopPropagation());
         this._historySelect.addEventListener('change', () => {
@@ -115,7 +97,7 @@ class FitnessChart {
         card.addEventListener('click', () => this._openModal());
 
         this._modal = new Modal();
-        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.setAttribute('data-i18n', 'fitness-chart-title');
         this._modal.bodyEl.innerHTML = '<canvas class="chart-modal-canvas"></canvas>';
         this._modalCanvas = this._modal.bodyEl.querySelector('.chart-modal-canvas');
         this._modalCtx = this._modalCanvas.getContext('2d');
@@ -153,7 +135,7 @@ class FitnessChart {
         }
         if (this._selectedKey !== 'current') return;
         this._data.push(data);
-        this._subtitleEl.textContent = data.label || this._i18n.labelNeatest;
+        this._subtitleEl.textContent = data.label || i18n.t('current-target');
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -165,7 +147,7 @@ class FitnessChart {
 
         if (this._perTargetSeries.size > 0) {
             const frontierGroup = document.createElement('optgroup');
-            frontierGroup.label = this._i18n.frontierTargets;
+            frontierGroup.label = i18n.t('frontier-targets');
             [...this._perTargetSeries.keys()].forEach(key => {
                 const opt = document.createElement('option');
                 opt.value = `frontier:${key}`;
@@ -178,7 +160,7 @@ class FitnessChart {
         } else {
             const opt = document.createElement('option');
             opt.value = 'current';
-            opt.textContent = this._i18n.currentTarget;
+            opt.textContent = i18n.t('current-target');
             this._historySelect.appendChild(opt);
         }
 
@@ -186,7 +168,7 @@ class FitnessChart {
             const coveredParent = this._perTargetSeries.size > 0 ?
                 document.createElement('optgroup') : this._historySelect;
             if (coveredParent !== this._historySelect) {
-                coveredParent.label = this._i18n.previousTargets;
+                coveredParent.label = i18n.t('previous-targets');
             }
             this._history.forEach(h => {
                 const opt = document.createElement('option');
@@ -214,7 +196,7 @@ class FitnessChart {
     _applySelection() {
         const key = this._selectedKey;
         let data = null;
-        let title = this._i18n.labelNeatest;
+        let title = i18n.t('current-target');
 
         if (key.startsWith('frontier:')) {
             const targetKey = parseInt(key.split(':')[1], 10);
@@ -228,7 +210,7 @@ class FitnessChart {
         } else {
             data = this._data;
             const latest = data[data.length - 1];
-            title = (latest && latest.label) || this._i18n.labelNeatest;
+            title = (latest && latest.label) || i18n.t('current-target');
         }
 
         const runStarted = data.length > 0;
@@ -358,7 +340,7 @@ class FitnessChart {
             ctx.lineTo(chartX + 18, chartY + 10);
             ctx.stroke();
             ctx.fillStyle = '#2563eb';
-            ctx.fillText(this._i18n.best, chartX + 22, chartY + 13);
+            ctx.fillText(i18n.t('fitness-chart-best'), chartX + 22, chartY + 13);
 
             ctx.strokeStyle = '#9ca3af';
             ctx.lineWidth = 1.5;
@@ -369,12 +351,12 @@ class FitnessChart {
             ctx.stroke();
             ctx.setLineDash([]);
             ctx.fillStyle = '#9ca3af';
-            ctx.fillText(this._i18n.average, chartX + 82, chartY + 13);
+            ctx.fillText(i18n.t('fitness-chart-average'), chartX + 82, chartY + 13);
         }
 
         // Header value
         const last = data[data.length - 1];
-        this._valueEl.textContent = `${this._i18n.best}: ${this._formatVal(last.best)}`;
+        this._valueEl.textContent = `${i18n.t('fitness-chart-best')}: ${this._formatVal(last.best)}`;
     }
 
     _niceStep(max) {

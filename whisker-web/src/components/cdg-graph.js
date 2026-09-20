@@ -21,15 +21,16 @@ const MIN_RENDER_INTERVAL_MS = 500;
 // Drives the toggle-button setup/update loop below instead of writing out each button by hand.
 const VIEW_I18N_KEYS = {graph: 'viewGraph', grid: 'viewGrid'};
 
+// Not translated yet: there are no locale keys for this card's text.
+const TEXT = {
+    title: 'CDG Coverage',
+    emptyMessage: 'Start a search to see the covered/targeted control dependence graph',
+    viewGraph: 'Graph',
+    viewGrid: 'Grid'
+};
+
 class CdgGraph {
-    constructor(container, i18n = {}) {
-        this._i18n = {
-            title: i18n.title || 'CDG Coverage',
-            emptyMessage: i18n.emptyMessage || 'Start a search to see the covered/targeted control dependence graph',
-            expand: i18n.expand || 'Click to expand',
-            viewGraph: i18n.viewGraph || 'Graph',
-            viewGrid: i18n.viewGrid || 'Grid'
-        };
+    constructor(container) {
         this._lastData = null;
         this._lastRenderTime = 0;
         this._viewMode = 'graph'; // 'graph' | 'grid'
@@ -41,7 +42,7 @@ class CdgGraph {
     reset() {
         this._lastData = null;
         this._lastRenderTime = 0;
-        this._titleEl.textContent = this._i18n.title;
+        this._titleEl.textContent = TEXT.title;
         this._emptyEl.style.display = '';
         for (const view of Object.values(this._views)) {
             view.graphEl.style.display = 'none';
@@ -59,21 +60,10 @@ class CdgGraph {
         this.reset();
     }
 
-    updateI18n(i18n) {
-        this._i18n = {...this._i18n, ...i18n};
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
-        this._card.title = this._i18n.expand;
-        this._modal.titleEl.textContent = this._i18n.title;
-        for (const [mode, btn] of Object.entries(this._toggleButtons)) {
-            btn.textContent = this._i18n[VIEW_I18N_KEYS[mode]];
-        }
-    }
-
     _buildUI(container) {
         const card = document.createElement('div');
         card.className = 'cdg-graph-card';
-        card.title = this._i18n.expand;
+        card.setAttribute('data-i18n', '[title]click-to-expand');
         card.innerHTML = `
             <div class="cdg-graph-header">
                 <span class="cdg-graph-title"></span>
@@ -92,8 +82,8 @@ class CdgGraph {
         this._card = card;
         this._titleEl = card.querySelector('.cdg-graph-title');
         this._emptyEl = card.querySelector('.cdg-graph-empty');
-        this._titleEl.textContent = this._i18n.title;
-        this._emptyEl.textContent = this._i18n.emptyMessage;
+        this._titleEl.textContent = TEXT.title;
+        this._emptyEl.textContent = TEXT.emptyMessage;
         this._views.card.graphEl = card.querySelector('.cdg-graph-canvas');
         this._views.card.gridEl = card.querySelector('.cdg-graph-grid');
         this._views.card.network = null;
@@ -101,7 +91,7 @@ class CdgGraph {
         this._toggleButtons = {};
         for (const mode of Object.keys(VIEW_I18N_KEYS)) {
             const btn = card.querySelector(`.cdg-graph-view-btn--${mode}`);
-            btn.textContent = this._i18n[VIEW_I18N_KEYS[mode]];
+            btn.textContent = TEXT[VIEW_I18N_KEYS[mode]];
             btn.addEventListener('click', e => {
                 e.stopPropagation();
                 this._setViewMode(mode);
@@ -113,7 +103,7 @@ class CdgGraph {
         card.addEventListener('click', () => this._openModal());
 
         this._modal = new Modal();
-        this._modal.titleEl.textContent = this._i18n.title;
+        this._modal.titleEl.textContent = TEXT.title;
         this._modal.bodyEl.innerHTML = `
             <div class="cdg-graph-canvas cdg-graph-canvas--modal"></div>
             <div class="cdg-graph-grid cdg-graph-grid--modal"></div>`;
@@ -161,7 +151,7 @@ class CdgGraph {
     _renderVisibleViews() {
         const parsed = vis.parseDOTNetwork(this._lastData.dot);
         const {covered, total} = this._lastData;
-        this._titleEl.textContent = `${this._i18n.title} — ${covered}/${total} statements`;
+        this._titleEl.textContent = `${TEXT.title} — ${covered}/${total} statements`;
 
         this._renderView('card', parsed);
         if (this._modal.isOpen()) this._renderView('modal', parsed);
