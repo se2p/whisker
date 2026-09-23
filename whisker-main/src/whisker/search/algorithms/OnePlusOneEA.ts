@@ -26,7 +26,7 @@ import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
 import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
 import { Container } from "../../utils/Container";
-import { emitCdgDot } from "../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -164,6 +164,6 @@ ${bestIndividual.toString()}`);
         const targetedKeys = this._fitnessFunction instanceof StatementFitnessFunction
             ? new Set([String(this._fitnessFunction.getTargetNode().id)])
             : new Set<string>();
-        emitCdgDot(Container.cdg, targetedKeys);
+        emitCdgUpdate(Container.cdg, targetedKeys);
     }
 }

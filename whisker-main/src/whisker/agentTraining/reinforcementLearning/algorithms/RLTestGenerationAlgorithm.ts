@@ -21,7 +21,7 @@ import { TargetObjectiveSelection } from "../../neuroevolution/misc/TargetObject
 import Arrays from "../../../utils/Arrays";
 import { NonExhaustiveCaseDistinction } from "../../../core/exceptions/NonExhaustiveCaseDistinction";
 import { Container } from "../../../utils/Container";
-import { emitCdgDot } from "../../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../../utils/ReportingEvents";
 
 export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implements RLAlgorithm<A> {
 
@@ -217,7 +217,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
     }
 
     /**
-     * Reports the CDG to the UI. Covered vs. uncovered statements are coloured by emitCdgDot from
+     * Reports the CDG to the UI. Covered vs. uncovered statements are read by emitCdgUpdate from
      * StatisticsCollector; only the currently targeted objective (set by algorithms that pursue one at
      * a time, e.g. CoverageDirectedDeepQLearning) is marked here.
      */
@@ -225,7 +225,7 @@ export abstract class RLTestGenerationAlgorithm<A extends TfAgentWrapper> implem
         const targetedKeys = this._currentTargetObjective
             ? new Set([String(this._currentTargetObjective.getTargetNode().id)])
             : new Set<string>();
-        emitCdgDot(Container.cdg, targetedKeys);
+        emitCdgUpdate(Container.cdg, targetedKeys);
     }
 
     /**

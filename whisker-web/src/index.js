@@ -73,6 +73,7 @@ const CoverageCurve = require('./components/coverage-curve');
 const FitnessChart = require('./components/fitness-chart');
 const SpeciesPopulationChart = require('./components/species-population-chart');
 const CdgGraph = require('./components/cdg-graph');
+const SourceCode = require('./components/source-code');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
@@ -81,7 +82,8 @@ window.$ = $;
 
 // Dashboard cards reset/emptied together whenever a new project is loaded or a search run starts.
 const DASHBOARD_CARDS = [
-    'networkTopology', 'speciesNetworks', 'coverageCurve', 'fitnessChart', 'speciesPopulationChart', 'cdgGraph'
+    'networkTopology', 'speciesNetworks', 'coverageCurve', 'fitnessChart', 'speciesPopulationChart', 'cdgGraph',
+    'sourceCode'
 ];
 const resetDashboardCards = () => DASHBOARD_CARDS.forEach(key => Whisker[key] && Whisker[key].reset());
 const startEmptyDashboardCards = (keys = DASHBOARD_CARDS) =>
@@ -1030,6 +1032,7 @@ const initComponents = function () {
     Whisker.consoleLog = new ConsoleLog(document.getElementById('whisker-dashboard-view'));
     Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'));
     Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'));
+    Whisker.sourceCode = new SourceCode(document.getElementById('whisker-dashboard-view'));
     Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'));
     Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'));
     Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'));

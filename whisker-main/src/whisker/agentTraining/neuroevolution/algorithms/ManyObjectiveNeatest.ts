@@ -12,7 +12,7 @@ import logger from "../../../../util/logger";
 import { FitnessFunction } from "../../../search/FitnessFunction";
 import { TestCase } from "../../../core/TestCase";
 import { Container } from "../../../utils/Container";
-import { emitCdgDot } from "../../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../../utils/ReportingEvents";
 
 
 /**
@@ -437,6 +437,6 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     */
     protected override _emitCdgUpdate(): void {
         const activeTargets = this._currentTargets.filter(key => !this._archive.has(key));
-        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(activeTargets));
+        emitCdgUpdate(Container.cdg, this._mapKeysToNodeIds(activeTargets));
     }
 }

@@ -32,7 +32,7 @@ import Arrays from "../../utils/Arrays";
 import logger from "../../../util/logger";
 import { BranchCoverageFitnessFunction } from "../../testcase/fitness/BranchCoverageFitnessFunction";
 import { Container } from "../../utils/Container";
-import { emitCdgDot } from "../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -281,7 +281,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
      * one archived (uncovered) candidate.
      */
     protected override _emitCdgUpdate(): void {
-        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(this._archiveUncovered.keys()));
+        emitCdgUpdate(Container.cdg, this._mapKeysToNodeIds(this._archiveUncovered.keys()));
     }
 
     /**

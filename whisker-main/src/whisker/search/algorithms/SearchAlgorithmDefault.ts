@@ -29,7 +29,7 @@ import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import { StoppingCondition } from "../StoppingCondition";
 import { TestChromosome } from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
-import { emitCoverageUpdate, emitFitnessUpdate, emitCdgDot } from "../../utils/ReportingEvents";
+import { emitCoverageUpdate, emitFitnessUpdate, emitCdgUpdate } from "../../utils/ReportingEvents";
 import { Container } from "../../utils/Container";
 import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
 
@@ -213,12 +213,12 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     }
 
     /**
-     * Reports the CDG to the UI (statement coverage is read from StatisticsCollector by emitCdgDot).
+     * Reports the CDG to the UI (statement coverage is read from StatisticsCollector by emitCdgUpdate).
      * Single-target algorithms override this to mark the one objective they're currently searching for;
      * many-objective algorithms (e.g. MOSA, MIO) override it to mark their whole active frontier.
      */
     protected _emitCdgUpdate(): void {
-        emitCdgDot(Container.cdg, new Set());
+        emitCdgUpdate(Container.cdg, new Set());
     }
 
 

@@ -30,7 +30,7 @@ import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
 import { Chromosome } from "../Chromosome";
 import { Container } from "../../utils/Container";
-import { emitCdgDot } from "../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -349,7 +349,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     protected override _emitCdgUpdate(): void {
         const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
-        emitCdgDot(Container.cdg, this._mapKeysToNodeIds(activeTargets));
+        emitCdgUpdate(Container.cdg, this._mapKeysToNodeIds(activeTargets));
     }
 
 

@@ -43,54 +43,40 @@ export function emitFitnessUpdate(iteration: number, best: number, average?: num
 }
 
 /**
- * Reports the CDG to the UI as a Graphviz dot string, coloring each node by whether its statement is
- * covered, currently targeted, or neither. Nodes are walked via getSortedNodes() (a BFS from the CDG's
+ * Reports the CDG to the UI: its nodes and edges, plus the ids of the covered and the currently targeted
+ * statements so the UI can color each node. Nodes are walked via getSortedNodes() (a BFS from the CDG's
  * entry nodes) rather than getAllNodes() (arbitrary insertion order), so the UI can lay them out
  * following the actual control-dependency structure instead of an unrelated order.
  *
- * CDG nodes are statements, so the colouring and the covered/total count are always statement coverage
+ * CDG nodes are statements, so the covered ids and the covered/total count are always statement coverage
  * (read from StatisticsCollector) regardless of whether the run's objective is statements or branches.
  * `targetedKeys` is the only per-run input, marking the CDG node(s) of the objective(s) being pursued.
  */
-export function emitCdgDot(cdg: ControlDependenceGraph, targetedKeys: Set<string>): void {
+export function emitCdgUpdate(cdg: ControlDependenceGraph, targetedKeys: Set<string>): void {
     const stats = StatisticsCollector.getInstance();
     if (!Container.vm || !cdg || !stats.statements) return;
 
     const coveredKeys = stats.getCoveredStatementNodeIds();
 
-    const edges = [];
-    const nodes = [];
-    // Entry/start are structural bookkeeping nodes with no Scratch block and are never a real coverage target,
-    // so they are kept in a neutral color (removing them would fragment the tree). The leaf Exit node is hidden.
+    // Block nodes are identified by their block id (the UI draws the block itself). Entry/start are structural
+    // bookkeeping nodes with no Scratch block and are never a real coverage target, so they carry a label to
+    // draw instead. The leaf Exit node is hidden.
+    const nodes: { id: string, label?: string }[] = [];
+    const edges: { from: string, to: string }[] = [];
     const isStructuralNode = (n: GraphNode) => !n.block;
     const isExitNode = (n: GraphNode) => n.id === 'Exit';
     for (const node of cdg.getSortedNodes()) {
         if (isExitNode(node)) continue;
-        if (isStructuralNode(node)) {
-            nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="lightgray",fontcolor="black"];`);
-        } else if (targetedKeys.has(node.id)) {
-            nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="yellow",fontcolor="black"];`);
-        } else if (coveredKeys.has(node.id)) {
-            nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="darkgreen",fontcolor="white"];`);
-        } else {
-            nodes.push(`\t"${node.toString()}" [style=filled,fillcolor="red",fontcolor="white"];`);
-        }
+        nodes.push(isStructuralNode(node) ? { id: node.id, label: node.toString() } : { id: node.id });
         for (const succ of cdg.successors(node.id)) {
             if (isExitNode(succ)) continue;
             // The CDG stores Entry as a successor of start; draw it as start's parent instead.
-            edges.push(succ.id === 'Entry'
-                ? `\t"${succ.toString()}" -> "${node.toString()}";`
-                : `\t"${node.toString()}" -> "${succ.toString()}";`);
+            edges.push(succ.id === 'Entry' ? { from: succ.id, to: node.id } : { from: node.id, to: succ.id });
         }
     }
-    const renderedEdges = edges.join('\n');
-    const renderedNodes = nodes.join('\n');
 
-    const dot = `digraph ScratchProgram {\n${renderedNodes}\n${renderedEdges}\n}`;
-    // Block ids of covered/targeted statements, for the "real Scratch blocks" view (which renders the
-    // actual scripts via scratch-blocks rather than the CDG's abstract node/edge structure).
     Container.vm.emit('CDG_UPDATE', {
-        dot, covered: coveredKeys.size, total: stats.statements.size,
+        graph: { nodes, edges }, covered: coveredKeys.size, total: stats.statements.size,
         coveredBlockIds: [...coveredKeys], targetedBlockIds: [...targetedKeys]
     });
 }

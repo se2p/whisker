@@ -9,7 +9,7 @@ import Arrays from "../../../utils/Arrays";
 import { OneOfStoppingCondition } from "../../../search/stoppingconditions/OneOfStoppingCondition";
 import { OptimalSolutionStoppingCondition } from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import { Container } from "../../../utils/Container";
-import { emitCdgDot } from "../../../utils/ReportingEvents";
+import { emitCdgUpdate } from "../../../utils/ReportingEvents";
 import { NeatestParameter } from "../hyperparameter/NeatestParameter";
 import logger from "../../../../util/logger";
 import { TargetObjectiveSelection } from "../misc/TargetObjectiveSelection";
@@ -423,6 +423,6 @@ export class Neatest extends NEAT {
     protected override _emitCdgUpdate(): void {
         const target = this._fitnessFunctionMap.get(this._targetKey);
         const targetedKeys = target ? new Set([String(target.getTargetNode().id)]) : new Set<string>();
-        emitCdgDot(Container.cdg, targetedKeys);
+        emitCdgUpdate(Container.cdg, targetedKeys);
     }
 }

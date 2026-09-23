@@ -2300,14 +2300,16 @@ label {
 
 .network-topology-empty,
 .coverage-curve-empty,
-.cdg-graph-empty {
+.cdg-graph-empty,
+.source-code-empty {
     padding: 48px 16px;
     text-align: center;
     font-size: 0.82rem;
     color: #d1d5db;
 }
 
-.cdg-graph-card {
+.cdg-graph-card,
+.source-code-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
@@ -2317,11 +2319,13 @@ label {
     transition: box-shadow 0.15s;
 }
 
-.cdg-graph-card:hover {
+.cdg-graph-card:hover,
+.source-code-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.cdg-graph-header {
+.cdg-graph-header,
+.source-code-header {
     display: flex;
     align-items: center;
     padding: 10px 14px;
@@ -2329,10 +2333,15 @@ label {
     border-bottom: 1px solid #e5e7eb;
 }
 
-.cdg-graph-title {
+.cdg-graph-title,
+.source-code-title {
     font-weight: 600;
     font-size: 15px;
     color: #374151;
+}
+
+.source-code-target-select {
+    margin-left: 14px;
 }
 
 .cdg-graph-view-toggle {
@@ -2362,14 +2371,16 @@ label {
     font-weight: 600;
 }
 
-.cdg-graph-blocks {
+.cdg-graph-tree,
+.source-code-blocks {
     width: 100%;
     height: 420px;
     position: relative;
     overflow: hidden;
 }
 
-.cdg-graph-blocks--modal {
+.cdg-graph-tree--modal,
+.source-code-blocks--modal {
     height: 75vh;
 }
 
