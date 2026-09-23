@@ -2362,12 +2362,14 @@ label {
     font-weight: 600;
 }
 
-.cdg-graph-canvas {
+.cdg-graph-blocks {
     width: 100%;
     height: 420px;
+    position: relative;
+    overflow: hidden;
 }
 
-.cdg-graph-canvas--modal {
+.cdg-graph-blocks--modal {
     height: 75vh;
 }
 

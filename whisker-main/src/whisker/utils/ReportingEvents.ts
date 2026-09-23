@@ -87,5 +87,10 @@ export function emitCdgDot(cdg: ControlDependenceGraph, targetedKeys: Set<string
     const renderedNodes = nodes.join('\n');
 
     const dot = `digraph ScratchProgram {\n${renderedNodes}\n${renderedEdges}\n}`;
-    Container.vm.emit('CDG_UPDATE', { dot, covered: coveredKeys.size, total: stats.statements.size });
+    // Block ids of covered/targeted statements, for the "real Scratch blocks" view (which renders the
+    // actual scripts via scratch-blocks rather than the CDG's abstract node/edge structure).
+    Container.vm.emit('CDG_UPDATE', {
+        dot, covered: coveredKeys.size, total: stats.statements.size,
+        coveredBlockIds: [...coveredKeys], targetedBlockIds: [...targetedKeys]
+    });
 }

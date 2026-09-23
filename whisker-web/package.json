@@ -51,7 +51,8 @@
         "vis-data": "^7.0.0",
         "vis-network": "^9.0.4",
         "vis-util": "^5.0.2",
-        "whisker-main": "0.8.0"
+        "whisker-main": "0.8.0",
+        "scratch-blocks": "git+https://gitlab.infosun.fim.uni-passau.de/se2/scratch/interrogative-debugging/scratch-blocks.git#develop"
     },
     "devDependencies": {
         "webpack-dev-server": "4.15.0"

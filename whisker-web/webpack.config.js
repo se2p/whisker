@@ -76,6 +76,12 @@ module.exports = [
                     {
                         from: 'src/includes',
                         to: 'includes'
+                    },
+                    {
+                        // scratch-blocks loads its own icons (loop arrows, dropdown carets, etc.) from this
+                        // folder at runtime via the `media` option passed to its inject() call.
+                        from: path.resolve(__dirname, '../node_modules/scratch-blocks/media'),
+                        to: 'blockly-media'
                     }
                 ]
             })
