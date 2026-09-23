@@ -129,6 +129,9 @@ const _learningFields = {
     trainingOptimizer: {path: ['training', 'optimizer'], clamp: 'raw', readCheck: 'truthy'}
 };
 
+// Dashboard cards that only make sense for the learning-based algorithms.
+const LEARNING_ONLY_CARDS = ['.network-topology-card', '.species-networks-card', '.species-pop-chart-card'];
+
 class ConfigPanel {
     constructor(element) {
         this.el = element;
@@ -244,6 +247,10 @@ class ConfigPanel {
             .toggle(!isLearning);
         $(this.el).find('#whisker-learning-config')
             .toggle(isLearning);
+        for (const selector of LEARNING_ONLY_CARDS) {
+            const card = document.querySelector(selector);
+            if (card) card.style.display = isLearning ? '' : 'none';
+        }
         if (isLearning) {
             const sel = this.el.querySelector('#whisker-learning-config .whisker-algo-select');
             if (sel) sel.value = path;

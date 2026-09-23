@@ -1823,18 +1823,6 @@
             if (window.Whisker && window.Whisker.configPanel) {
                 window.Whisker.configPanel.switchToMode(isLearning);
             }
-            if (window.Whisker && window.Whisker.networkTopology) {
-                var card = document.querySelector('.network-topology-card');
-                if (card) card.style.display = isLearning ? '' : 'none';
-            }
-            if (window.Whisker && window.Whisker.speciesNetworks) {
-                var snCard = document.querySelector('.species-networks-card');
-                if (snCard) snCard.style.display = isLearning ? '' : 'none';
-            }
-            if (window.Whisker && window.Whisker.speciesPopulationChart) {
-                var spcCard = document.querySelector('.species-pop-chart-card');
-                if (spcCard) spcCard.style.display = isLearning ? '' : 'none';
-            }
         }
 
         function _switchWhiskerTab(targetContentId, clickedBtn) {
