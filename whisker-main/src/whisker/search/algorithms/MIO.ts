@@ -272,7 +272,8 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
         await this._emitFrontierUpdate(
             activeTargets,
             key => this._archiveUncovered.get(key).map(tuple => tuple.heuristicValue),
-            scores => Math.max(...scores)
+            scores => Math.max(...scores),
+            1
         );
     }
 

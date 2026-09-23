@@ -115,6 +115,8 @@ class FitnessChart {
     _onTargetCovered(event) {
         const key = event.objectiveKey;
         const seriesData = this._perTargetSeries.has(key) ? this._perTargetSeries.get(key) : [...this._data];
+        // A covered target is no longer scored, so the search reports its final value along with the event.
+        if (event.best !== void 0) seriesData.push({best: event.best, average: event.average});
         this._history.push({objectiveKey: key, label: event.label, data: seriesData});
         this._perTargetSeries.delete(key);
         this._perTargetLabels.delete(key);

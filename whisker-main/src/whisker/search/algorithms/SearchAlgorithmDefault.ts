@@ -241,10 +241,13 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      * @param getScores returns the scores to aggregate for a given target key.
      * @param pickBest picks the best score out of a target's scores (e.g. Math.min for distance, Math.max
      * for a 0-1 heuristic).
+     * @param coveredScore the score of a covered target (0 for a distance, 1 for a 0-1 heuristic), reported as
+     * the last point of its chart since the search stops scoring a target once it is covered.
      */
     protected async _emitFrontierUpdate(activeTargets: number[],
         getScores: (key: number) => number[] | Promise<number[]>,
-        pickBest: (scores: number[]) => number): Promise<void> {
+        pickBest: (scores: number[]) => number,
+        coveredScore: number): Promise<void> {
         // Only a target that was actually shown as "current" can meaningfully move to "covered" in the
         // chart - an objective archived before ever appearing in a reported frontier has nothing to move.
         if (Container.vm) {
@@ -253,7 +256,9 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
                     this._reportedCoveredTargets.add(key);
                     Container.vm.emit('OBJECTIVE_COVERED', {
                         objectiveKey: key,
-                        label: this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`
+                        label: this._fitnessFunctions.get(key)?.toString() ?? `Objective ${key}`,
+                        best: coveredScore,
+                        average: coveredScore
                     });
                 }
             }

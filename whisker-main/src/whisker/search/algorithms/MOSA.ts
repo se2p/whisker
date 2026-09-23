@@ -339,7 +339,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         await this._emitFrontierUpdate(
             activeTargets,
             key => Promise.all(population.map(chromosome => this._fitnessFunctions.get(key)!.getFitness(chromosome))),
-            scores => Math.min(...scores)
+            scores => Math.min(...scores),
+            0
         );
     }
 
