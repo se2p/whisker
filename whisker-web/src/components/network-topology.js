@@ -71,7 +71,7 @@ class NetworkTopology {
             <div class="network-topology-header">
                 <select class="network-topology-generation" id="nt-generation"></select>
                 <p class="modal-title" data-i18n="network-topology-title"></p>
-                <select class="network-topology-history-select" id="nt-history-select"></select>
+                <select class="target-select" id="nt-history-select"></select>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
             <div class="network-topology-empty" data-i18n="network-topology-empty"></div>

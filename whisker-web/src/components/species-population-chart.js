@@ -1,6 +1,7 @@
 const Modal = require('./modal');
 const {createHoverTooltip} = require('./network-diagram');
 const {i18n} = require('../index');
+const {fillTargetSelect} = require('./target-select');
 
 const PAD_L = 8;
 const PAD_R = 8;
@@ -25,6 +26,9 @@ class SpeciesPopulationChart {
         window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY', data => this._update(data));
         // Only Neatest emits these (single sequential target, species restart on each switch)
         window.Whisker.scratch.vm.on('SPECIES_TARGET_COVERED', data => this._onTargetCovered(data));
+        window.Whisker.scratch.vm.on('SPECIES_NETWORK_TOPOLOGY_COVERED', data => {
+            this._coveredSnapshot = data;
+        });
         // A skipped (uncovered) target is dropped
         window.Whisker.scratch.vm.on('SPECIES_TARGET_ABANDONED', () => this._clearLive());
     }
@@ -35,15 +39,14 @@ class SpeciesPopulationChart {
         this._colorMap = new Map();
         this._colorIndex = 0;
         this._pastTargets = [];
+        this._coveredSnapshot = null;
         this._firstGeneration = 0;
         this._selectedKey = 'current';
-        this._count = null;
     }
 
     reset() {
         this._resetState();
-        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
-        this._historySelect.style.display = 'none';
+        this._rebuildHistorySelect();
         this._emptyEl.style.display = '';
         this._canvas.style.display = 'none';
         this._countEl.textContent = '';
@@ -52,8 +55,7 @@ class SpeciesPopulationChart {
 
     startEmpty() {
         this._resetState();
-        this._historySelect.innerHTML = `<option value="current">${i18n.t('current-target')}</option>`;
-        this._historySelect.style.display = 'none';
+        this._rebuildHistorySelect();
         this._emptyEl.style.display = 'none';
         this._canvas.style.display = '';
         this._redraw();
@@ -62,12 +64,24 @@ class SpeciesPopulationChart {
 
     // Refreshes the text that is built in JS (dropdown entry, species count); the static text is data-i18n.
     updateI18n() {
-        this._historySelect.options[0].textContent = i18n.t('current-target');
+        this._rebuildHistorySelect();
         this._renderCount();
     }
 
+    // The objective dropdown: the current target, then the targets covered earlier. Only Neatest archives
+    // targets, so it stays hidden until there is one (never for the many-objective runs).
+    _rebuildHistorySelect() {
+        this._selectedKey = fillTargetSelect(this._historySelect, {
+            previous: this._pastTargets.map(t => ({key: t.objectiveKey, label: t.label}))
+        });
+        this._historySelect.style.display = this._pastTargets.length > 0 ? '' : 'none';
+    }
+
+    // Shows how many species the selected target has (in its latest generation).
     _renderCount() {
-        this._countEl.textContent = this._count ? `${i18n.t('config-num-species')}: ${this._count}` : '';
+        const {history} = this._stateForKey(this._selectedKey);
+        const count = history.length > 0 ? history[history.length - 1].entries.size : 0;
+        this._countEl.textContent = count ? `${i18n.t('config-num-species')}: ${count}` : '';
     }
 
     _buildUI(container) {
@@ -79,6 +93,7 @@ class SpeciesPopulationChart {
             <div class="species-pop-chart-header">
                 <span class="species-pop-chart-title" data-i18n="species-pop-chart-title"></span>
                 <span class="species-pop-chart-count"></span>
+                <select class="target-select"></select>
                 <span class="network-topology-expand-hint">⤢</span>
             </div>
             <div class="species-pop-chart-empty" data-i18n="species-pop-chart-empty"></div>
@@ -87,6 +102,7 @@ class SpeciesPopulationChart {
 
         this._card = card;
         this._countEl = card.querySelector('.species-pop-chart-count');
+        this._historySelect = card.querySelector('.target-select');
         this._emptyEl = card.querySelector('.species-pop-chart-empty');
         this._canvas = card.querySelector('.species-pop-chart-canvas');
         this._ctx = this._canvas.getContext('2d');
@@ -95,15 +111,12 @@ class SpeciesPopulationChart {
 
         this._modal = new Modal({titleExtraClass: 'species-pop-chart-modal-title'});
         this._modal.titleEl.setAttribute('data-i18n', 'species-pop-chart-title');
-        this._modal.titleEl.insertAdjacentHTML('afterend', `
-            <select class="network-topology-history-select" id="spc-history-select" style="display:none;">
-                <option value="current"></option>
-            </select>`);
-        this._historySelect = this._modal.el.querySelector('#spc-history-select');
+        this._historySelect.addEventListener('click', e => e.stopPropagation());
         this._historySelect.addEventListener('change', () => {
             this._selectedKey = this._historySelect.value;
-            const W = this._modalCanvas.parentElement.clientWidth - 32;
-            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey(this._selectedKey));
+            this._renderCount();
+            this._redraw();
+            this._redrawModal();
         });
         this._modal.bodyEl.innerHTML = '<canvas class="species-pop-chart-modal-canvas"></canvas>';
         this._modalCanvas = this._modal.bodyEl.querySelector('.species-pop-chart-modal-canvas');
@@ -154,25 +167,39 @@ class SpeciesPopulationChart {
         this._tooltip.style.display = 'none';
     }
 
-    // Resolves 'current' | objectiveKey to the {history, speciesOrder, colorMap} it should render.
+    // Resolves 'current' | 'covered:<objectiveKey>' to the {history, speciesOrder, colorMap} it should render.
     _stateForKey(key) {
         const current = {history: this._history, speciesOrder: this._speciesOrder, colorMap: this._colorMap};
         if (key === 'current') return current;
-        return this._pastTargets.find(t => String(t.objectiveKey) === key) || current;
+        return this._pastTargets.find(t => `covered:${t.objectiveKey}` === key) || current;
     }
 
     _openModal() {
         if (!this._history.length && this._pastTargets.length === 0) return;
         this._modal.open();
-        this._historySelect.value = this._selectedKey;
+        this._redrawModal();
+    }
+
+    _redrawModal() {
+        if (!this._modal.isOpen()) return;
         const W = this._modalCanvas.parentElement.clientWidth - 32;
         this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey(this._selectedKey));
     }
 
     _update(data) {
+        this._addSnapshot(data.species, data.generation);
+        this._emptyEl.style.display = 'none';
+        this._canvas.style.display = '';
+        this._renderCount();
+        this._redraw();
+        this._redrawModal();
+    }
+
+    // Appends one generation's species sizes to the live chart.
+    _addSnapshot(species, generation) {
         const entries = new Map();
         let total = 0;
-        for (const s of data.species) {
+        for (const s of species) {
             entries.set(s.speciesId, s.memberCount);
             total += s.memberCount;
             if (!this._colorMap.has(s.speciesId)) {
@@ -182,35 +209,27 @@ class SpeciesPopulationChart {
             }
         }
         // Neatest's generation counter runs across targets, so each target's chart counts from its first snapshot.
-        if (!this._history.length) this._firstGeneration = data.generation;
-        this._history.push({generation: data.generation - this._firstGeneration, entries, total});
-        this._emptyEl.style.display = 'none';
-        this._canvas.style.display = '';
-        this._count = data.species.length;
-        this._renderCount();
-        this._redraw();
-        if (this._modal.isOpen() && this._selectedKey === 'current') {
-            const W = this._modalCanvas.parentElement.clientWidth - 32;
-            this._drawChart(this._modalCanvas, this._modalCtx, W, MODAL_CHART_H, this._stateForKey('current'));
-        }
+        if (!this._history.length) this._firstGeneration = generation;
+        this._history.push({generation: generation - this._firstGeneration, entries, total});
     }
 
     // Neatest's current target was covered: species restart for the next target, so archive this target's
     // chart under its objective key instead of letting the live chart keep stacking across the switch.
     _onTargetCovered(data) {
+        // A target covered before its first generation has no snapshots; use the species it was covered with.
+        const covered = this._coveredSnapshot;
+        if (!this._history.length && covered && covered.objectiveKey === data.objectiveKey) {
+            this._addSnapshot(covered.species, 0);
+        }
         if (this._history.length > 0) {
             this._pastTargets.push({
                 objectiveKey: data.objectiveKey,
+                label: data.label,
                 history: this._history,
                 speciesOrder: this._speciesOrder,
                 colorMap: this._colorMap
             });
-            const opt = document.createElement('option');
-            opt.value = String(data.objectiveKey);
-            opt.textContent = `Obj. ${data.objectiveKey}`;
-            opt.title = data.label;
-            this._historySelect.appendChild(opt);
-            this._historySelect.style.display = '';
+            this._rebuildHistorySelect();
         }
         this._clearLive();
     }
@@ -220,7 +239,6 @@ class SpeciesPopulationChart {
         this._speciesOrder = [];
         this._colorMap = new Map();
         this._colorIndex = 0;
-        this._count = null;
         this._renderCount();
         this._redraw();
     }
@@ -228,7 +246,7 @@ class SpeciesPopulationChart {
     _redraw() {
         const W = this._card.clientWidth - 2;
         if (W <= 0) return;
-        this._drawChart(this._canvas, this._ctx, W, CHART_H, this._stateForKey('current'));
+        this._drawChart(this._canvas, this._ctx, W, CHART_H, this._stateForKey(this._selectedKey));
     }
 
     _drawChart(canvas, ctx, W, chartH, {history, speciesOrder, colorMap}) {

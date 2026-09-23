@@ -72,7 +72,7 @@ class SpeciesNetworks {
             <div class="species-networks-header">
                 <select class="network-topology-generation" id="sn-generation"></select>
                 <p class="species-networks-title" data-i18n="species-networks-title"></p>
-                <select class="network-topology-history-select" id="sn-history-select">
+                <select class="target-select" id="sn-history-select">
                     <option value="current">${i18n.t('current-target')}</option>
                 </select>
             </div>

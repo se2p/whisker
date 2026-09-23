@@ -71,7 +71,7 @@ class FitnessChart {
                 </div>
                 <div class="fitness-chart-right-group">
                     <span class="fitness-chart-value"></span>
-                    <select class="network-topology-history-select fitness-chart-history-select">
+                    <select class="target-select fitness-chart-history-select">
                         <option value="current"></option>
                     </select>
                     <span class="network-topology-expand-hint">⤢</span>
