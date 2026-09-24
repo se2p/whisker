@@ -99,6 +99,7 @@ class SpeciesPopulationChart {
             <div class="species-pop-chart-empty" data-i18n="species-pop-chart-empty"></div>
             <canvas class="species-pop-chart-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.species-pop-chart-header'));
 
         this._card = card;
         this._countEl = card.querySelector('.species-pop-chart-count');

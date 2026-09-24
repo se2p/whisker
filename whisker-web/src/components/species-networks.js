@@ -82,6 +82,7 @@ class SpeciesNetworks {
                 <canvas id="sn-preview-canvas"></canvas>
             </div>`;
         this.container.appendChild(this._card);
+        Modal.makeCollapsible(this._card, this._card.querySelector('.species-networks-header'));
         this._genLabel = this._card.querySelector('#sn-generation');
         this._gens = new GenerationSelect(this._genLabel);
         this._emptyEl = this._card.querySelector('.species-networks-empty');

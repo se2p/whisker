@@ -65,6 +65,8 @@ class CdgGraph {
             <div class="cdg-graph-tree" style="display:none;"></div>
             <div class="cdg-graph-grid" style="display:none;"></div>`;
         container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.cdg-graph-header'),
+            () => this._views.card.tree && this._views.card.tree.fit());
 
         this._card = card;
         this._titleEl = card.querySelector('.cdg-graph-title');

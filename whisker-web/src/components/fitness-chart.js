@@ -80,6 +80,7 @@ class FitnessChart {
             <div class="fitness-chart-empty" data-i18n="fitness-chart-empty"></div>
             <canvas class="fitness-chart-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.fitness-chart-header'));
 
         this._card = card;
         this._subtitleEl = card.querySelector('.fitness-chart-subtitle');

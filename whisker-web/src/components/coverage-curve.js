@@ -46,6 +46,7 @@ class CoverageCurve {
             <div class="coverage-curve-empty" data-i18n="coverage-curve-empty"></div>
             <canvas class="coverage-curve-canvas" style="display:none;"></canvas>`;
         container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.coverage-curve-header'));
 
         this._card = card;
         this._titleEl = card.querySelector('.coverage-curve-title');

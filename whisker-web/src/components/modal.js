@@ -37,6 +37,31 @@ class Modal {
         });
     }
 
+    // Adds a collapse button to a card's header; collapsing hides everything in the card but the header.
+    static makeCollapsible(card, header, onExpand) {
+        header.classList.add('card-collapsible-header');
+
+        const button = document.createElement('button');
+        button.className = 'card-collapse-btn';
+        button.innerHTML = '&#8963;';
+
+        const expandHint = header.querySelector('.network-topology-expand-hint');
+        if (expandHint) {
+            expandHint.before(button);
+        } else {
+            header.append(button);
+        }
+
+        button.addEventListener('click', e => {
+            e.stopPropagation();
+            const collapsed = card.classList.toggle('card-collapsed');
+            button.innerHTML = collapsed ? '&#8964;' : '&#8963;';
+            if (!collapsed && onExpand) {
+                onExpand();
+            }
+        });
+    }
+
     open() {
         this.el.classList.add('modal--open');
     }

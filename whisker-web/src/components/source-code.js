@@ -53,6 +53,7 @@ class SourceCode {
             <div class="source-code-empty"></div>
             <div class="source-code-blocks" style="display:none;"></div>`;
         container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.source-code-header'));
 
         this._card = card;
         this._titleEl = card.querySelector('.source-code-title');

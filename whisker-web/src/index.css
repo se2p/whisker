@@ -2754,6 +2754,30 @@ label {
     color: #374151;
 }
 
+.card-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #6b7280;
+    padding: 0 4px;
+    margin-left: 8px;
+    line-height: 1;
+}
+
+.card-collapse-btn+.network-topology-expand-hint {
+    margin-left: 8px;
+}
+
+.card-collapsed> :not(.card-collapsible-header) {
+    display: none !important;
+}
+
+.card-collapsed>.card-collapsible-header {
+    border-bottom: none;
+    border-radius: 10px;
+}
+
 .console-log-modal .modal-box {
     height: 80vh;
 }

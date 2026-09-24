@@ -77,6 +77,7 @@ class NetworkTopology {
             <div class="network-topology-empty" data-i18n="network-topology-empty"></div>
             <canvas id="network-topology-canvas" style="display:none;"></canvas>`;
         this.container.appendChild(card);
+        Modal.makeCollapsible(card, card.querySelector('.network-topology-header'));
         this._card = card;
         this.canvas = card.querySelector('#network-topology-canvas');
         this.ctx = this.canvas.getContext('2d');
