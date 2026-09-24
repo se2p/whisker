@@ -273,6 +273,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
             activeTargets,
             key => this._archiveUncovered.get(key).map(tuple => tuple.heuristicValue),
             scores => Math.max(...scores),
+            this._archiveCovered,
             1
         );
     }
@@ -458,7 +459,6 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
-        this._archive.set(fitnessFunctionKey, chromosome);
         this._bestIndividuals = Arrays.distinct(this._archiveCovered.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         this._samplingCounter.set(fitnessFunctionKey, 0);

@@ -340,6 +340,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             activeTargets,
             key => Promise.all(population.map(chromosome => this._fitnessFunctions.get(key)!.getFitness(chromosome))),
             scores => Math.min(...scores),
+            this._archive,
             0
         );
     }
