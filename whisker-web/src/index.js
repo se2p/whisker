@@ -1641,6 +1641,9 @@ const _updateFilenameLabels = () => {
     }
 };
 
+// Called by the tab bar in index.html after it switches tabs.
+window.Whisker.updateFilenameLabels = _updateFilenameLabels;
+
 $('.nav-link').on('click', event => {
     const lng = $('#lang-select').val();
     const href = event.target.getAttribute('href');

@@ -30,8 +30,7 @@
 
     <!-- Holds additional data such as the selected mutation operators -->
     <div id="container"></div>
-
-    <!-- Header (preserved for JS) -->
+    <!-- Header (preserved for JS, filled by components/header.js, which also creates the language form) -->
     <div id="header" role="navigation" style="display:none;"></div>
 
     <!-- NEW TOP BAR -->
@@ -105,29 +104,8 @@
         </button>
     </nav>
 
-    <!-- Legacy Bootstrap tab nav (visually hidden, keeps JS wiring and Puppeteer clicks intact) -->
-    <div style="position:fixed; opacity:0; top:-200px; left:0; z-index:-1;">
-        <ul class="nav nav-tabs" id="whiskerTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tabProject" data-bs-toggle="tab" data-bs-target="#contentProject"
-                    type="button" role="tab" aria-controls="contentProject" aria-selected="true"
-                    data-i18n="title-project"></button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tabLogs" data-bs-toggle="tab" data-bs-target="#contentLogs" type="button"
-                    role="tab" aria-controls="contentLogs" aria-selected="false" data-i18n="title-console"></button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tabModelEditor" data-bs-toggle="tab" data-bs-target="#contentModelEditor"
-                    type="button" role="tab" aria-controls="contentModelEditor" aria-selected="false"
-                    data-i18n="title-model"></button>
-            </li>
-        </ul>
-    </div>
-
     <div class="tab-content container-fluid" id="whiskerTabContent">
-        <div class="tab-pane tabBorder fade show active" id="contentProject" role="tabpanel"
-            aria-labelledby="tabProject">
+        <div class="tab-pane tabBorder fade show active" id="contentProject" role="tabpanel">
             <div class="whisker-workspace-split">
                 <!-- Left: Config Panel (30%) -->
                 <div class="whisker-config-panel" id="whisker-config-panel">
@@ -633,7 +611,7 @@
                         <!-- Scratch project -->
                         <div id="scratch-project" class="row">
                             <div id="whisker-viewport-col" class="col-lg-6">
-                                <b><label id="your-project-label" data-i18n="your-project"></label></b>
+                                <b><label data-i18n="your-project"></label></b>
                                 <div class="help-tooltip">
                                     <a href="#project-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
                                             alt="help" /></a>
@@ -683,12 +661,11 @@
                                                 <label for="acceleration-factor" id="acceleration"
                                                     data-i18n="acceleration"></label>
                                                 <div id="acceleration-value"></div>
-                                                <label id="seedLabel" data-i18n="[title]t-seed;seed" for="seed"
-                                                    data-toggle="tooltip" data-placement="top"
-                                                    data-animation="false"></label>
+                                                <label data-i18n="[title]t-seed;seed" for="seed" data-toggle="tooltip"
+                                                    data-placement="top" data-animation="false"></label>
                                             </div>
                                             <div class="row save-states-row">
-                                                <span id="use-save-states-label" data-i18n="use-save-states"></span>
+                                                <span data-i18n="use-save-states"></span>
                                                 <label class="switch">
                                                     <input id="use-save-states" type="checkbox" autocomplete="off">
                                                     <span class="slider round"></span>
@@ -1302,7 +1279,7 @@
                 </div>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel" aria-labelledby="tabLogs">
+        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel">
             <!-- TAP13 output -->
             <div id="output-run" class="mt-4 spacer50">
                 <b><label id="tap-header" data-i18n="header:tap"></label></b>
@@ -1373,7 +1350,7 @@
                 </form>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="tabModelEditor">
+        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel">
             <!-- Model editor -->
             <div id="model-editor" class="mt-4 spacer10">
                 <h3 data-i18n="modelEditor:title"></h3>
@@ -1425,7 +1402,7 @@
                                         data-i18n="no-file"></label>
                                 </div>
                                 <div class="form-group">
-                                    <small id="help-text4" class="form-text text-muted" data-i18n="choose-file"></small>
+                                    <small class="form-text text-muted" data-i18n="choose-file"></small>
                                 </div>
                             </div>
                         </div>
@@ -1699,17 +1676,17 @@
                 <!-- Buttons belonging to model editor -->
                 <div class="col-lg-12 spacer50">
 
-                    <!-- Load tests button -->
+                    <!-- Load models button -->
                     <button id="model-editor-apply" type="button" class="btn btn-sm btn-main vm-related"
                         data-toggle="tooltip" data-placement="top" data-animation="false"
                         data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
 
-                    <!-- Download tests button -->
+                    <!-- Download program model button -->
                     <button id="model-editor-save-model" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
                         data-placement="top" data-animation="false"
                         data-i18n="[title]modelEditor:t-save-model;modelEditor:save-model;"></button>
 
-                    <!-- Download tests button -->
+                    <!-- Download user model button -->
                     <button id="model-editor-save-user-model" type="button" class="btn btn-sm btn-main"
                         data-toggle="tooltip" data-placement="top" data-animation="false"
                         data-i18n="[title]modelEditor:t-save-user-model;modelEditor:save-user-model;"></button>
@@ -1830,15 +1807,12 @@
                 btn.classList.remove('active');
             });
             clickedBtn.classList.add('active');
-            var legacyTabMap = {
-                'contentProject': 'tabProject',
-                'contentLogs': 'tabLogs',
-                'contentModelEditor': 'tabModelEditor'
-            };
-            var legacyId = legacyTabMap[targetContentId];
-            if (legacyId) {
-                var legacyTab = document.getElementById(legacyId);
-                if (legacyTab) legacyTab.click();
+            document.querySelectorAll('#whiskerTabContent > .tab-pane').forEach(function (pane) {
+                pane.classList.toggle('active', pane.id === targetContentId);
+                pane.classList.toggle('show', pane.id === targetContentId);
+            });
+            if (window.Whisker && window.Whisker.updateFilenameLabels) {
+                window.Whisker.updateFilenameLabels();
             }
             if (targetContentId === 'contentProject') {
                 var mode = clickedBtn.id === 'whisker-tab-editor' ? 'editor'
