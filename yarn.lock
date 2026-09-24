@@ -9710,9 +9710,9 @@ scratch-audio@0.1.0-prerelease.20200528195344:
     minilog "^3.0.1"
     startaudiocontext "1.2.1"
 
-"scratch-blocks@git+https://gitlab.infosun.fim.uni-passau.de/se2/scratch/interrogative-debugging/scratch-blocks.git#develop":
+"scratch-blocks@git+https://gitlab+deploy-token-48:gldt-mTVBSs1uZHiH1RnEXrec@gitlab.infosun.fim.uni-passau.de/se2/scratch/interrogative-debugging/scratch-blocks.git#develop":
   version "1.1.210-se2"
-  resolved "git+https://gitlab.infosun.fim.uni-passau.de/se2/scratch/interrogative-debugging/scratch-blocks.git#39e6fd305c6128a8332e1fda835a078900e567b4"
+  resolved "git+https://gitlab+deploy-token-48:gldt-mTVBSs1uZHiH1RnEXrec@gitlab.infosun.fim.uni-passau.de/se2/scratch/interrogative-debugging/scratch-blocks.git#39e6fd305c6128a8332e1fda835a078900e567b4"
   dependencies:
     exports-loader "^0.7.0"
     google-closure-library "^20190301.0.0"
