@@ -400,6 +400,7 @@ class TestTable {
         test.translatedTestResult = null;
         test.error = null;
         test.log = null;
+        test.details = null;
     }
 
 
@@ -419,6 +420,54 @@ class TestTable {
         const tests = this.dataTable.data();
         tests[test.index - 1] = test;
         this.setTests(tests);
+    }
+
+    /**
+     * Shows a spinner in the rows of the networks that are about to run.
+     * @param {string[]} names The names of the networks.
+     */
+    showNetworkRuns(names) {
+        if (names.length === 0) {
+            return;
+        }
+        const rows = this.dataTable.data().toArray();
+        rows.filter(row => names.includes(row.name)).forEach(row => {
+            this.resetRunData(row);
+            row.isRunning = true;
+        });
+        this.setTests(rows);
+    }
+
+    /**
+     * Shows each network's coverage, marked as failed if it was flagged as running on a mutant.
+     * @param {string[]} names The names of the networks, in the order they ran.
+     * @param {AgentSuiteResults[]} results The result of each of those networks.
+     */
+    setNetworkResults(names, results) {
+        const rows = this.dataTable.data().toArray();
+        names.forEach((name, i) => {
+            const row = rows.find(r => r.name === name);
+            const result = results[i];
+            if (!row || !result) {
+                return;
+            }
+            const status = result.isMutant ? Test.FAIL : Test.PASS;
+            row.isRunning = false;
+            row.testResultClass = status;
+            row.testResultSign = result.isMutant ? FAIL_SIGN : PASS_SIGN;
+            row.translatedTestResult = index.i18n.t(status);
+            const percent = fraction => `${Math.round(fraction * 100)}%`;
+            // Shown when the row is expanded.
+            row.details = {
+                'Statement coverage': `${percent(result.statementCoverageAgent)} (suite: ${percent(result.statementCoverageSuite)})`,
+                'Branch coverage': `${percent(result.branchCoverageAgent)} (suite: ${percent(result.branchCoverageSuite)})`,
+                'Won': result.wonAgent ? 'yes' : 'no',
+                'Score': result.score,
+                'Play time': `${(result.playTime / 1000).toFixed(1)} s`,
+                'Flagged as mutant': result.isMutant ? 'yes' : 'no'
+            };
+        });
+        this.setTests(rows);
     }
 
     updateAfterAbort() {
@@ -449,6 +498,11 @@ class TestTable {
         this.dataTable = this.table.DataTable({
             createdRow: function (row, data, _dataIndex) {
                 $(row).addClass(data.testResultClass);
+                // The debugger replays the static test code, which a network doesn't have.
+                if (data.type === 'network') {
+                    $(row).find('.debug-test')
+                        .remove();
+                }
             },
             data: TestTable.prepareTests(tests),
             columns: [
@@ -513,7 +567,7 @@ class TestTable {
 
             autoWidth: false,
             dom: '<"row test-table-rows-wrapper"<"col-sm-12"tr>>' +
-                 '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
+                '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
 
             search: {
                 smart: true
@@ -608,9 +662,15 @@ class TestTable {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(test, 'log') && test.log.length) {
+        if (test.log && test.log.length) {
             const log = index.i18n.t('log');
             result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
+        }
+
+        if (test.details) {
+            for (const [label, value] of Object.entries(test.details)) {
+                result += `<tr><td>${label}</td><td>${value}</td></tr>`;
+            }
         }
 
         result += `</tbody> </table>`;

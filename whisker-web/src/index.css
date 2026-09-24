@@ -1170,6 +1170,10 @@ tr td:nth-child(5) {
     border: none;
 }
 
+.child-table {
+    width: 100%;
+}
+
 .child-table>tbody>tr {
     border-left: none;
     border-right: none;

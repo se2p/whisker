@@ -265,6 +265,10 @@ export class StatisticsCollector {
         this._networkSuiteResults.push(results);
     }
 
+    get agentSuiteResults(): readonly AgentSuiteResults[] {
+        return this._networkSuiteResults;
+    }
+
     set seed(value: number) {
         this._seed = value;
     }

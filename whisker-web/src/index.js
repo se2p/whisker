@@ -4,6 +4,7 @@ import {NeatestSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suite
 import {QSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/QSuiteExecutor';
 import {StateActionRecorder} from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
+import {StatisticsCollector} from 'whisker-main/src/whisker/utils/StatisticsCollector';
 import {FileSaver} from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
 import {Container} from 'whisker-main/src/whisker/utils/Container';
@@ -162,13 +163,32 @@ const loadModelFromString = function (models, userModels) {
     }
 };
 
+// A generated Neuroevolution suite wraps its networks as {Static, Dynamic}; the suite executor wants the Dynamic
+// part ({Configs, Networks}), which is what a saved dynamic.json holds. Returns null if the text isn't JSON.
+const _dynamicSuite = function (suiteText) {
+    try {
+        const suite = JSON.parse(suiteText);
+        return suite.Dynamic || suite;
+    } catch (e) {
+        return null;
+    }
+};
+
+// One table row per network; each is run through the suite executor (see runSingleNetwork).
+const _networkRows = function (dynamicSuite) {
+    return Object.keys((dynamicSuite && dynamicSuite.Networks) || {})
+        .map(name => ({name, description: '', categories: [], type: 'network'}));
+};
+
 const loadTestsFromString = async function (string) {
     // Check for Neuroevolution TestSuites.
     const testString = `${string}`;
     if ((testString.includes('"Static":') && testString.includes('"Dynamic":')) ||
         (testString.toLowerCase().includes('network') && testString.toLowerCase().includes('nodes'))) {
-        Whisker.tests = testString;
+        const dynamicSuite = _dynamicSuite(testString);
+        Whisker.tests = dynamicSuite ? JSON.stringify(dynamicSuite) : testString;
         Whisker.testEditor.setValue(string);
+        Whisker.testTable.setTests(_networkRows(dynamicSuite));
         return testString;
     }
 
@@ -584,8 +604,30 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     return [coveragePerTest, timingsPerTest];
 };
 
+// The one network of a Neuroevolution suite that is being run on its own (see runSingleNetwork), if any.
+let singleNetwork = null;
+
+const _networkNames = suiteText => Object.keys(JSON.parse(suiteText).Networks);
+
+// The suite to execute: the loaded one, or only the single network picked to run alone.
+const _suiteToRun = function () {
+    if (singleNetwork === null) {
+        return Whisker.tests;
+    }
+    const suite = JSON.parse(Whisker.tests);
+    return JSON.stringify({...suite, Networks: {[singleNetwork]: suite.Networks[singleNetwork]}});
+};
+
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
+
+    // Several networks run one after another, each on its own.
+    if (singleNetwork === null && Whisker.tests && _isNeatestSuite() && _networkNames(Whisker.tests).length > 1) {
+        for (const name of _networkNames(Whisker.tests)) {
+            await runSingleNetwork({name}); // eslint-disable-line no-use-before-define
+        }
+        return;
+    }
 
     const durationValue = Number(document.querySelector('#model-duration').value);
     Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
@@ -616,6 +658,9 @@ const runAllTests = async function () {
     if (Whisker.tests && _isAgentSuite()) {
         let coverage;
         let summary;
+        const networkNames = _isNeatestSuite() ? _networkNames(_suiteToRun()) : [];
+        const resultsBefore = StatisticsCollector.getInstance().agentSuiteResults.length;
+        Whisker.testTable.showNetworkRuns(networkNames);
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
 
@@ -630,7 +675,8 @@ const runAllTests = async function () {
             const mutantDownload = document.querySelector('#container').downloadMutants;
 
             properties.projectName = Whisker.projectFileSelect.getName();
-            properties.testName = Whisker.testFileSelect.getName();
+            // A suite generated in the app has no test file behind it.
+            properties.testName = Whisker.testFileSelect.hasName() ? Whisker.testFileSelect.getName() : 'generated';
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
@@ -642,13 +688,16 @@ const runAllTests = async function () {
             let suiteExecutor;
             if (_isNeatestSuite()) {
                 suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties,
-                    Whisker.tests);
+                    _suiteToRun());
             } else {
                 const zip = await JSZip.loadAsync(Whisker.tests);
                 suiteExecutor = new QSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties, zip);
             }
 
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
+            // The networks' own results come first, ahead of any mutant runs.
+            Whisker.testTable.setNetworkResults(networkNames,
+                StatisticsCollector.getInstance().agentSuiteResults.slice(resultsBefore));
             summary = Container.vmWrapper.getTestResultsSummary();
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
@@ -662,6 +711,7 @@ const runAllTests = async function () {
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csv);
         } finally {
+            Whisker.testTable.updateAfterAbort(); // clears the spinner if the run failed
             _showRunIcon();
             enableVMRelatedButtons();
             accSlider.slider('enable');
@@ -740,6 +790,20 @@ const runTest = async function (test) {
 };
 
 /**
+ * Runs one network of the loaded Neuroevolution suite, by running the suite with only that network in it.
+ *
+ * @param {object} network The network's table row.
+ */
+const runSingleNetwork = async function (network) {
+    singleNetwork = network.name;
+    try {
+        await runAllTests();
+    } finally {
+        singleNetwork = null;
+    }
+};
+
+/**
  * Runs a single test. Detects if it's a Whisker test or a block-based test.
  *
  * @param {object} test The test object to run.
@@ -747,6 +811,8 @@ const runTest = async function (test) {
 const runSingleTest = async function (test) {
     if (test.type && test.type === 'BBT') {
         await runBBTTest(test);
+    } else if (test.type === 'network') {
+        await runSingleNetwork(test);
     } else {
         await runTest(test);
     }
