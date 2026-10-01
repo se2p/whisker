@@ -5,29 +5,32 @@ set -euo pipefail
 COMMIT=$(git rev-parse --short HEAD)
 declare -l BRANCH # Make contents of the variable lowercase
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+linked_dockerfile=0
 
 IMG_TAG="whisker:${BRANCH}-${COMMIT}"
 
-# On Infosun workstations, use a different data root for docker. This avoids cluttering the Linux root partition.
-# On other systems, fall back to regular docker and its default data root location.
-with_local_data_root() {
-    if command -v dockerd-rootless-infosun &>/dev/null; then
-        dockerd-rootless-infosun --data-root "/local/${USER}/docker" -- "$@"
-    else
-        "$@"
-    fi
-}
+# Infosun-specific buildkitd socket location
+systemctl --user start buildkitd.socket
+export BUILDKIT_HOST="unix:///run/user/$(id -u)/buildkit/buildkitd.sock"
+export APPTAINER_TMPDIR="/local/${USER}/apptainer/tmp"
+export APPTAINER_CACHEDIR="/local/${USER}/apptainer/cache"
 
-echo "🔨 Building Whisker Docker image ${IMG_TAG}"
-with_local_data_root docker build . -t "${IMG_TAG}" -f build-for-apptainer.Dockerfile --no-cache
+mkdir -p "${APPTAINER_TMPDIR}" "${APPTAINER_CACHEDIR}"
 
-echo "🔄 Converting to Apptainer SIF"
-with_local_data_root apptainer build "${IMG_TAG}.sif" "docker-daemon://${IMG_TAG}"
+if [ ! -f Dockerfile ]; then
+    # needs to be called Dockerfile for buildkit
+    ln -s build-for-apptainer.Dockerfile Dockerfile
+    linked_dockerfile=1
+fi
 
-echo "🗑 Removing intermediate Docker image..."
-with_local_data_root docker rmi "${IMG_TAG}"
+echo "🔄 Building Apptainer SIF"
+apptainer build "${IMG_TAG}.sif" "buildkit://."
 
-echo "🧹 Cleaning up Docker system..."
-with_local_data_root docker system prune -f
+echo "🧹 Cleaning up..."
+buildctl prune
+
+if [ "${linked_dockerfile}" -eq 1 ]; then
+    unlink Dockerfile
+fi
 
 echo "✅ Whisker image saved: ${IMG_TAG}.sif"

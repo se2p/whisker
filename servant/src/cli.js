@@ -428,7 +428,17 @@ const subCommands = [
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
-        .optionMaxMutants()
+        .optionMaxMutants(),
+
+    newSubCommand('api')
+        .description('starts an HTTP server that provides an API')
+        .requiredOption(
+            '-p, --port <Integer>',
+            'port',
+            (port) => util.processPositiveInt(port),
+            8091
+        )
+        .optionNumberOfJobs()
 ];
 
 // Common configuration for Whisker and all subcommands:
