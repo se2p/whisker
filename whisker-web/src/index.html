@@ -1756,6 +1756,9 @@
             if (viewId === 'whisker-dashboard-view' && window.Whisker && window.Whisker.networkTopology) {
                 window.Whisker.networkTopology.refresh();
             }
+            if (viewId === 'whisker-dashboard-view' && window.Whisker && window.Whisker.sourceCode) {
+                window.Whisker.sourceCode.refresh();
+            }
         }
 
         function _applyProjectLayout(mode) {

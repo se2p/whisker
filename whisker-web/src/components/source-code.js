@@ -2,7 +2,8 @@
 // the covered/targeted statements highlighted (see block-workspace.js).
 const Modal = require('./modal');
 const {
-    createWorkspace, renderTarget, highlightBlocks, effectiveHighlight, MIN_RENDER_INTERVAL_MS, coverageTitle
+    createWorkspace, renderTarget, resizeWorkspace, highlightBlocks, effectiveHighlight, MIN_RENDER_INTERVAL_MS,
+    coverageTitle
 } = require('./block-workspace');
 
 const TEXT = {
@@ -37,6 +38,12 @@ class SourceCode {
 
     startEmpty() {
         this.reset();
+    }
+
+    // The card may have been updated while hidden (e.g. on the Results tab), in which case Blockly rendered
+    // into a zero-size container and drew nothing. Force a full re-render once it becomes visible again.
+    refresh() {
+        if (this._views.card.workspace) resizeWorkspace(this._views.card.workspace);
     }
 
     _buildUI(container) {

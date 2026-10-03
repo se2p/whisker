@@ -50,6 +50,12 @@ function createWorkspace(container, {scrollable = true} = {}) {
 }
 
 // Clears the workspace and loads every script of `target` at its real recorded position.
+// Blockly caches its SVG root's pixel width/height and only recomputes them here. A workspace created (or
+// re-rendered) while its container was display:none gets stuck at 0x0  otherwise
+function resizeWorkspace(workspace) {
+    scratchBlocks.svgResize(workspace);
+}
+
 function renderTarget(workspace, target) {
     workspace.clear();
     const xml = `<xml>${target.blocks.toXML(target.comments)}</xml>`;
@@ -145,6 +151,7 @@ function coverageTitle(title, {covered, total}) {
 module.exports = {
     createWorkspace,
     renderTarget,
+    resizeWorkspace,
     createBlockRenderer,
     highlightBlocks,
     effectiveHighlight,
