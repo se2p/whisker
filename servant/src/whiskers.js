@@ -2,7 +2,6 @@ const logger = require("./logger");
 const genericPool = require("generic-pool");
 const fs = require("fs");
 const {openNewBrowser, forwardConsoleMessages} = require("./whisker-web");
-const {switchToProjectTab} = require("./common");
 const path = require("path");
 const os = require("os");
 const {clearTimeout} = require("node:timers");
@@ -257,10 +256,6 @@ class Whisker {
             ...opts,
             acceleration: String(opts.acceleration), // Infinity (as number) is not JSON serializable.
         });
-
-        // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
-        // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
-        await switchToProjectTab(this._page, true);
 
         // Page initialization code specific to the current Whisker subcommand.
         await this._pool._initWhiskerOnce(this);

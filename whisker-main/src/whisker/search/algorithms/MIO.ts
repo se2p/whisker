@@ -18,19 +18,21 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {MIOProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {Randomness} from "../../utils/Randomness";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
-import {TestChromosome} from "../../testcase/TestChromosome";
-import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import { Chromosome } from '../Chromosome';
+import { MIOProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { Randomness } from "../../utils/Randomness";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
+import { TestChromosome } from "../../testcase/TestChromosome";
+import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import logger from "../../../util/logger";
-import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import { BranchCoverageFitnessFunction } from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import { Container } from "../../utils/Container";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -243,10 +245,15 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
                 await this.applyLocalSearch(chromosome);
+
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
             this.updateCoverageTimeLine();
+            // Emit coverage and fitness updates to the UI
+            this._emitCoverageUpdate();
+            this._emitCdgUpdate();
+            await this._emitFrontierFitnessUpdate();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
@@ -254,6 +261,29 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`);
         }
         return this._archiveCovered;
+    }
+
+    /**
+     * Reports best/average heuristic value towards every currently uncovered target with at least one
+     * archived candidate, rather than a single value. Heuristic is higher-is-better (range [0, 1]).
+     */
+    private async _emitFrontierFitnessUpdate(): Promise<void> {
+        const activeTargets = [...this._archiveUncovered.keys()];
+        await this._emitFrontierUpdate(
+            activeTargets,
+            key => this._archiveUncovered.get(key).map(tuple => tuple.heuristicValue),
+            scores => Math.max(...scores),
+            this._archiveCovered,
+            1
+        );
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and every objective with at least
+     * one archived (uncovered) candidate.
+     */
+    protected override _emitCdgUpdate(): void {
+        emitCdgUpdate(Container.cdg, this._mapKeysToNodeIds(this._archiveUncovered.keys()));
     }
 
     /**
@@ -373,7 +403,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
                 } else {
                     archiveTuples = [];
                 }
-                const newTuple = {chromosome, heuristicValue};
+                const newTuple = { chromosome, heuristicValue };
                 newTuple.chromosome.targetObjective = this._fitnessFunctions.get(fitnessFunctionKey);
                 // Do not add duplicates in any population!
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
@@ -405,7 +435,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
      * @return boolean determining if the tupleList already contains the tupleToAdd
      */
     private tuplesContainChromosome(tupleList: Heuristic<C>[],
-                                    tupleToAdd: Heuristic<C>): boolean {
+        tupleToAdd: Heuristic<C>): boolean {
         const chromosomeToAdd = tupleToAdd.chromosome as unknown as TestChromosome;
         const genesToAdd = JSON.stringify(chromosomeToAdd.getGenes());
         for (const tuple of tupleList) {
@@ -445,7 +475,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
         let worstTuple: Heuristic<C>;
         let worstHeuristicValue = 1;
         for (const tuple of chromosomeHeuristicTuples) {
-            const {chromosome, heuristicValue} = tuple;
+            const { chromosome, heuristicValue } = tuple;
             if (worstTuple == undefined ||
                 heuristicValue < worstHeuristicValue ||
                 (heuristicValue === worstHeuristicValue &&

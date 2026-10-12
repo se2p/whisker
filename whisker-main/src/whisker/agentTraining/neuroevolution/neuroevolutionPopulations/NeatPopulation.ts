@@ -478,6 +478,27 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
+     * Returns the fittest network within the given array of networks. Unlike sortPopulation(), this does
+     * not reorder the array - callers use this just to answer "who is fittest" without side effects.
+     * @param networks the networks to search - must not be empty.
+     * @returns the network with the highest fitness value.
+     */
+    public static getFittest(networks: NeatChromosome[]): NeatChromosome {
+        return networks.reduce((a, b) => b.fitness > a.fitness ? b : a, networks[0]);
+    }
+
+    /**
+     * Returns the network with the highest coverage score towards a given target, within the given array.
+     * @param networks the networks to search - must not be empty.
+     * @param targetKey the key of the target objective to compare coverage scores for.
+     */
+    public static getBestForTarget(networks: NeatChromosome[], targetKey: number): NeatChromosome {
+        return networks.reduce((a, b) =>
+            (b.coverageObjectives.get(targetKey) ?? 0) > (a.coverageObjectives.get(targetKey) ?? 0) ? b : a,
+            networks[0]);
+    }
+
+    /**
      * Sorts all currently existent species according to their number of expected offspring in decreasing order.
      */
     protected sortSpecies(): void {

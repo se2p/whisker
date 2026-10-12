@@ -70,9 +70,8 @@ async function evaluateProjects(pool, projects, testPath) {
         logger.info(`Testing project: ${project}`);
         const start = Date.now();
 
-        await (await page.$('#tabUpload')).click();
         await (await page.$('#fileselect-project')).uploadFile(project);
-        await (await page.$('#tabProject')).click();
+        await (await page.$('#whisker-tab-search')).evaluate(t => t.click());
         await (await page.$('#run-all-tests')).click();
 
         const log = await getOutputLogWhenBBTTestsAreDone(page, true);

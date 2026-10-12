@@ -18,13 +18,13 @@
  *
  */
 
-import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {Container} from "./Container";
-import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
+import { StatementFitnessFunction } from "../testcase/fitness/StatementFitnessFunction";
+import { Container } from "./Container";
+import { BranchCoverageFitnessFunction } from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
-import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
-import {modelCsvHeader, ModelResult, modelResultToCsvData} from "../../test-runner/model-result";
-import {TestCase} from "../core/TestCase";
+import { IllegalArgumentException } from "../core/exceptions/IllegalArgumentException";
+import { modelCsvHeader, ModelResult, modelResultToCsvData } from "../../test-runner/model-result";
+import { TestCase } from "../core/TestCase";
 
 
 /**
@@ -134,6 +134,10 @@ export class StatisticsCollector {
 
     set statements(value: Map<StatementFitnessFunction, number>) {
         this._statements = value;
+    }
+
+    get statements(): Map<StatementFitnessFunction, number> {
+        return this._statements;
     }
 
     set branches(value: Map<BranchCoverageFitnessFunction, number>) {
@@ -261,6 +265,10 @@ export class StatisticsCollector {
         this._networkSuiteResults.push(results);
     }
 
+    get agentSuiteResults(): readonly AgentSuiteResults[] {
+        return this._networkSuiteResults;
+    }
+
     set seed(value: number) {
         this._seed = value;
     }
@@ -301,11 +309,11 @@ export class StatisticsCollector {
             "bestTestSuiteSize", "fitnessEvaluations", "generatedTestsForFullCoverage", "searchTimeForFullCoverage"];
         const headerRow = headers.join(",").concat(",", coverageHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount,
-            this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
-            this._isWinningStateCovered(), this._iterationCount, this._testEventCount, this._eventsCount,
-            this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime,
-            this._bestTestSuiteSize, this._evaluations, this._createdTestsToReachFullCoverage,
-            this._timeToReachFullCoverage];
+        this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
+        this._isWinningStateCovered(), this._iterationCount, this._testEventCount, this._eventsCount,
+        this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime,
+        this._bestTestSuiteSize, this._evaluations, this._createdTestsToReachFullCoverage,
+        this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }
@@ -327,8 +335,8 @@ export class StatisticsCollector {
         const headers = ["projectName", "configName", "seed", "statements", "statementCoverage", "branches",
             "branchCoverage", 'timeToFullCoverage', "won", "iterations", "evaluations"];
         const data = [this._projectName, this._configName, this._seed, this._statements.size,
-            this._statementCoverage, this._branches.size, this._branchCoverage, this._timeToReachFullCoverage,
-            this._isWinningStateCovered(), this._iterationCount, this._evaluations];
+        this._statementCoverage, this._branches.size, this._branchCoverage, this._timeToReachFullCoverage,
+        this._isWinningStateCovered(), this._iterationCount, this._evaluations];
 
         // Combine the header and data arrays
         const headerCombined = headers.join(",").concat(",", fitnessHeaders);
@@ -345,11 +353,11 @@ export class StatisticsCollector {
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.agentName, testResult.agentID, testResult.seed,
-                testResult.statements, testResult.statementCoverageAgent, testResult.statementCoverageSuite,
-                testResult.branches, testResult.branchCoverageAgent, testResult.branchCoverageSuite,
-                testResult.wonAgent, testResult.wonSuite,
-                testResult.score, testResult.playTime, testResult.isMutant,
-                ...modelResultToCsvData(testResult.modelResult)
+            testResult.statements, testResult.statementCoverageAgent, testResult.statementCoverageSuite,
+            testResult.branches, testResult.branchCoverageAgent, testResult.branchCoverageSuite,
+            testResult.wonAgent, testResult.wonSuite,
+            testResult.score, testResult.playTime, testResult.isMutant,
+            ...modelResultToCsvData(testResult.modelResult)
             ];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
@@ -365,7 +373,7 @@ export class StatisticsCollector {
      * @return Array containing the formatted header and body of the coverage timeline for the respective csv row.
      */
     private _getPaddedTimeLineData(sampleStepSize: number, timelineData: Map<number, CoverageGroup>,
-                                   maxTimeStep?: number): [number[], string[]] {
+        maxTimeStep?: number): [number[], string[]] {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
         const timestamps = [...timelineData.keys()].sort((a, b) => a - b);
         const timelineValues = timestamps.map((ts) => Object.values(timelineData.get(ts)).join('|'));
@@ -481,6 +489,14 @@ export class StatisticsCollector {
         );
     }
 
+    /**
+     * CDG node ids of every covered statement. Used by the CDG report so it colours nodes and counts
+     * coverage by statement, whether the run's objective is statement or branch coverage.
+     */
+    public getCoveredStatementNodeIds(): Set<string> {
+        return new Set([...this.getCoveredStatements()].map(st => String(st.getTargetNode().id)));
+    }
+
     private _isWinningStateCovered(): string {
         const coveredStatements = this.getCoveredStatements();
         const winningState = this.getWinningStateForProject(this._projectName);
@@ -515,6 +531,15 @@ export class StatisticsCollector {
         this._startTime = Date.now();
         this._projectName = this._unknownProject;
         this._configName = this._unknownConfig;
+        this.resetCoverage();
+    }
+
+    /* 
+    * Resets branch and statement coverage to ensure these values don't persist on restarting test generation
+    */
+    public resetCoverage(): void {
+        this._branchCoverage = 0;
+        this._statementCoverage = 0;
     }
 }
 

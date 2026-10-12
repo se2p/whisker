@@ -1,17 +1,18 @@
-import {NEAT} from "./NEAT";
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperties";
-import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
-import {NeatestPopulation} from "../neuroevolutionPopulations/NeatestPopulation";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import { NEAT } from "./NEAT";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { SearchAlgorithmProperties } from "../../../search/SearchAlgorithmProperties";
+import { NeatPopulation } from "../neuroevolutionPopulations/NeatPopulation";
+import { NeatestPopulation } from "../neuroevolutionPopulations/NeatestPopulation";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../../utils/Arrays";
-import {OneOfStoppingCondition} from "../../../search/stoppingconditions/OneOfStoppingCondition";
-import {OptimalSolutionStoppingCondition} from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {Container} from "../../../utils/Container";
-import {NeatestParameter} from "../hyperparameter/NeatestParameter";
+import { OneOfStoppingCondition } from "../../../search/stoppingconditions/OneOfStoppingCondition";
+import { OptimalSolutionStoppingCondition } from "../../../search/stoppingconditions/OptimalSolutionStoppingCondition";
+import { Container } from "../../../utils/Container";
+import { emitCdgUpdate } from "../../../utils/ReportingEvents";
+import { NeatestParameter } from "../hyperparameter/NeatestParameter";
 import logger from "../../../../util/logger";
-import {TargetObjectiveSelection} from "../misc/TargetObjectiveSelection";
+import { TargetObjectiveSelection } from "../misc/TargetObjectiveSelection";
 
 export class Neatest extends NEAT {
 
@@ -48,16 +49,20 @@ export class Neatest extends NEAT {
     private _switchedObjectives = new Set<StatementFitnessFunction>();
 
 
+
     /**
      * Searches for a suite of networks that are able to cover all objectives of a given Scratch program reliably.
      * @returns Mapping of an objective's key to the network capable of reaching the given objective reliably.
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
+        // Sets up the REQUEST_TOPOLOGY_GEN/REQUEST_SPECIES_TOPOLOGY_GEN listeners for this run (see NEAT).
+        this._initTopologyHistory();
         this.initialise();
         const totalNumObjectives = this._fitnessFunctions.size;
         while (this._archive.size != totalNumObjectives && !(await this._stoppingCondition.isFinished(this))) {
             const currentTarget = this._setNextObjective();
             logger.debug(`Next objective ${this._archive.size}/${totalNumObjectives}:${currentTarget}`);
+            this._emitCdgUpdate();
             this._population = this.getPopulation();
             await this._population.generatePopulation();
             this._targetIterations = 0;
@@ -68,11 +73,14 @@ export class Neatest extends NEAT {
                 // Stop if we managed to cover the current target objective.
                 if (this._archive.has(this._targetKey)) {
                     logger.debug(`Covered Target Objective ${this._targetKey}:${currentTarget}`);
+                    Container.vm?.emit('SPECIES_TARGET_COVERED',
+                        {objectiveKey: this._targetKey, label: currentTarget.toString()});
                     break;
                 }
 
                 // Update the population, report the current status to the user and evolve the population.
                 this._population.updatePopulationStatistics();
+
 
                 // Switch if we stopped improving for a set number of generations.
                 const remainingTargets = this._getUncoveredObjectives()
@@ -81,6 +89,8 @@ export class Neatest extends NEAT {
                     && remainingTargets.length > 0) {
                     this._switchedObjectives.add(currentTarget);
                     logger.debug("Switching Target " + currentTarget.getNodeId() + " due to missing improvement.");
+                    Container.vm?.emit('SPECIES_TARGET_ABANDONED',
+                        {objectiveKey: this._targetKey, label: currentTarget.toString()});
                     break;
                 }
 
@@ -201,6 +211,14 @@ export class Neatest extends NEAT {
                 logger.debug(`Covered Objective ${fitnessFunctionKey}:${fitnessFunction}`);
                 coveredNewObjective = true;
                 this._archive.set(fitnessFunctionKey, network);
+                // A network can incidentally cover other objectives while playing towards its current
+                // target; only report the target we are actually tracking, not every incidental one.
+                if (this._shouldRecordCoveredTopology(fitnessFunctionKey)) {
+                    this._emitFitnessUpdate(network.fitness, this._population.averageFitness,
+                        fitnessFunction.toString());
+                    this._emitCoveredNetworkTopology(fitnessFunctionKey, network);
+                    this._emitCoveredSpeciesTopology(fitnessFunctionKey, this._population, network);
+                }
                 this.updateBestIndividualAndStatistics();
             }
         }
@@ -289,6 +307,9 @@ export class Neatest extends NEAT {
         logger.debug(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         logger.debug("\n-----------------------------------------------------\n");
+        this._emitSpeciesTopologies(this._population);
+        this._emitFitnessUpdate(this._population.bestFitness, this._population.averageFitness,
+            this._fitnessFunctionMap.get(this._targetKey)?.toString());
     }
 
     /**
@@ -299,6 +320,9 @@ export class Neatest extends NEAT {
         StatisticsCollector.getInstance().iterationCount = this._iterations;
 
         this.updateCoverageTimeLine();
+        this._emitNetworkTopology();
+        this._emitCoverageUpdate();
+        this._emitCdgUpdate();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -370,5 +394,35 @@ export class Neatest extends NEAT {
             }
         }
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
+    }
+
+    // Methods for reporting data to the UI
+
+    /**
+     * Whether a just-covered objective should be reported to the UI as "covered". Neatest only tracks its
+     * one current target at a time, so an incidentally covered objective (see updateArchive()) is not
+     * reported here but only when it matches that target.
+     */
+    protected _shouldRecordCoveredTopology(key: number): boolean {
+        return key === this._targetKey;
+    }
+
+    /**
+     * Reports the population's fittest network's topology to the UI.
+     */
+    protected override _emitNetworkTopology(): void {
+        if (!Container.vm || !this._population || this._population.networks.length === 0) return;
+        const best = NeatPopulation.getFittest(this._population.networks);
+        this._emitNetworkTopologySnapshot(best);
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and the single objective Neatest is
+     * currently targeting.
+     */
+    protected override _emitCdgUpdate(): void {
+        const target = this._fitnessFunctionMap.get(this._targetKey);
+        const targetedKeys = target ? new Set([String(target.getTargetNode().id)]) : new Set<string>();
+        emitCdgUpdate(Container.cdg, targetedKeys);
     }
 }

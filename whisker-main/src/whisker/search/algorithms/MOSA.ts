@@ -18,17 +18,19 @@
  *
  */
 
-import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {Randomness} from "../../utils/Randomness";
-import {Selection} from "../Selection";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import { GeneticAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { Randomness } from "../../utils/Randomness";
+import { Selection } from "../Selection";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { LocalSearch } from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
-import {Chromosome} from "../Chromosome";
+import { Chromosome } from "../Chromosome";
+import { Container } from "../../utils/Container";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -159,6 +161,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             await this._applyLocalSearch(parentPopulation);
             this._iterations++;
             this.updateStatistics();
+            // emit fitness to the UI
+            await this._emitFrontierFitnessUpdate(parentPopulation);
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
@@ -317,11 +321,39 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
+        // emit coverage updates to the UI
+        this._emitCoverageUpdate();
+        this._emitCdgUpdate();
     }
 
     setFitnessFunction(): void {
         throw new Error('Method not implemented.');
     }
+    /**
+     * Reports best/average fitness-distance towards every currently active (non-optimised) target, rather
+     * than a single value. Distance is lower-is-better.
+     */
+    private async _emitFrontierFitnessUpdate(population: C[]): Promise<void> {
+        if (population.length === 0) return;
+        const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
+        await this._emitFrontierUpdate(
+            activeTargets,
+            key => Promise.all(population.map(chromosome => this._fitnessFunctions.get(key)!.getFitness(chromosome))),
+            scores => Math.min(...scores),
+            this._archive,
+            0
+        );
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and every objective still being
+     * optimised.
+     */
+    protected override _emitCdgUpdate(): void {
+        const activeTargets = this._nonOptimisedObjectives.filter(key => !this._archive.has(key));
+        emitCdgUpdate(Container.cdg, this._mapKeysToNodeIds(activeTargets));
+    }
+
 
     /**
      * Compares the given chromosomes based on their fitness towards a coverage objective.
@@ -333,7 +365,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * a negative value if the second chromosome is better, and 0 if they are equal.
      */
     private async _compareChromosomes(chromosome1: Chromosome, chromosome2: Chromosome,
-                                      objective: FitnessFunction<Chromosome>): Promise<number> {
+        objective: FitnessFunction<Chromosome>): Promise<number> {
         const fitness1 = await chromosome1.getFitness(objective);
         const fitness2 = await chromosome2.getFitness(objective);
         const compareValue = objective.compare(fitness1, fitness2);

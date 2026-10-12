@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Whisker</title>
-    <link rel="icon" type="image/png" href="assets/favicon_whisker.png"/>
-    <link rel="stylesheet" href="whisker-gui.css"/>
+    <link rel="icon" type="image/png" href="assets/favicon_whisker.png" />
+    <link rel="stylesheet" href="whisker-gui.css" />
     <script defer src="whisker-gui.js"></script>
     <script src="includes/bootstrap.js"></script>
     <script type="text/javascript" src="includes/jquery-1.4.3.min.js"></script>
@@ -17,12 +17,12 @@
     <link rel="stylesheet" href="includes/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
 
     <script> // This should be executed before anything else to prevent loading the whole page twice
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has("lng")) {
-        params.set("lng", "de");
-        const base = window.location.pathname
-        window.location.href = base + '?' + params.toString();
-    }
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has("lng")) {
+            params.set("lng", "de");
+            const base = window.location.pathname
+            window.location.href = base + '?' + params.toString();
+        }
     </script>
 </head>
 
@@ -30,482 +30,1246 @@
 
     <!-- Holds additional data such as the selected mutation operators -->
     <div id="container"></div>
+    <!-- Header (preserved for JS, filled by components/header.js, which also creates the language form) -->
+    <div id="header" role="navigation" style="display:none;"></div>
 
-    <!-- Main functionality buttons -->
-    <div id="main-functionality">
-        <!-- Run all tests button -->
-        <button id="run-all-tests" class="btn btn-main vm-related" type="button"
-                data-toggle="tooltip" data-placement="top" data-animation="false"
-                data-i18n="[title]t-tests">
-            <i id="run-tests-icon" class="fas fa-play"></i>
-            <i id="stop-tests-icon" class="fas fa-stop hide"></i>
-        </button>
-        <!-- Reset program button -->
-        <button id="reset" class="btn btn-main vm-related" type="button"
-                data-toggle="tooltip" data-placement="top" data-animation="false"
-                data-i18n="[title]t-reset;">
-            <i class="fas fa-undo"></i>
-        </button>
-        <!-- Load tests button -->
-        <button id="applyChanges" class="editor-apply btn btn-main" type="button"
-                data-toggle="tooltip" data-placement="top" data-animation="false"
-                onclick="_removeTestClass()" data-i18n="[title]t-load">
-            <i class="fas fa-sync"></i>
-        </button>
-        <!-- Download tests button -->
-        <button class="editor-save btn btn-main" type="button"
-                data-toggle="tooltip" data-placement="top" data-animation="false"
-                data-i18n="[title]t-save">
-            <i class="fas fa-download"></i>
-        </button>
-        <div class="help-tooltip" style="text-align:center;">
-            <a href="#controls-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-            <span class="help-text" data-i18n="controls-tooltip"></span>
+    <!-- NEW TOP BAR -->
+    <header id="whisker-topbar">
+        <div class="whisker-topbar-logo">
+            <a href="https://www.fim.uni-passau.de/en/chair-for-software-engineering-ii">
+                <img id="small-logo" class="whisker-logo-img" src="assets/whisker-text-logo.png" alt="Whisker" />
+            </a>
         </div>
-        <div style="display:none">
-            <div id="controls-tooltip">
-                <ol>
-                    <li data-i18n="controls-helptext01"></li>
-                    <li data-i18n="controls-helptext02"></li>
-                    <li data-i18n="controls-helptext03"></li>
-                    <li data-i18n="controls-helptext04"></li>
-                </ol>
+        <div class="whisker-topbar-center">
+            <div class="whisker-topbar-upload">
+                <input type="file" class="vm-related" id="fileselect-project" accept=".sb3" name="program-file"
+                    title="" />
+                <label class="whisker-upload-btn" for="fileselect-project">
+                    <i class="fas fa-upload"></i>
+                    <span data-filename data-i18n="topbar-upload-project">Upload .sb3 Project</span>
+                </label>
             </div>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <div id="header" role="navigation"></div>
-    <div style="width:100%; text-align: center;">
-        <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
-            <img id="banner" style="max-width: 1920px;" class="banner" alt="Scratch Items" src=""/>
-        </a>
-    </div>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-9" style="padding-right:0px;">
-                <ul class="nav nav-tabs" id="whiskerTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="tabUpload" data-bs-toggle="tab" data-bs-target="#contentUpload" type="button" role="tab" aria-controls="contentUpload" aria-selected="true" data-i18n="title-uploads"></button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tabProject" data-bs-toggle="tab" data-bs-target="#contentProject" type="button" role="tab" aria-controls="contentProject" aria-selected="false" data-i18n="title-project"></button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tabLogs" data-bs-toggle="tab" data-bs-target="#contentLogs" type="button" role="tab" aria-controls="contentLogs" aria-selected="false" data-i18n="title-console"></button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tabTestEditor" data-bs-toggle="tab" data-bs-target="#contentTestEditor" type="button" role="tab" aria-controls="contentTestEditor" onclick="_manipulateTestEditor()" aria-selected="false" data-i18n="title-editor"></button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tabModelEditor" data-bs-toggle="tab" data-bs-target="#contentModelEditor" type="button" role="tab" aria-controls="contentModelEditor" aria-selected="false" data-i18n="title-model"></button>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-lg-3" style="padding:0px; border-bottom: 1px solid #dee2e6; margin-left:-15px; text-align:right;">
-                <span data-i18n="extended-view"></span>
-                <label class="switch">
-                      <input type="checkbox" id="extendedView" onchange="_updateExtendedView()">
-                      <span class="slider round"></span>
+            <div class="whisker-topbar-upload">
+                <input type="file" class="vm-related" id="fileselect-tests" accept=".js, .json, .sb3" name="test-file"
+                    title="" />
+                <label class="whisker-upload-btn" for="fileselect-tests">
+                    <i class="fas fa-upload"></i>
+                    <span data-filename data-i18n="topbar-upload-tests">Upload Tests</span>
                 </label>
             </div>
         </div>
+        <div class="whisker-topbar-right">
+            <button class="lang-btn" data-lng="de" title="Deutsch">DE</button>
+            <button class="lang-btn" data-lng="en" title="English">EN</button>
+        </div>
+    </header>
+
+    <!-- Fancybox popups triggered programmatically from index.js when a project/test .sb3 is loaded -->
+    <div style="display:none">
+        <a id="project-contains-bbts-tooltip-link" href="#project-contains-bbts-tooltip" class="inlinebox"></a>
+    </div>
+    <div style="display:none">
+        <div id="project-contains-bbts-tooltip">
+            <p data-i18n="project-contains-bbts"></p>
+        </div>
+    </div>
+    <div style="display:none">
+        <a id="no-bbts-tooltip-link" href="#no-bbts-tooltip" class="inlinebox"></a>
+    </div>
+    <div style="display:none">
+        <div id="no-bbts-tooltip">
+            <p data-i18n="test-no-bbts-in-sb3"></p>
+        </div>
     </div>
 
-    <div class="tab-content container" id="whiskerTabContent">
-        <div class="tab-pane tabBorder fade show active" id="contentUpload" role="tabpanel" aria-labelledby="home-tab">
-            <div class="row">
-                <div class="col-lg-12">
-                    <form>
-                        <div class="row">
+    <!-- NEW TAB BAR -->
+    <nav id="whisker-tabbar">
+        <button class="whisker-tab" id="whisker-tab-editor" data-i18n="title-editor"
+            onclick="_switchWhiskerTab('contentProject', this)"> Test Editor </button>
+        <button class="whisker-tab active" id="whisker-tab-search" data-i18n="tab-search"
+            onclick="_switchWhiskerTab('contentProject', this)">
+            Search-Based Testing
+        </button>
+        <button class="whisker-tab" id="whisker-tab-learning" data-i18n="tab-learning"
+            onclick="_switchWhiskerTab('contentProject', this)">
+            Learning-Based Testing
+        </button>
+        <button class="whisker-tab" id="whisker-tab-logs" data-i18n="title-console"
+            onclick="_switchWhiskerTab('contentLogs', this)">
+            Console-Log
+        </button>
+        <button class="whisker-tab" id="whisker-tab-model" data-i18n="title-model"
+            onclick="_switchWhiskerTab('contentModelEditor', this)">
+            Model Editor
+        </button>
+    </nav>
 
-                            <!-- Sb3 upload -->
-                            <div class="col-lg-6">
-                                <div id="file-upload" class="row form">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10 label-padding">
-                                                <b><label id="fileselect-project-label" for="fileselect-project"
-                                                       data-i18n="program"></label></b>
-                                                <div class="help-tooltip">
-                                                    <a href="#upload-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                                    <span class="help-text" data-i18n="upload-tooltip"></span>
-                                                </div>
+    <div class="tab-content container-fluid" id="whiskerTabContent">
+        <div class="tab-pane tabBorder fade show active" id="contentProject" role="tabpanel">
+            <div class="whisker-workspace-split">
+                <!-- Left: Config Panel (30%) -->
+                <div class="whisker-config-panel" id="whisker-config-panel">
+                    <h2 class="whisker-config-title" data-i18n="config-title">Configuration</h2>
 
-                                                <div style="display:none">
-                                                    <div id="upload-tooltip">
-                                                        <ol>
-                                                            <li data-i18n="upload-helptext01"></li>
-                                                            <li data-i18n="upload-helptext02"></li>
-                                                            <li data-i18n="upload-helptext03"></li>
-                                                        </ol>
-                                                        <a href='https://scratch.mit.edu' target='_blank'>Scratch Web-GUI</a>
-                                                        <div style="text-align:center; padding-left: 30px; display:inline-block;">
-                                                            <img src='assets/upload01.png' />
-                                                            <img src='assets/upload02.png' style="padding-left:30px;" />
-                                                        </div>
-                                                    </div>
-                                                </div>
+                    <div id="config-upload">
+                        <div class="config-upload-header">
+                            <p class="whisker-algo-section-label" data-i18n="config-upload-label">Upload algorithm
+                                config</p>
+                            <div class="help-tooltip">
+                                <a class="help-icon"><img src="assets/help.png" alt="help" /></a>
+                                <span class="help-text help-text--up" data-i18n="generation-config-tooltip"></span>
+                            </div>
+                        </div>
+                        <div class="whisker-file-upload">
+                            <input type="file" class="vm-related" id="fileselect-config" accept=".json"
+                                name="config-file" title="" />
+                            <label for="fileselect-config" class="whisker-file-upload-btn">
+                                <i class="fas fa-file-upload"></i>
+                                <span id="config-label" data-i18n="mio-config">Select config file...</span>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="config-or-divider" data-i18n="config-or-choose">or choose</p>
 
-                                                <div style="display:none">
-                                                    <a id="project-contains-bbts-tooltip-link" href="#project-contains-bbts-tooltip"
-                                                       class="inlinebox"></a>
-                                                </div>
+                    <!-- Search-Based algorithms (default visible) -->
+                    <div id="whisker-search-config">
+                        <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
+                        <div class="whisker-algo-cards">
+                            <button class="whisker-algo-card" data-config-path="config/mio.json">
+                                <span class="whisker-algo-name">MIO</span>
+                                <span class="whisker-algo-desc">Many Independent Objectives</span>
+                            </button>
+                            <button class="whisker-algo-card" data-config-path="config/mosa.json">
+                                <span class="whisker-algo-name">MOSA</span>
+                                <span class="whisker-algo-desc">Many-Objective Sorting Algorithm</span>
+                            </button>
+                            <button class="whisker-algo-card" data-config-path="config/random.json">
+                                <span class="whisker-algo-name">Random</span>
+                                <span class="whisker-algo-desc">Baseline random event generation</span>
+                            </button>
+                            <button class="whisker-algo-card" data-config-path="config/oneplusone.json">
+                                <span class="whisker-algo-name">One Plus One</span>
+                                <span class="whisker-algo-desc">Simple (1+1) evolutionary algorithm</span>
+                            </button>
+                            <button class="whisker-algo-card" data-config-path="config/randomSearch.json">
+                                <span class="whisker-algo-name">Random Search</span>
+                                <span class="whisker-algo-desc">Many-objective random search</span>
+                            </button>
+                        </div>
 
-                                                <div style="display:none">
-                                                    <div id="project-contains-bbts-tooltip">
-                                                        <p data-i18n="project-contains-bbts"></p>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img class="img" src="assets/sb3.png" alt="sb3"/>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                    <input type="file" class="vm-related" id="fileselect-project"
-                                                           accept=".sb3"
-                                                           name="program-file" title=""/>
-                                                    <label id="project-label" class="filename-label"
-                                                           for="fileselect-project"
-                                                           data-i18n="no-file"
-                                                           data-toggle="tooltip" data-placement="top"></label>
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="help-text2a" class="form-text text-muted"
-                                                           data-i18n="choose-file"></small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- Global Settings -->
+                        <div class="whisker-global-settings">
+                            <div class="whisker-settings-row">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" for="cfg-time-budget"
+                                        data-i18n="config-time-budget">Time Budget (s)</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-time-budget"
+                                        value="600" min="1" step="1">
+                                </div>
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" for="cfg-max-events"
+                                        data-i18n="config-max-test-length">Max test length</label>
+                                    <input type="number" required class="whisker-setting-input" id="cfg-max-events"
+                                        value="20" min="1" step="1">
                                 </div>
                             </div>
 
-                            <!-- Test upload -->
-                            <div class="col-lg-6">
-                                <div id="test-upload" class="row form">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10 label-padding">
-                                                <b><label id="fileselect-tests-label" for="fileselect-tests"
-                                                       data-i18n="test" data-animation="false"></label></b>
-                                                <div class="help-tooltip">
-                                                    <a href="#test-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                                    <span class="help-text" data-i18n="test-tooltip"></span>
-                                                </div>
+                            <hr class="whisker-settings-divider">
 
-                                                <div style="display:none">
-                                                    <div id="test-tooltip">
-                                                        <ol>
-                                                            <li data-i18n="test-helptext01"></li>
-                                                            <li data-i18n="test-helptext02"></li>
-                                                            <li data-i18n="test-helptext03"></li>
-                                                        </ol>
-                                                        <div style="text-align:center; padding-left: 30px; display:inline-block;">
-                                                            <img src='assets/test01.png' />
-                                                            <img src='assets/test02.png' style="padding-left:30px;" />
-                                                        </div>
-                                                    </div>
-                                                </div>
+                            <!-- Advanced Config collapsible -->
+                            <button class="whisker-advanced-header">
+                                <span data-i18n="config-advanced">Advanced Config</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="whisker-advanced-body" style="display:none;">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" data-i18n="config-coverage-target">Coverage
+                                        Target</label>
+                                    <div class="whisker-coverage-toggle">
+                                        <button class="whisker-coverage-btn whisker-coverage-btn--active"
+                                            id="cfg-coverage-statement" data-coverage-value="statement"
+                                            data-i18n="config-coverage-statement">Statement</button>
+                                        <button class="whisker-coverage-btn" id="cfg-coverage-branch"
+                                            data-coverage-value="branch"
+                                            data-i18n="config-coverage-branch">Branch</button>
+                                    </div>
+                                </div>
 
-                                                <div style="display:none">
-                                                    <a id="no-bbts-tooltip-link" href="#no-bbts-tooltip"
-                                                       class="inlinebox"></a>
-                                                </div>
-
-                                                <div style="display:none">
-                                                    <div id="no-bbts-tooltip">
-                                                        <p data-i18n="test-no-bbts-in-sb3"></p>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img class="img" src="assets/js.png" alt="js"/>
+                                <!-- Algorithm-specific settings -->
+                                <div id="whisker-algo-settings" class="whisker-algo-settings">
+                                    <div id="cfg-row-minimize" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-minimize">
+                                            <span data-i18n="config-minimize">Minimise test suite</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-assertions" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-assertions">
+                                            <span data-i18n="config-assertions">Generate assertions</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-minimizeAssertions" style="display:none;">
+                                        <label class="whisker-checkbox-row">
+                                            <input type="checkbox" id="cfg-minimizeAssertions">
+                                            <span data-i18n="config-minimize-assertions">Minimise assertions</span>
+                                        </label>
+                                    </div>
+                                    <div id="cfg-row-localSearchExtension" style="display:none;">
+                                        <div class="whisker-checkbox-prob-row">
+                                            <label class="whisker-checkbox-row">
+                                                <input type="checkbox" id="cfg-local-search-extension">
+                                                <span data-i18n="config-local-search-extension">Extension local
+                                                    search</span>
+                                            </label>
+                                            <div id="cfg-ls-ext-prob" class="whisker-prob-group whisker-disabled">
+                                                <span class="whisker-prob-label" data-i18n="config-probability">P
+                                                    =</span>
+                                                <input type="number" required class="whisker-prob-input"
+                                                    id="cfg-ls-ext-prob-val" min="0" max="1" step="0.05" value="0.3">
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                    <input type="file" class="vm-related" id="fileselect-tests"
-                                                           accept=".js, .json, .sb3" name="test-file" title=""/>
-                                                    <label id="tests-label" class="filename-label"
-                                                           for="fileselect-tests"
-                                                           data-i18n="no-file" data-animation="false"></label>
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="help-text2b" class="form-text text-muted"
-                                                           data-i18n="choose-file"></small>
-                                                </div>
+                                    </div>
+                                    <div id="cfg-row-localSearchReduction" style="display:none;">
+                                        <div class="whisker-checkbox-prob-row">
+                                            <label class="whisker-checkbox-row">
+                                                <input type="checkbox" id="cfg-local-search-reduction">
+                                                <span data-i18n="config-local-search-reduction">Reduction local
+                                                    search</span>
+                                            </label>
+                                            <div id="cfg-ls-red-prob" class="whisker-prob-group whisker-disabled">
+                                                <span class="whisker-prob-label" data-i18n="config-probability">P
+                                                    =</span>
+                                                <input type="number" required class="whisker-prob-input"
+                                                    id="cfg-ls-red-prob-val" min="0" max="1" step="0.05" value="0.3">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <div id="model-upload" class="row form">
-                        <div class="col-lg-6">
-                            <div class="row mr-2">
-                                <div class="col-lg-10 label-padding">
-                                    <b><label id="fileselect-model-label" for="fileselect-models"
-                                           data-i18n="model"></label></b>
-                                    <div class="help-tooltip">
-                                        <a href="#model-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                        <span class="help-text" data-i18n="model-tooltip"></span>
-                                    </div>
+                    </div>
 
-                                    <div style="display:none">
-                                        <div id="model-tooltip">
-                                            <ol>
-                                                <li data-i18n="model-helptext01"></li>
-                                                <li data-i18n="model-helptext02"></li>
-                                                <li data-i18n="model-helptext03"></li>
-                                            </ol>
-                                            <div class="spacer20" style="text-align:center; padding-left: 30px; display:inline-block;">
-                                                <img src='assets/model01.png' />
-                                                <img src='assets/model02.png' style="padding-left:30px;" />
-                                            </div>
-                                            <div>
-                                                <ul>
-                                                    <li data-i18n="model-helptext04"></li>
-                                                    <li data-i18n="model-helptext05"></li>
-                                                    <li data-i18n="model-helptext06"></li>
-                                                    <li data-i18n="model-helptext07"></li>
-                                                </ul>
-                                            </div>
+                    <!-- Learning-Based algorithms (hidden until learning tab active) -->
+                    <div id="whisker-learning-config" style="display:none;">
+                        <p class="whisker-algo-section-label" data-i18n="config-algo-label">Algorithm</p>
+                        <select class="whisker-algo-select">
+                            <optgroup label="NEATEST">
+                                <option value="config/Neuroevolution/neatest.json">NEATEST</option>
+                                <option value="config/Neuroevolution/neatestBackprop.json">NEATEST + Backprop</option>
+                                <option value="config/Neuroevolution/cosineNovelty.json">NEATEST — Cosine Novelty
+                                </option>
+                                <option value="config/Neuroevolution/eventNovelty.json">NEATEST — Event Novelty</option>
+                                <option value="config/Neuroevolution/random.json">NEATEST — Random</option>
+                            </optgroup>
+                            <optgroup label="Many-Objective NEATEST">
+                                <option value="config/Neuroevolution/mio.json">MioNeatest</option>
+                                <option value="config/Neuroevolution/mosa.json">MosaNeatest</option>
+                                <option value="config/Neuroevolution/newsd.json">NewsdNeatest</option>
+                            </optgroup>
+                            <optgroup label="NEAT">
+                                <option value="config/Neuroevolution/score.json">NEAT — Score</option>
+                                <option value="config/Neuroevolution/survive.json">NEAT — Survive</option>
+                            </optgroup>
+                            <optgroup label="Reinforcement Learning">
+                                <option value="config/ReinforcementLearning/dql.json">DQL</option>
+                            </optgroup>
+                        </select>
+
+                        <div class="whisker-global-settings">
+                            <div class="whisker-settings-grid">
+                                <div class="whisker-setting-group">
+                                    <label class="whisker-setting-label" data-i18n="config-time-budget">Time Budget
+                                        (s)</label>
+                                    <input type="number" required class="whisker-setting-input"
+                                        id="cfg-learning-timeBudget" value="7200" min="1" step="1"
+                                        data-learning-key="timeBudget">
+                                </div>
+                                <div class="whisker-setting-group" id="cfg-learning-populationSize-group">
+                                    <label class="whisker-setting-label" data-i18n="config-population-size">Population
+                                        Size</label>
+                                    <input type="number" required class="whisker-setting-input"
+                                        id="cfg-learning-populationSize" value="150" min="1" step="1"
+                                        data-learning-key="populationSize">
+                                </div>
+                                <div class="whisker-setting-group" id="cfg-learning-maxArchiveSize-group">
+                                    <label class="whisker-setting-label" data-i18n="config-max-archive-size">Max Archive
+                                        Size</label>
+                                    <input type="number" required class="whisker-setting-input"
+                                        id="cfg-learning-maxArchiveSize" value="20" min="1" step="1"
+                                        data-learning-key="maxArchiveSize">
+                                </div>
+                                <div class="whisker-setting-group" id="cfg-learning-randomSelectionProbability-group">
+                                    <label class="whisker-setting-label" data-i18n="config-random-selection-prob">Random
+                                        Selection Prob.</label>
+                                    <input type="number" required class="whisker-setting-input"
+                                        id="cfg-learning-randomSelectionProbability" value="0.9" min="0" max="1"
+                                        step="0.05" data-learning-key="randomSelectionProbability">
+                                </div>
+                            </div>
+
+                            <hr class="whisker-settings-divider">
+
+                            <div id="cfg-learning-groundTruth-group" style="display:none;">
+                                <p class="whisker-algo-section-label" data-i18n="config-ground-truth">Ground Truth</p>
+                                <div class="whisker-file-upload">
+                                    <input type="file" id="fileselect-ground-truth" accept=".json"
+                                        name="ground-truth-file" />
+                                    <label for="fileselect-ground-truth" class="whisker-file-upload-btn">
+                                        <i class="fas fa-file-upload"></i>
+                                        <span id="ground-truth-filename" data-i18n="ground-truth-select">Select
+                                            recording file...</span>
+                                    </label>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
+                            <div id="cfg-learning-dqlTraining-group" style="display:none;">
+                                <button class="whisker-advanced-header">
+                                    <span data-i18n="config-dql-training">Training</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-learning-rate">Learning Rate</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-learningRate" value="0.001" min="0" step="0.0001"
+                                                data-learning-key="learningRate">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-batch-size">Batch
+                                                Size</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-batchSize" value="16" min="1" step="1"
+                                                data-learning-key="batchSize">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-training-epochs">Epochs</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-trainingEpochs" value="1" min="1" step="1"
+                                                data-learning-key="trainingEpochs">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-training-frequency">Training Frequency</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-trainingFrequency" value="4" min="1" step="1"
+                                                data-learning-key="trainingFrequency">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-gamma">Discount
+                                                Factor (γ)</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-gamma" value="0.99" min="0" max="1" step="0.01"
+                                                data-learning-key="gamma">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-epsilon-end">Epsilon
+                                                End</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-epsilonEnd" value="0.05" min="0" max="1" step="0.01"
+                                                data-learning-key="epsilonEnd">
+                                        </div>
+                                        <div class="whisker-setting-group whisker-settings-full">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-training-optimizer">Optimizer</label>
+                                            <select class="whisker-setting-select" id="cfg-learning-trainingOptimizer"
+                                                data-learning-key="trainingOptimizer">
+                                                <option value="adam">Adam</option>
+                                                <option value="rmsprop">RMSProp</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
-                                    <img class="img" src="assets/json.png" alt="json"/>
-                                </div>
-                                <div class="col">
-                                    <div class="upload-btn-wrapper">
-                                        <button class="btnr" data-i18n="browse"></button>
-                                        <input type="file" id="fileselect-models" accept=".json"
-                                               name="model-file" title="" class="vm-related"/>
-                                        <label id="model-label" class="filename-label"
-                                               for="fileselect-models"
-                                               data-i18n="no-file"></label>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
+                            <div id="cfg-learning-hiddenLayers-group" style="display:none;">
+                                <button class="whisker-advanced-header">
+                                    <span data-i18n="config-hidden-layers">Hidden Layers</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-hidden-layers">
+                                        <div id="cfg-learning-hiddenLayers-container"></div>
+                                        <button type="button" class="whisker-add-layer-btn">
+                                            <i class="fas fa-plus"></i>
+                                            <span data-i18n="config-add-layer">Add Layer</span>
+                                        </button>
                                     </div>
-                                    <div class="form-group">
-                                        <small id="help-text4" class="form-text text-muted"
-                                               data-i18n="choose-file"></small>
+                                </div>
+                                <hr class="whisker-settings-divider">
+                            </div>
+
+                            <div id="cfg-learning-searchOperators-group" style="display:none;">
+                                <button class="whisker-advanced-header">
+                                    <span data-i18n="config-search-operators">Search Operators</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-mutation-add-connection">Add Connection</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-mutationAddConnection" value="0.1" min="0" max="1"
+                                                step="0.01" data-learning-key="mutationAddConnection">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-mutation-add-node">Add Node</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-mutationAddNode" value="0.05" min="0" max="1"
+                                                step="0.01" data-learning-key="mutationAddNode">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-mutate-weights">Mutate Weights</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-mutateWeights" value="0.8" min="0" max="1" step="0.01"
+                                                data-learning-key="mutateWeights">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-perturbation-power">Perturbation Power</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-perturbationPower" value="0.5" min="0" step="0.01"
+                                                data-learning-key="perturbationPower">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-mutate-toggle-enable">Toggle Enable</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-mutateToggleEnableConnection" value="0.05" min="0"
+                                                max="1" step="0.01" data-learning-key="mutateToggleEnableConnection">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-crossover-without-mutation">Crossover w/o
+                                                Mutation</label>
+                                            <input type="number" class="whisker-setting-input"
+                                                id="cfg-learning-crossoverWithoutMutation" value="0.25" min="0" max="1"
+                                                step="0.01" data-learning-key="crossoverWithoutMutation">
+                                        </div>
                                     </div>
                                 </div>
+                                <hr class="whisker-settings-divider">
                             </div>
-                        </div>
-                        <div class="col ml-2  mt-2">
-                            <div class="row">
-                                <div class="col label-padding">
-                                    <label data-i18n="model-duration" for="model-duration"></label>
+
+                            <div id="cfg-learning-speciation-group" style="display:none;">
+                                <button class="whisker-advanced-header">
+                                    <span data-i18n="config-speciation">Speciation</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="whisker-advanced-body" style="display:none;">
+                                    <div class="whisker-settings-grid">
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-num-species">Number
+                                                of Species</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-numberOfSpecies" value="5" min="1" step="1"
+                                                data-learning-key="numberOfSpecies">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-dist-threshold">Distance Threshold</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-distanceThreshold" value="1.0" min="0" step="0.1"
+                                                data-learning-key="distanceThreshold">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-dist-modifier">Distance Modifier</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-distanceModifier" value="0.2" min="0" step="0.01"
+                                                data-learning-key="distanceModifier">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-disjoint-coeff">Disjoint Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-disjointCoefficient" value="3" min="0" step="0.1"
+                                                data-learning-key="disjointCoefficient">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-excess-coeff">Excess
+                                                Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-excessCoefficient" value="3" min="0" step="0.1"
+                                                data-learning-key="excessCoefficient">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-weight-coeff">Weight
+                                                Coefficient</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-weightCoefficient" value="0.4" min="0" step="0.01"
+                                                data-learning-key="weightCoefficient">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-parents-per-species">Parents per Species</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-parentsPerSpecies" value="0.3" min="0" max="1"
+                                                step="0.01" data-learning-key="parentsPerSpecies">
+                                        </div>
+                                        <div class="whisker-setting-group">
+                                            <label class="whisker-setting-label" data-i18n="config-age-significance">Age
+                                                Significance</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-ageSignificance" value="1.0" min="0" step="0.1"
+                                                data-learning-key="ageSignificance">
+                                        </div>
+                                        <div class="whisker-setting-group" id="cfg-learning-penalizingAge-group">
+                                            <label class="whisker-setting-label"
+                                                data-i18n="config-penalizing-age">Penalizing Age</label>
+                                            <input type="number" required class="whisker-setting-input"
+                                                id="cfg-learning-penalizingAge" value="20" min="1" step="1"
+                                                data-learning-key="penalizingAge">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-4" style="padding:0">
-                                    <input type="text" id="model-duration" name="model-duration"
-                                           placeholder="(optional)" class="model-small-input mt-1">
-                                </div>
+                                <hr class="whisker-settings-divider">
                             </div>
-                            <div class="row mt-1">
-                                <div class="col label-padding">
-                                    <label data-i18n="model-repetitions" for="model-repetitions"></label>
-                                </div>
-                                <div class="col-4" style="padding:0">
-                                    <input type="text" id="model-repetitions" name="model-repetitions"
-                                           placeholder="1" class="model-small-input mt-1">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col  mt-2 ml-2">
-                            <div class="row">
-                                <div class="form-group col">
-                                    <div class="mt-1">
-                                        <input id="model-logs-checkbox" class="mt-1" type="checkbox"
-                                               autocomplete="off">
-                                        <label for="model-logs-checkbox"
-                                               data-i18n="model-logs-checkbox"></label>
+
+                            <button class="whisker-advanced-header">
+                                <span data-i18n="config-advanced">Advanced Config</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="whisker-advanced-body" style="display:none;">
+                                <div class="whisker-settings-grid">
+                                    <div class="whisker-setting-group whisker-settings-full"
+                                        id="cfg-learning-coverageTarget-group">
+                                        <label class="whisker-setting-label" data-i18n="config-coverage-target">Coverage
+                                            Target</label>
+                                        <div class="whisker-coverage-toggle">
+                                            <button class="whisker-coverage-btn whisker-coverage-btn--active"
+                                                id="cfg-learning-coverage-statement" data-coverage-value="statement"
+                                                data-i18n="config-coverage-statement">Statement</button>
+                                            <button class="whisker-coverage-btn" id="cfg-learning-coverage-branch"
+                                                data-coverage-value="branch"
+                                                data-i18n="config-coverage-branch">Branch</button>
+                                        </div>
+                                    </div>
+                                    <div class="whisker-setting-group" id="cfg-learning-switchObjectiveCount-group">
+                                        <label class="whisker-setting-label"
+                                            data-i18n="config-switch-objective-count">Switch Objective Count</label>
+                                        <input type="number" required class="whisker-setting-input"
+                                            id="cfg-learning-switchObjectiveCount" value="10" min="1" step="1"
+                                            data-learning-key="switchObjectiveCount">
+                                    </div>
+                                    <div class="whisker-setting-group whisker-settings-full"
+                                        id="cfg-learning-activationFunction-group">
+                                        <label class="whisker-setting-label"
+                                            data-i18n="config-activation-function">Activation Function</label>
+                                        <select class="whisker-setting-select" id="cfg-learning-activationFunction"
+                                            data-learning-key="activationFunction">
+                                            <option value="SIGMOID">Sigmoid</option>
+                                            <option value="RELU">ReLU</option>
+                                            <option value="TANH">Tanh</option>
+                                            <option value="SOFTMAX">Softmax</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="tab-pane tabBorder fade" id="contentProject" role="tabpanel" aria-labelledby="contact-tab">
-            <!-- Scratch project -->
-            <div id="scratch-project" class="row">
-                <div class="col-lg-6">
-                    <b><label id="your-project-label" data-i18n="your-project"></label></b>
-                    <div class="help-tooltip">
-                        <a href="#project-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                        <span class="help-text" data-i18n="project-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="project-tooltip">
-                            <ul>
-                                <li data-i18n="project-helptext01"></li>
-                                <li data-i18n="project-helptext02"></li>
-                                <li data-i18n="project-helptext03"></li>
-                            </ul>
+                <!-- Right: Main Panel (70%) -->
+                <div class="whisker-main-panel">
+                    <!-- View Toggle Bar -->
+                    <div class="whisker-view-toggle-bar">
+                        <div class="whisker-view-toggle" id="whisker-search-toggle">
+                            <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-results-btn"
+                                onclick="_switchContentView('whisker-results-view', 'whisker-search-toggle', this)">
+                                <i class="fas fa-list"></i>
+                                <span data-i18n="viewmode-results">Results</span>
+                            </button>
+                            <button class="whisker-view-btn" id="whisker-view-statistics-btn"
+                                onclick="_switchContentView('whisker-dashboard-view', 'whisker-search-toggle', this)">
+                                <i class="fas fa-chart-bar"></i>
+                                <span data-i18n="viewmode-statistics">Statistics</span>
+                            </button>
+                        </div>
+                        <div class="whisker-view-toggle" id="whisker-editor-toggle" style="display:none;">
+                            <button class="whisker-view-btn whisker-view-btn--active" id="whisker-view-editor-btn"
+                                onclick="_switchContentView('whisker-editor-view', 'whisker-editor-toggle', this)">
+                                <i class="fas fa-code"></i>
+                                <span data-i18n="title-editor">Test Editor</span>
+                            </button>
+                            <button class="whisker-view-btn" id="whisker-view-ergebnisse-btn"
+                                onclick="_switchContentView('whisker-results-view', 'whisker-editor-toggle', this)">
+                                <i class="fas fa-list"></i>
+                                <span data-i18n="viewmode-results">Results</span>
+                            </button>
                         </div>
                     </div>
-                    <!-- Stage -->
-                    <!-- Use tabindex to make the canvas focusable. -->
-                    <div id="viewer">
-                        <canvas id="scratch-stage" tabindex="1"></canvas>
-                    </div>
-                    <!-- Acceleration slider, seed, scratch controls -->
-                    <div class="row">
-                        <div class="slide-container but">
-                            <div class="col-lg-12">
-                                <div class="row">
-                                    <input id="acceleration-factor" type="text"
-                                           data-slider-min="1" data-slider-max="100"
-                                           data-slider-step="1" data-slider-value="1">
-                                    <input id="seed" name="seed" placeholder="-">
-                                    <button id="green-flag" type="button"
-                                            class="btn btn-outline-success but1 vm-related record-related"
-                                            data-toggle="tooltip" data-placement="top"
-                                            data-animation="false" data-i18n="[title]start">
-                                        <i class="fas fa-flag"></i></button>
-                                    <button id="stop-scratch" type="button"
-                                            class="btn btn-danger but2 vm-related record-related"
-                                            data-toggle="tooltip" data-placement="top"
-                                            data-animation="false" data-i18n="[title]stop">
-                                        <i class="fas fa-stop"></i></button>
-                                </div>
-                                <div class="row" style="padding-top:20px;">
-                                    <label for="acceleration-factor" id="acceleration"
-                                           data-i18n="acceleration"></label>
-                                    <div id="acceleration-value"></div>
-                                    <label id="seedLabel" data-i18n="[title]t-seed;seed" for="seed"
-                                           data-toggle="tooltip" data-placement="top"
-                                           data-animation="false"></label>
-                                </div>
-                                <div class="row">
-                                    <input id="use-save-states" type="checkbox" autocomplete="off">
-                                    <label id="use-save-states-label" data-i18n="use-save-states" for="use-save-states"></label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="scratch-controls">
-                        <div class="row spacer20 p-0 mt-4">
-                            <!-- Record inputs -->
-                            <div class="col-lg-8" style="text-align: right;">
-                                <!-- Record inputs button -->
-                                <button id="record" type="button"
-                                        class="btn btn-main btn-sm search-button vm-related record-related"
-                                        data-toggle="tooltip" data-placement="top" data-animation="false"
-                                        data-i18n="[title]t-record;start-record;"></button>
-                            </div>
-                            <div class="col-lg-4">
+                    <!-- Game View -->
+                    <div id="whisker-game-view" class="whisker-view-content">
+                        <!-- Scratch project -->
+                        <div id="scratch-project" class="row">
+                            <div id="whisker-viewport-col" class="col-lg-6">
+                                <b><label data-i18n="your-project"></label></b>
                                 <div class="help-tooltip">
-                                    <a href="#record-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                    <span class="help-text" data-i18n="record-tooltip"></span>
+                                    <a href="#project-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
+                                            alt="help" /></a>
+                                    <span class="help-text" data-i18n="project-tooltip"></span>
                                 </div>
 
                                 <div style="display:none">
-                                    <div id="record-tooltip">
+                                    <div id="project-tooltip">
                                         <ul>
-                                            <li data-i18n="record-helptext01"></li>
-                                            <li data-i18n="record-helptext02"></li>
-                                            <li data-i18n="record-helptext03"></li>
+                                            <li data-i18n="project-helptext01"></li>
+                                            <li data-i18n="project-helptext02"></li>
+                                            <li data-i18n="project-helptext03"></li>
                                         </ul>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-8" style="text-align: right;">
-                                <button id="run-search" type="button"
-                                class="btn btn-main btn-sm search-button vm-related"
-                                data-toggle="tooltip" data-placement="top" data-animation="false"
-                                data-i18n="search"></button>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="help-tooltip">
-                                    <a href="#generation-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                    <span class="help-text" data-i18n="generation-tooltip"></span>
+                                <!-- Stage -->
+                                <!-- Use tabindex to make the canvas focusable. -->
+                                <div id="viewer">
+                                    <div id="scratch-placeholder"></div>
+                                    <canvas id="scratch-stage" tabindex="1"></canvas>
                                 </div>
-
-                                <div style="display:none">
-                                    <div id="generation-tooltip">
-                                        <ul>
-                                            <li data-i18n="generation-helptext01"></li>
-                                            <li data-i18n="generation-helptext02"></li>
-                                            <li data-i18n="generation-helptext03"></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <button id="search-running" type="button" style="display:none;"
-                                        class="btn btn-main btn-sm search-button" disabled>
-                                    <i class="fas fa-circle-notch fa-spin result-spinner"></i></button>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-8 text-right">
-                                <span data-i18n="use-bbt-tests"></span>
-                                <label class="switch">
-                                    <input type="checkbox" id="use-bbt-tests">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="row" id="use-bbt-tests-add-comment-row">
-                            <div class="col-lg-8 text-right">
-                                <span data-i18n="use-bbt-tests-add-comment"></span>
-                                <label class="switch">
-                                    <input type="checkbox" id="use-bbt-tests-add-comment">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <!-- Config file upload -->
-                            <div class="col-lg-12">
-                                <div id="config-upload" class="form m-4 mr-5">
-                                    <div class="row">
-                                        <div class="col-lg-9 label-padding">
-                                            <b><label id="fileselect-config-label" for="fileselect-config"
-                                                   data-i18n="configuration"></label></b>
-                                            <div class="help-tooltip">
-                                                <a class="help-icon"><img src="assets/help.png" alt="help"/></a>
-                                                <span class="help-text" data-i18n="generation-config-tooltip"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <img class="img" src="assets/json.png" alt="json"/>
-                                        </div>
-                                    </div>
-                                    <div class="row">
+                                <!-- Acceleration slider, seed, scratch controls -->
+                                <div class="row">
+                                    <div class="slide-container but">
                                         <div class="col-lg-12">
-                                            <div class="upload-btn-wrapper">
-                                                <button class="btnr" data-i18n="browse"></button>
-                                                <input type="file" class="vm-related" id="fileselect-config"
-                                                       accept=".json"
-                                                       name="config-file" title=""/>
-                                                <label id="config-label" class="filename-label"
-                                                       for="fileselect-config"
-                                                       data-i18n="mio-config"></label>
+                                            <div class="row">
+                                                <input id="acceleration-factor" type="text" data-slider-min="-15"
+                                                    data-slider-max="100" data-slider-step="1" data-slider-value="1">
+                                                <input id="seed" name="seed" placeholder="-">
+                                                <button id="green-flag" type="button"
+                                                    class="btn btn-outline-success but1 vm-related record-related"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]start">
+                                                    <i class="fas fa-flag"></i></button>
+                                                <button id="stop-scratch" type="button"
+                                                    class="btn btn-danger but2 vm-related record-related"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]stop">
+                                                    <i class="fas fa-stop"></i></button>
+                                                <button id="reset" class="btn btn-main but2 vm-related" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]t-reset;">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
                                             </div>
-                                            <div class="form-group">
-                                                <small id="help-text3" class="form-text text-muted"
-                                                       data-i18n="choose-file"></small>
+                                            <div class="row" style="padding-top:28px;">
+                                                <label for="acceleration-factor" id="acceleration"
+                                                    data-i18n="acceleration"></label>
+                                                <div id="acceleration-value"></div>
+                                                <label data-i18n="[title]t-seed;seed" for="seed" data-toggle="tooltip"
+                                                    data-placement="top" data-animation="false"></label>
                                             </div>
+                                            <div class="row save-states-row">
+                                                <span data-i18n="use-save-states"></span>
+                                                <label class="switch">
+                                                    <input id="use-save-states" type="checkbox" autocomplete="off">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                                <div class="save-states-warning" data-i18n="use-save-states-warning">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="scratch-controls">
+                                    <div class="row spacer20 p-0 mt-4">
+                                        <div class="col-lg-8" style="text-align: right;">
+                                            <button id="record" type="button"
+                                                class="btn btn-main btn-sm search-button vm-related record-related"
+                                                data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                data-i18n="[title]t-record;start-record;"></button>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="help-tooltip">
+                                                <a href="#record-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="record-tooltip"></span>
+                                            </div>
+                                            <div style="display:none">
+                                                <div id="record-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="record-helptext01"></li>
+                                                        <li data-i18n="record-helptext02"></li>
+                                                        <li data-i18n="record-helptext03"></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-8" style="text-align: right;">
+                                            <div
+                                                style="display:inline-flex; align-items:center; gap:8px; margin-left:35%;">
+                                                <button id="run-search" type="button"
+                                                    class="btn btn-main btn-sm vm-related" data-toggle="tooltip"
+                                                    data-placement="top" data-animation="false"
+                                                    data-i18n="search"></button>
+                                                <button id="stop-search" type="button" style="display:none;"
+                                                    class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="help-tooltip">
+                                                <a href="#generation-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="generation-tooltip"></span>
+                                            </div>
+                                            <div style="display:none">
+                                                <div id="generation-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="generation-helptext01"></li>
+                                                        <li data-i18n="generation-helptext02"></li>
+                                                        <li data-i18n="generation-helptext03"></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="bbt-toggles">
+                                        <div class="row">
+                                            <div class="col-lg-8 text-right">
+                                                <span data-i18n="use-bbt-tests"></span>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="use-bbt-tests">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="row" id="use-bbt-tests-add-comment-row">
+                                            <div class="col-lg-8 text-right">
+                                                <span data-i18n="use-bbt-tests-add-comment"></span>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="use-bbt-tests-add-comment">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Tests table / Statistics (toggled) -->
+
+                            <div id="whisker-content-col" class="col-lg-6">
+                                <div id="whisker-results-view">
+                                    <div style="display:none">
+                                        <div id="testtable-tooltip">
+                                            <ul>
+                                                <li data-i18n="testtable-helptext01"></li>
+                                                <li data-i18n="testtable-helptext02"></li>
+                                                <li data-i18n="testtable-helptext03"></li>
+                                                <li data-i18n="testtable-helptext04"></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
+                                        <div id="test-table-toolbar">
+                                            <div id="test-table-toolbar-left">
+                                                <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
+                                                <div class="help-tooltip">
+                                                    <a href="#testtable-tooltip" class="help-icon inlinebox"><img
+                                                            src="assets/help.png" alt="help" /></a>
+                                                    <span class="help-text" data-i18n="testtable-tooltip"></span>
+                                                </div>
+                                            </div>
+                                            <div id="test-table-toolbar-right">
+                                                <button id="run-all-tests"
+                                                    class="btn btn-sm btn-table-action vm-related" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]t-tests">
+                                                    <i id="run-tests-icon" class="fas fa-play"></i>
+                                                    <i id="stop-tests-icon" class="fas fa-stop hide"></i>
+                                                </button>
+                                                <button id="applyChanges"
+                                                    class="editor-apply btn btn-sm btn-table-action" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    onclick="_removeTestClass()" data-i18n="[title]t-load">
+                                                    <i class="fas fa-sync"></i>
+                                                </button>
+                                                <button class="editor-save btn btn-sm btn-table-action" type="button"
+                                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                                    data-i18n="[title]t-save">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <div id="test-table-search-box">
+                                                    <i class="fas fa-search"></i>
+                                                    <input id="test-table-search" type="search"
+                                                        data-i18n="[placeholder]search-placeholder">
+                                                </div>
+                                                <button class="btn btn-sm btn-table-action"
+                                                    id="test-table-collapse-btn">
+                                                    <i class="fas fa-chevron-up"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div id="test-table-content">
+                                            <table class="display table table-sm mt-4">
+                                                <thead class="thead-white">
+                                                    <tr>
+                                                        <th></th>
+                                                        <th>#</th>
+                                                        <th data-i18n="table-name"></th>
+                                                        <th data-i18n="table-categories"></th>
+                                                        <th data-i18n="table-test-result" class="result text-center">
+                                                        </th>
+                                                        <th></th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="whisker-dashboard-view" style="display:none;"></div>
+                                <div id="whisker-editor-view" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                            <b><label id="editor-header" data-i18n="editor-header"></label></b>
+                                            <div class="help-tooltip">
+                                                <a href="#editor-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="editor-tooltip"></span>
+                                            </div>
+
+                                            <div style="display:none">
+                                                <div id="editor-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="editor-helptext01"></li>
+                                                        <li data-i18n="editor-helptext02"></li>
+                                                        <li data-i18n="editor-helptext03"></li>
+                                                        <li data-i18n="editor-helptext04"></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div id="test-editor-div">
+                                                <div id="test-editor"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <b><label id="snippets-header" data-i18n="snippets-header"></label></b>
+                                            <div class="help-tooltip">
+                                                <a href="#snippets-tooltip" class="help-icon inlinebox"><img
+                                                        src="assets/help.png" alt="help" /></a>
+                                                <span class="help-text" data-i18n="snippets-tooltip"></span>
+                                            </div>
+
+                                            <div style="display:none">
+                                                <div id="snippets-tooltip">
+                                                    <ul>
+                                                        <li data-i18n="snippets-helptext01"></li>
+                                                        <li data-i18n="snippets-helptext02"></li>
+                                                        <li data-i18n="snippets-helptext03"></li>
+                                                    </ul>
+                                                    <a href="https://github.com/se2p/whisker/blob/master/HOWTO.md"
+                                                        target="_blank">SE2P-Whisker
+                                                        on github</a>
+                                                </div>
+                                            </div>
+                                            <ul style="margin-left:-40px; list-style: none;">
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(1)"
+                                                        data-i18n="snippets:snippet01-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet1-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet1-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet01-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet01-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet01-helptext03">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet01-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet1" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet01-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(2)"
+                                                        data-i18n="snippets:snippet02-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet2-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet2-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet02-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext04">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet02-helptext05">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet02-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet2" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet02-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(3)"
+                                                        data-i18n="snippets:snippet03-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet3-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet01-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet3-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet03-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet03-helptext04">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet03-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet3" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet03-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(4)"
+                                                        data-i18n="snippets:snippet04-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet4-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet04-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet4-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <span
+                                                                        data-i18n="snippets:snippet04-helptext01"></span>
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet04-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext04">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext05">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext06">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext07">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet04-helptext08">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet04-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet4" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet04-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(5)"
+                                                        data-i18n="snippets:snippet05-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet5-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet05-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet5-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <span
+                                                                        data-i18n="snippets:snippet05-helptext01"></span>
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet05-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet05-helptext03">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet05-helptext04">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet05-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet5" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet05-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(6)"
+                                                        data-i18n="snippets:snippet06-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet6-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet06-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet6-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet06-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet06-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet06-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet6" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet06-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(7)"
+                                                        data-i18n="snippets:snippet07-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet7-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet07-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet7-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet07-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet07-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet07-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet7" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet07-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(8)"
+                                                        data-i18n="snippets:snippet08-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet8-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet08-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet8-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet08-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet08-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet08-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet8" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet08-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(9)"
+                                                        data-i18n="snippets:snippet09-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet9-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet09-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet9-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet09-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet09-helptext02">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet09-helptext03">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet09-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet9" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet09-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(10)"
+                                                        data-i18n="snippets:snippet10-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet10-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet10-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet10-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet10-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet10-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet10-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet10" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet10-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <button class="snippetButton" onclick="_displaySnippet(11)"
+                                                        data-i18n="snippets:snippet11-title"></button>
+                                                    <div class="help-tooltip">
+                                                        <a href="#snippet11-tooltip" class="help-icon inlinebox"><img
+                                                                src="assets/help.png" alt="help" /></a>
+                                                        <span class="help-text"
+                                                            data-i18n="snippets:snippet11-tooltip"></span>
+                                                    </div>
+                                                    <div style="display:none">
+                                                        <div id="snippet11-tooltip">
+                                                            <div class="row">
+                                                                <div class="col-lg-6">
+                                                                    <ol>
+                                                                        <li data-i18n="snippets:snippet11-helptext01">
+                                                                        </li>
+                                                                        <li data-i18n="snippets:snippet11-helptext02">
+                                                                        </li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <pre class="prettyprint"
+                                                                        data-i18n="snippets:snippet11-code"></pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div id="snippet11" style="display:none;">
+                                                        <pre class="prettyprint"
+                                                            data-i18n="snippets:snippet11-shortcode"></pre>
+                                                    </div>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -513,54 +1277,14 @@
                         </div>
                     </div>
                 </div>
-
-
-                <!-- Tests table -->
-
-                <div class="col-lg-6">
-                    <div class="help-tooltip">
-                        <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                        <span class="help-text" data-i18n="testtable-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="testtable-tooltip">
-                            <ul>
-                                <li data-i18n="testtable-helptext01"></li>
-                                <li data-i18n="testtable-helptext02"></li>
-                                <li data-i18n="testtable-helptext03"></li>
-                                <li data-i18n="testtable-helptext04"></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
-                        <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
-
-                        <table class="display table table-sm mt-4">
-                            <thead class="thead-white">
-                            <tr>
-                                <th></th>
-                                <th>#</th>
-                                <th data-i18n="table-name"></th>
-                                <th data-i18n="table-categories"></th>
-                                <th data-i18n="table-test-result"
-                                    class="result text-center"></th>
-                                <th></th>
-                            <th></th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel">
             <!-- TAP13 output -->
             <div id="output-run" class="mt-4 spacer50">
                 <b><label id="tap-header" data-i18n="header:tap"></label></b>
                 <div class="help-tooltip">
-                    <a href="#tap-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                    <a href="#tap-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help" /></a>
                     <span class="help-text" data-i18n="tap-tooltip"></span>
                 </div>
 
@@ -579,13 +1303,12 @@
                         <div class="form-row">
                             <div class="col">
                                 <!-- Clear button -->
-                                <button class="output-clear btn btn-sm btn-main" type="button"
-                                        data-toggle="tooltip" data-placement="top"
-                                        data-animation="false" data-i18n="[title]t-clear;clear;"></button>
+                                <button class="output-clear btn btn-sm btn-main" type="button" data-toggle="tooltip"
+                                    data-placement="top" data-animation="false"
+                                    data-i18n="[title]t-clear;clear;"></button>
                                 <!-- Save button -->
-                                <button class="output-save btn btn-sm btn-main" type="button"
-                                        data-toggle="tooltip" data-placement="top"
-                                        data-animation="false" data-i18n="tap-save"></button>
+                                <button class="output-save btn btn-sm btn-main" type="button" data-toggle="tooltip"
+                                    data-placement="top" data-animation="false" data-i18n="tap-save"></button>
                             </div>
                         </div>
                     </div>
@@ -596,7 +1319,7 @@
             <div id="output-log" class="mt-4 spacer50">
                 <b><label id="log-header" data-i18n="header:log"></label></b>
                 <div class="help-tooltip">
-                    <a href="#log-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                    <a href="#log-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help" /></a>
                     <span class="help-text" data-i18n="log-tooltip"></span>
                 </div>
 
@@ -615,377 +1338,114 @@
                         <div class="form-row">
                             <div class="col">
                                 <!-- Clear button -->
-                                <button class="output-clear btn btn-sm btn-main" type="button"
-                                        data-toggle="tooltip" data-placement="top"
-                                        data-animation="false" data-i18n="[title]t-clear;clear;"></button>
+                                <button class="output-clear btn btn-sm btn-main" type="button" data-toggle="tooltip"
+                                    data-placement="top" data-animation="false"
+                                    data-i18n="[title]t-clear;clear;"></button>
                                 <!-- Save button -->
-                                <button class="output-save btn btn-sm btn-main" type="button"
-                                        data-toggle="tooltip" data-placement="top"
-                                        data-animation="false" data-i18n="log-save"></button>
+                                <button class="output-save btn btn-sm btn-main" type="button" data-toggle="tooltip"
+                                    data-placement="top" data-animation="false" data-i18n="log-save"></button>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-        <div class="tab-pane tabBorder fade" id="contentTestEditor" role="tabpanel" aria-labelledby="contact-tab">
-            <!-- Test editor -->
-            <div class="row">
-                <div class="col-lg-8">
-                    <b><label id="editor-header" data-i18n="editor-header"></label></b>
-                    <div class="help-tooltip">
-                        <a href="#editor-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                        <span class="help-text" data-i18n="editor-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="editor-tooltip">
-                            <ul>
-                                <li data-i18n="editor-helptext01"></li>
-                                <li data-i18n="editor-helptext02"></li>
-                                <li data-i18n="editor-helptext03"></li>
-                                <li data-i18n="editor-helptext04"></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div id="test-editor-div">
-                        <div id="test-editor"></div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <b><label id="snippets-header" data-i18n="snippets-header"></label></b>
-                    <div class="help-tooltip">
-                        <a href="#snippets-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                        <span class="help-text" data-i18n="snippets-tooltip"></span>
-                    </div>
-
-                    <div style="display:none">
-                        <div id="snippets-tooltip">
-                            <ul>
-                                <li data-i18n="snippets-helptext01"></li>
-                                <li data-i18n="snippets-helptext02"></li>
-                                <li data-i18n="snippets-helptext03"></li>
-                            </ul>
-                            <a href="https://github.com/se2p/whisker/blob/master/HOWTO.md" target="_blank">SE2P-Whisker on github</a>
-                        </div>
-                    </div>
-                    <ul style="margin-left:-40px; list-style: none;">
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(1)" data-i18n="snippets:snippet01-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet1-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet1-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet01-helptext01"></li>
-                                                <li data-i18n="snippets:snippet01-helptext02"></li>
-                                                <li data-i18n="snippets:snippet01-helptext03"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet01-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet1" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet01-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(2)" data-i18n="snippets:snippet02-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet2-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet2-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet02-helptext01"></li>
-                                                <li data-i18n="snippets:snippet02-helptext02"></li>
-                                                <li data-i18n="snippets:snippet02-helptext03"></li>
-                                                <li data-i18n="snippets:snippet02-helptext04"></li>
-                                                <li data-i18n="snippets:snippet02-helptext05"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet02-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet2" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet02-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(3)" data-i18n="snippets:snippet03-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet3-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet01-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet3-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet03-helptext01"></li>
-                                                <li data-i18n="snippets:snippet03-helptext02"></li>
-                                                <li data-i18n="snippets:snippet03-helptext03"></li>
-                                                <li data-i18n="snippets:snippet03-helptext04"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet03-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet3" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet03-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(4)" data-i18n="snippets:snippet04-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet4-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet04-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet4-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <span data-i18n="snippets:snippet04-helptext01"></span>
-                                            <ol>
-                                                <li data-i18n="snippets:snippet04-helptext02"></li>
-                                                <li data-i18n="snippets:snippet04-helptext03"></li>
-                                                <li data-i18n="snippets:snippet04-helptext04"></li>
-                                                <li data-i18n="snippets:snippet04-helptext05"></li>
-                                                <li data-i18n="snippets:snippet04-helptext06"></li>
-                                                <li data-i18n="snippets:snippet04-helptext07"></li>
-                                                <li data-i18n="snippets:snippet04-helptext08"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet04-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet4" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet04-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(5)" data-i18n="snippets:snippet05-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet5-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet05-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet5-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <span data-i18n="snippets:snippet05-helptext01"></span>
-                                            <ol>
-                                                <li data-i18n="snippets:snippet05-helptext02"></li>
-                                                <li data-i18n="snippets:snippet05-helptext03"></li>
-                                                <li data-i18n="snippets:snippet05-helptext04"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet05-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet5" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet05-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(6)" data-i18n="snippets:snippet06-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet6-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet06-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet6-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet06-helptext01"></li>
-                                                <li data-i18n="snippets:snippet06-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet06-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet6" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet06-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(7)" data-i18n="snippets:snippet07-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet7-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet07-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet7-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet07-helptext01"></li>
-                                                <li data-i18n="snippets:snippet07-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet07-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet7" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet07-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(8)" data-i18n="snippets:snippet08-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet8-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet08-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet8-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet08-helptext01"></li>
-                                                <li data-i18n="snippets:snippet08-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet08-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet8" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet08-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(9)" data-i18n="snippets:snippet09-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet9-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet09-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet9-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet09-helptext01"></li>
-                                                <li data-i18n="snippets:snippet09-helptext02"></li>
-                                                <li data-i18n="snippets:snippet09-helptext03"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet09-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet9" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet09-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(10)" data-i18n="snippets:snippet10-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet10-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet10-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet10-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet10-helptext01"></li>
-                                                <li data-i18n="snippets:snippet10-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet10-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet10" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet10-shortcode"></pre>
-                            </div>
-                        </li>
-                        <li>
-                            <button class="snippetButton" onclick="_displaySnippet(11)" data-i18n="snippets:snippet11-title"></button>
-                            <div class="help-tooltip">
-                                <a href="#snippet11-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                                <span class="help-text" data-i18n="snippets:snippet11-tooltip"></span>
-                            </div>
-                            <div style="display:none">
-                                <div id="snippet11-tooltip">
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <ol>
-                                                <li data-i18n="snippets:snippet11-helptext01"></li>
-                                                <li data-i18n="snippets:snippet11-helptext02"></li>
-                                            </ol>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <pre class="prettyprint" data-i18n="snippets:snippet11-code"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                            <div id="snippet11" style="display:none;">
-                                <pre class="prettyprint" data-i18n="snippets:snippet11-shortcode"></pre>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="contact-tab">
+        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel">
             <!-- Model editor -->
             <div id="model-editor" class="mt-4 spacer10">
                 <h3 data-i18n="modelEditor:title"></h3>
+
+                <!-- Model file upload and run parameters -->
+                <div id="model-upload" class="row form mb-3">
+                    <div class="col-lg-6">
+                        <div class="row mr-2">
+                            <div class="col-lg-10 label-padding">
+                                <b><label id="fileselect-model-label" for="fileselect-models"
+                                        data-i18n="model"></label></b>
+                                <div class="help-tooltip">
+                                    <a href="#model-tooltip" class="help-icon inlinebox"><img src="assets/help.png"
+                                            alt="help" /></a>
+                                    <span class="help-text" data-i18n="model-tooltip"></span>
+                                </div>
+                                <div style="display:none">
+                                    <div id="model-tooltip">
+                                        <ol>
+                                            <li data-i18n="model-helptext01"></li>
+                                            <li data-i18n="model-helptext02"></li>
+                                            <li data-i18n="model-helptext03"></li>
+                                        </ol>
+                                        <div class="spacer20"
+                                            style="text-align:center; padding-left: 30px; display:inline-block;">
+                                            <img src='assets/model01.png' />
+                                            <img src='assets/model02.png' style="padding-left:30px;" />
+                                        </div>
+                                        <div>
+                                            <ul>
+                                                <li data-i18n="model-helptext04"></li>
+                                                <li data-i18n="model-helptext05"></li>
+                                                <li data-i18n="model-helptext06"></li>
+                                                <li data-i18n="model-helptext07"></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <img class="img" src="assets/json.png" alt="json" />
+                            </div>
+                            <div class="col">
+                                <div class="upload-btn-wrapper">
+                                    <button class="btnr" data-i18n="browse"></button>
+                                    <input type="file" id="fileselect-models" accept=".json" name="model-file" title=""
+                                        class="vm-related" />
+                                    <label id="model-label" class="filename-label" for="fileselect-models"
+                                        data-i18n="no-file"></label>
+                                </div>
+                                <div class="form-group">
+                                    <small class="form-text text-muted" data-i18n="choose-file"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col ml-2 mt-2">
+                        <div class="row">
+                            <div class="col label-padding">
+                                <label data-i18n="model-duration" for="model-duration"></label>
+                            </div>
+                            <div class="col-4" style="padding:0">
+                                <input type="text" id="model-duration" name="model-duration" placeholder="(optional)"
+                                    class="model-small-input mt-1">
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col label-padding">
+                                <label data-i18n="model-repetitions" for="model-repetitions"></label>
+                            </div>
+                            <div class="col-4" style="padding:0">
+                                <input type="text" id="model-repetitions" name="model-repetitions" placeholder="1"
+                                    class="model-small-input mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col mt-2 ml-2">
+                        <div class="row">
+                            <div class="form-group col">
+                                <div class="mt-1">
+                                    <input id="model-logs-checkbox" class="mt-1" type="checkbox" autocomplete="off">
+                                    <label for="model-logs-checkbox" data-i18n="model-logs-checkbox"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
                     <!-- model editor TABS -->
                     <div class="row tab-model-editor">
                         <div id="model-tabs" class="col"></div>
                         <div id="model-add-tab-container" class="col">
-                            <button id="model-editor-add-tab" type="button"
-                                    class="tab-model-editor-button" data-i18n="modelEditor:newTab">
+                            <button id="model-editor-add-tab" type="button" class="tab-model-editor-button"
+                                data-i18n="modelEditor:newTab">
                             </button>
                         </div>
                     </div>
@@ -1001,29 +1461,22 @@
                             <!-- model editor BUTTONS -->
                             <div class="row my-2">
                                 <div class="col model-add-buttons-div">
-                                    <button id="model-add-node" type="button"
-                                            class="btn btn-sm model-button center"
-                                            data-i18n="modelEditor:addNode"></button>
+                                    <button id="model-add-node" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:addNode"></button>
                                 </div>
                                 <div class="col model-add-buttons-div">
-                                    <button id="model-add-edge" type="button"
-                                            class="btn btn-sm model-button center"
-                                            data-i18n="modelEditor:addEdge"></button>
+                                    <button id="model-add-edge" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:addEdge"></button>
                                 </div>
                                 <div class="col model-add-buttons-div">
-                                    <button id="model-fit" type="button"
-                                            class="btn btn-sm model-button center"
-                                            data-i18n="modelEditor:fit"></button>
+                                    <button id="model-fit" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:fit"></button>
                                 </div>
                                 <div class="col model-add-buttons-div">
-                                    <select name="model-layout" id="model-layout"
-                                            class="center">
-                                        <option value="none"
-                                                data-i18n="modelEditor:layout1"></option>
-                                        <option value="treeLR"
-                                                data-i18n="modelEditor:layout2"></option>
-                                        <option value="treeUD"
-                                                data-i18n="modelEditor:layout3"></option>
+                                    <select name="model-layout" id="model-layout" class="center">
+                                        <option value="none" data-i18n="modelEditor:layout1"></option>
+                                        <option value="treeLR" data-i18n="modelEditor:layout2"></option>
+                                        <option value="treeUD" data-i18n="modelEditor:layout3"></option>
                                     </select>
                                 </div>
                                 <div class="col hide model-cancel-add-div">
@@ -1031,18 +1484,16 @@
                                     <label id="model-explanation"></label>
                                 </div>
                                 <div class="col-2 hide model-cancel-add-div">
-                                    <button id="model-cancel-add" type="button"
-                                            class="btn btn-sm model-button center"
-                                            data-i18n="modelEditor:cancel"></button>
+                                    <button id="model-cancel-add" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:cancel"></button>
                                 </div>
                                 <div class="col hide model-delete-div">
-                                    <label
-                                        data-i18n="modelEditor:selection-explanation"></label>
+                                    <label data-i18n="modelEditor:selection-explanation"></label>
                                 </div>
                                 <div class="col-4 hide model-delete-div">
                                     <button id="model-delete-selection" type="button"
-                                            class="btn btn-sm model-button center"
-                                            data-i18n="modelEditor:deleteSelection"></button>
+                                        class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:deleteSelection"></button>
                                 </div>
                             </div>
                         </div>
@@ -1053,13 +1504,11 @@
                             <!-- model editor MODEL CONFIG PANEL-->
                             <div id="model-general-settings">
                                 <div class="row">
-                                    <h4 data-i18n="modelEditor:general-settings-header"
-                                        style="width:80%;"></h4>
+                                    <h4 data-i18n="modelEditor:general-settings-header" style="width:80%;"></h4>
                                     <button id="model-delete-button" type="button"
-                                            class="model-button model-small-button right"
-                                            data-toggle="tooltip" data-placement="top"
-                                            data-animation="false"
-                                            data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"></button>
+                                        class="model-button model-small-button right" data-toggle="tooltip"
+                                        data-placement="top" data-animation="false"
+                                        data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"></button>
                                 </div>
                                 <div class="row">
                                     <div class="col">
@@ -1073,30 +1522,30 @@
                                 <div class="row">
                                     <div class="col">
                                         <input id="model-type-program" type="radio" class="model-radio"
-                                               name="model-type" value="program">
-                                        <label for="model-type-program" data-toggle="tooltip"
-                                               data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
+                                            name="model-type" value="program">
+                                        <label for="model-type-program" data-toggle="tooltip" data-placement="right"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
                                         </label>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <input id="model-type-user" type="radio" class="model-radio"
-                                               name="model-type" value="user">
-                                        <label for="model-type-user" data-toggle="tooltip"
-                                               data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
+                                        <input id="model-type-user" type="radio" class="model-radio" name="model-type"
+                                            value="user">
+                                        <label for="model-type-user" data-toggle="tooltip" data-placement="right"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
                                         </label>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <input id="model-type-end" type="radio" class="model-radio"
-                                               name="model-type" value="user">
-                                        <label for="model-type-end" data-toggle="tooltip"
-                                               data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
+                                        <input id="model-type-end" type="radio" class="model-radio" name="model-type"
+                                            value="user">
+                                        <label for="model-type-end" data-toggle="tooltip" data-placement="right"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
                                         </label>
                                     </div>
                                 </div>
@@ -1109,24 +1558,22 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <label for="model-node-label"
-                                               data-i18n="modelEditor:nodeLabel"></label>
+                                        <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
                                         <input class="model-input" id="model-node-label">
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col">
                                         <input type="checkbox" id="model-stopAllNode">
-                                        <label for="model-stopAllNode" data-toggle="tooltip"
-                                               data-placement="top" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-stopAllNode;modelEditor:stopAllNode"></label>
+                                        <label for="model-stopAllNode" data-toggle="tooltip" data-placement="top"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-stopAllNode;modelEditor:stopAllNode"></label>
                                     </div>
                                 </div>
                                 <div class="row mt-2 model-priority-div">
                                     <div class="col">
-                                        <label data-toggle="tooltip" data-placement="top"
-                                               data-animation="false"
-                                               data-i18n="[title]modelEditor:t-priority;modelEditor:priority"></label>
+                                        <label data-toggle="tooltip" data-placement="top" data-animation="false"
+                                            data-i18n="[title]modelEditor:t-priority;modelEditor:priority"></label>
                                     </div>
                                 </div>
                                 <div class="row model-priority-div">
@@ -1141,20 +1588,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <label for="model-edge-label"
-                                               data-i18n="modelEditor:edgeLabel">Name</label>
+                                        <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
                                         <input class="model-input" id="model-edge-label">
                                     </div>
                                 </div>
                                 <div class="row mt-1">
-                                    <label data-i18n="modelEditor:forceTest" data-toggle="tooltip"
-                                           data-placement="top" data-animation="false"></label>
+                                    <label data-i18n="modelEditor:forceTest" data-toggle="tooltip" data-placement="top"
+                                        data-animation="false"></label>
                                 </div>
                                 <div class="row">
                                     <div class="col mt-1" style="padding-right: 0;">
-                                        <label for="model-forceTestAfter" data-toggle="tooltip"
-                                               data-placement="top" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-forceTestAfter;modelEditor:forceTestAfter"></label>
+                                        <label for="model-forceTestAfter" data-toggle="tooltip" data-placement="top"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-forceTestAfter;modelEditor:forceTestAfter"></label>
                                     </div>
                                     <div class="col-4" style="padding-left: 0;">
                                         <input id="model-forceTestAfter" class="model-input">
@@ -1163,9 +1609,9 @@
                                 </div>
                                 <div class="row">
                                     <div class="col mt-1" style="padding-right: 0;">
-                                        <label for="model-forceTestAt" data-toggle="tooltip"
-                                               data-placement="top" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-forceTestAt;modelEditor:forceTestAt"></label>
+                                        <label for="model-forceTestAt" data-toggle="tooltip" data-placement="top"
+                                            data-animation="false"
+                                            data-i18n="[title]modelEditor:t-forceTestAt;modelEditor:forceTestAt"></label>
                                     </div>
                                     <div class="col-4" style="padding-left: 0;">
                                         <input id="model-forceTestAt" class="model-input">
@@ -1173,23 +1619,21 @@
                                     </div>
                                 </div>
                                 <div class="row mt-2">
-                                    <label class="mt-1" data-toggle="tooltip"
-                                           data-placement="top" data-animation="false"
-                                           data-i18n="[title]modelEditor:t-conditions;modelEditor:conditions"></label>
+                                    <label class="mt-1" data-toggle="tooltip" data-placement="top"
+                                        data-animation="false"
+                                        data-i18n="[title]modelEditor:t-conditions;modelEditor:conditions"></label>
                                     <button id="model-editor-addC" type="button" data-i18n="modelEditor:add"
-                                            class="model-button model-small-button right"
-                                            style="float:right;"></button>
+                                        class="model-button model-small-button right" style="float:right;"></button>
                                 </div>
                                 <div class="row">
                                     <div class="col check-container" id="model-conditions"></div>
                                 </div>
                                 <div class="row mt-1">
                                     <label id="model-effect-or-input-label" class="mt-1" data-toggle="tooltip"
-                                           data-placement="top" data-animation="false"
-                                           data-i18n="[title]modelEditor:t-effects;modelEditor:effects"></label>
+                                        data-placement="top" data-animation="false"
+                                        data-i18n="[title]modelEditor:t-effects;modelEditor:effects"></label>
                                     <button id="model-editor-addE" type="button" data-i18n="modelEditor:add"
-                                            class="model-button model-small-button right"
-                                            style="float:right;"></button>
+                                        class="model-button model-small-button right" style="float:right;"></button>
                                 </div>
                                 <div class="row">
                                     <div id="model-effects" class="col check-container"></div>
@@ -1199,20 +1643,17 @@
                             <!-- model editor EDGE CHECK PANEL -->
                             <div id="model-edge-check-div" class="hide">
                                 <div class="row">
-                                    <button id="model-check-back" type="button"
-                                            class="col2 model-button btn-sm"
-                                            data-i18n="modelEditor:back"></button>
-                                    <button id="model-check-save" type="button"
-                                            class="col2 right model-button btn-sm"
-                                            data-i18n="modelEditor:saveCheck"></button>
+                                    <button id="model-check-back" type="button" class="col2 model-button btn-sm"
+                                        data-i18n="modelEditor:back"></button>
+                                    <button id="model-check-save" type="button" class="col2 right model-button btn-sm"
+                                        data-i18n="modelEditor:saveCheck"></button>
                                 </div>
                                 <div class="row mt-2">
                                     <h4 id="model-check-label" data-i18n="modelEditor:condition"></h4>
                                 </div>
                                 <div class="row mt-1">
                                     <div class="col" style="padding-left: 0;">
-                                        <label for="model-edge-check"
-                                               data-i18n="modelEditor:edgeCheckType"></label>
+                                        <label for="model-edge-check" data-i18n="modelEditor:edgeCheckType"></label>
                                         <select id="model-edge-check" name="model-edge-check"></select>
                                     </div>
                                 </div>
@@ -1220,7 +1661,7 @@
                                     <div class="col">
                                         <input id="model-check-negated" type="checkbox">
                                         <label for="model-check-negated"
-                                               data-i18n="[title]modelEditor:t-negated;modelEditor:negated"></label>
+                                            data-i18n="[title]modelEditor:t-negated;modelEditor:negated"></label>
                                     </div>
                                 </div>
                                 <div class="row mt-2">
@@ -1235,25 +1676,25 @@
                 <!-- Buttons belonging to model editor -->
                 <div class="col-lg-12 spacer50">
 
-                    <!-- Load tests button -->
+                    <!-- Load models button -->
                     <button id="model-editor-apply" type="button" class="btn btn-sm btn-main vm-related"
-                            data-toggle="tooltip" data-placement="top" data-animation="false"
-                            data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
+                        data-toggle="tooltip" data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
 
-                    <!-- Download tests button -->
-                    <button id="model-editor-save-model" type="button" class="btn btn-sm btn-main"
-                            data-toggle="tooltip" data-placement="top" data-animation="false"
-                            data-i18n="[title]modelEditor:t-save-model;modelEditor:save-model;"></button>
+                    <!-- Download program model button -->
+                    <button id="model-editor-save-model" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
+                        data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-save-model;modelEditor:save-model;"></button>
 
-                    <!-- Download tests button -->
+                    <!-- Download user model button -->
                     <button id="model-editor-save-user-model" type="button" class="btn btn-sm btn-main"
-                            data-toggle="tooltip" data-placement="top" data-animation="false"
-                            data-i18n="[title]modelEditor:t-save-user-model;modelEditor:save-user-model;"></button>
+                        data-toggle="tooltip" data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-save-user-model;modelEditor:save-user-model;"></button>
 
                     <!-- Minimized models button -->
-                    <button id="model-minimize-btn" type="button" class="btn btn-sm btn-main"
-                            data-toggle="tooltip" data-placement="top" data-animation="false"
-                            data-i18n="[title]modelEditor:t-minimize-models;modelEditor:minimize-models"></button>
+                    <button id="model-minimize-btn" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
+                        data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-minimize-models;modelEditor:minimize-models"></button>
                 </div>
             </div>
         </div>
@@ -1262,45 +1703,16 @@
     <script>
         $("a.inlinebox").fancybox({
             'hideOnContentClick': false,
-            'transitionIn'	:	'fade',
-            'transitionOut'	:	'fade',
-            'speedIn'		:	300,
-            'speedOut'		:	200,
-            'overlayShow'	:	true,
+            'transitionIn': 'fade',
+            'transitionOut': 'fade',
+            'speedIn': 300,
+            'speedOut': 200,
+            'overlayShow': true,
             'showCloseButton': true,
-            'scrolling'     : true,
+            'scrolling': true,
             'autoDimensions': true,
-            'width:'        : '70%'
+            'width:': '70%'
         });
-        document.getElementById("extendedView").checked = false;
-        function _updateExtendedView() {
-            if(document.getElementById("extendedView").checked)
-            {
-                document.getElementById("model-upload").style.display = "flex";
-                document.getElementById("scratch-controls").style.display = "block";
-                document.getElementById("tabModelEditor").parentElement.style.display = "list-item";
-                document.getElementById("tabLogs").parentElement.style.display = "list-item";
-                document.getElementById("seed").style.display = "block";
-                document.getElementById("seedLabel").style.display = "block";
-                document.getElementById("green-flag").style.display = "block";
-                document.getElementById("stop-scratch").style.display = "block";
-                document.getElementById("use-save-states").style.display = "block";
-                document.getElementById("use-save-states-label").style.display = "block";
-            }
-            else
-            {
-                document.getElementById("model-upload").style.display = "none";
-                document.getElementById("scratch-controls").style.display = "none";
-                document.getElementById("tabModelEditor").parentElement.style.display = "none";
-                document.getElementById("tabLogs").parentElement.style.display = "none";
-                document.getElementById("seed").style.display = "none";
-                document.getElementById("seedLabel").style.display = "none";
-                document.getElementById("green-flag").style.display = "none";
-                document.getElementById("stop-scratch").style.display = "none";
-                document.getElementById("use-save-states").style.display = "none";
-                document.getElementById("use-save-states-label").style.display = "none";
-            }
-        }
         function _addTestClass() {
             document.getElementById("applyChanges").classList.add("applyChangesClass");
         }
@@ -1311,16 +1723,107 @@
             document.getElementById("test-editor").firstChild.onclick = _addTestClass;
         }
         function _displaySnippet(i) {
-            if(document.getElementById("snippet" + i).style.display == "none")
-            {
+            if (document.getElementById("snippet" + i).style.display == "none") {
                 document.getElementById("snippet" + i).style.display = "block";
             }
-            else
-            {
+            else {
                 document.getElementById("snippet" + i).style.display = "none";
             }
         }
-        _updateExtendedView();
+
+        function _setProjectColumns(viewportClass, contentClass) {
+            var viewportCol = document.getElementById('whisker-viewport-col');
+            var contentCol = document.getElementById('whisker-content-col');
+            ['col-lg-3', 'col-lg-5', 'col-lg-6'].forEach(function (c) {
+                if (viewportCol) viewportCol.classList.remove(c);
+            });
+            ['col-lg-6', 'col-lg-7', 'col-lg-9'].forEach(function (c) {
+                if (contentCol) contentCol.classList.remove(c);
+            });
+            if (viewportCol) viewportCol.classList.add(viewportClass);
+            if (contentCol) contentCol.classList.add(contentClass);
+        }
+
+        function _switchContentView(viewId, toggleGroupId, clickedBtn) {
+            document.querySelectorAll('#' + toggleGroupId + ' .whisker-view-btn').forEach(function (btn) {
+                btn.classList.remove('whisker-view-btn--active');
+            });
+            clickedBtn.classList.add('whisker-view-btn--active');
+            ['whisker-results-view', 'whisker-dashboard-view', 'whisker-editor-view'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = id === viewId ? '' : 'none';
+            });
+            if (viewId === 'whisker-dashboard-view' && window.Whisker && window.Whisker.networkTopology) {
+                window.Whisker.networkTopology.refresh();
+            }
+            if (viewId === 'whisker-dashboard-view' && window.Whisker && window.Whisker.sourceCode) {
+                window.Whisker.sourceCode.refresh();
+            }
+        }
+
+        function _applyProjectLayout(mode) {
+            var editorView = document.getElementById('whisker-editor-view');
+            var resultsView = document.getElementById('whisker-results-view');
+            var dashboardView = document.getElementById('whisker-dashboard-view');
+            var configPanel = document.getElementById('whisker-config-panel');
+            var searchToggle = document.getElementById('whisker-search-toggle');
+            var editorToggle = document.getElementById('whisker-editor-toggle');
+
+            var isEditor = mode === 'editor';
+            var isLearning = mode === 'learning';
+
+            if (configPanel) configPanel.style.display = isEditor ? 'none' : '';
+            if (searchToggle) searchToggle.style.display = isEditor ? 'none' : '';
+            if (editorToggle) editorToggle.style.display = isEditor ? '' : 'none';
+            _setProjectColumns(isEditor ? 'col-lg-5' : 'col-lg-6', isEditor ? 'col-lg-7' : 'col-lg-6');
+
+            if (isEditor) {
+                if (editorView) editorView.style.display = '';
+                if (resultsView) resultsView.style.display = 'none';
+                if (dashboardView) dashboardView.style.display = 'none';
+                document.querySelectorAll('#whisker-editor-toggle .whisker-view-btn').forEach(function (btn) {
+                    btn.classList.remove('whisker-view-btn--active');
+                });
+                var editorBtn = document.getElementById('whisker-view-editor-btn');
+                if (editorBtn) editorBtn.classList.add('whisker-view-btn--active');
+                _manipulateTestEditor();
+                return;
+            }
+
+            if (editorView) editorView.style.display = 'none';
+            if (resultsView) resultsView.style.display = '';
+            if (dashboardView) dashboardView.style.display = 'none';
+
+            document.querySelectorAll('#whisker-search-toggle .whisker-view-btn').forEach(function (btn) {
+                btn.classList.remove('whisker-view-btn--active');
+            });
+            var resultsBtn = document.getElementById('whisker-view-results-btn');
+            if (resultsBtn) resultsBtn.classList.add('whisker-view-btn--active');
+
+            if (window.Whisker && window.Whisker.configPanel) {
+                window.Whisker.configPanel.switchToMode(isLearning);
+            }
+        }
+
+        function _switchWhiskerTab(targetContentId, clickedBtn) {
+            document.querySelectorAll('.whisker-tab').forEach(function (btn) {
+                btn.classList.remove('active');
+            });
+            clickedBtn.classList.add('active');
+            document.querySelectorAll('#whiskerTabContent > .tab-pane').forEach(function (pane) {
+                pane.classList.toggle('active', pane.id === targetContentId);
+                pane.classList.toggle('show', pane.id === targetContentId);
+            });
+            if (window.Whisker && window.Whisker.updateFilenameLabels) {
+                window.Whisker.updateFilenameLabels();
+            }
+            if (targetContentId === 'contentProject') {
+                var mode = clickedBtn.id === 'whisker-tab-editor' ? 'editor'
+                    : clickedBtn.id === 'whisker-tab-learning' ? 'learning'
+                        : 'search';
+                _applyProjectLayout(mode);
+            }
+        }
 
     </script>
 
@@ -1328,4 +1831,5 @@
     <div id="footer" role="contentinfo"></div>
 
 </body>
+
 </html>

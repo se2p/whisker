@@ -18,12 +18,15 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import { Chromosome } from '../Chromosome';
+import { SearchAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
+import { StatementFitnessFunction } from "../../testcase/fitness/StatementFitnessFunction";
+import { Container } from "../../utils/Container";
+import { emitCdgUpdate } from "../../utils/ReportingEvents";
 import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -71,6 +74,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         if (await this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
+            // Report here too, since an instantly covered target skips the loop below entirely.
+            this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction.toString());
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
@@ -90,6 +95,11 @@ ${bestIndividual.toString()}`);
             }
             this._iterations++;
             this.updateCoverageTimeLine();
+            // Emit coverage updates to the UI
+            this._emitCoverageUpdate();
+            this._emitCdgUpdate();
+            // Report fitness updates to the UI
+            this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction.toString());
             StatisticsCollector.getInstance().incrementIterationCount();
         }
         logger.debug("1+1 EA completed at " + Date.now());
@@ -144,5 +154,16 @@ ${bestIndividual.toString()}`);
 
     setLocalSearchOperators(): void {
         throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Reports the CDG to the UI, coloring already covered statements and the single objective OnePlusOneEA
+     * is currently targeting.
+     */
+    protected override _emitCdgUpdate(): void {
+        const targetedKeys = this._fitnessFunction instanceof StatementFitnessFunction
+            ? new Set([String(this._fitnessFunction.getTargetNode().id)])
+            : new Set<string>();
+        emitCdgUpdate(Container.cdg, targetedKeys);
     }
 }

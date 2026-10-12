@@ -18,14 +18,14 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {Selection} from "../Selection";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {Randomness} from "../../utils/Randomness";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import { Chromosome } from '../Chromosome';
+import { GeneticAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { Selection } from "../Selection";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { Randomness } from "../../utils/Randomness";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
 import logger from '../../../util/logger';
 
@@ -117,6 +117,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             population = nextGeneration;
             this._iterations++;
+            this._emitFitnessUpdate(this._bestFitness, undefined, this._fitnessFunction.toString());
             this.updateStatistics();
         }
 

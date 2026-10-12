@@ -1,15 +1,16 @@
-import {NodeGene} from "../networkComponents/NodeGene";
-import {ConnectionGene} from "../networkComponents/ConnectionGene";
-import {InputConnectionMethod, NetworkChromosome} from "./NetworkChromosome";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import { NodeGene } from "../networkComponents/NodeGene";
+import { ConnectionGene } from "../networkComponents/ConnectionGene";
+import { InputConnectionMethod, NetworkChromosome } from "./NetworkChromosome";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
 import {
     AddConnectionInnovation,
     AddNodeSplitConnectionInnovation,
     NeatPopulation
 } from "../neuroevolutionPopulations/NeatPopulation";
-import {HiddenNode} from "../networkComponents/HiddenNode";
-import {ActivationFunction} from "../networkComponents/ActivationFunction";
-import {BiasNode} from "../networkComponents/BiasNode";
+import { HiddenNode } from "../networkComponents/HiddenNode";
+import { ActivationFunction } from "../networkComponents/ActivationFunction";
+import { BiasNode } from "../networkComponents/BiasNode";
+import { SerializedNode, SerializedConnection } from "../NetworkTopologyTypes";
 
 export class NeatChromosome extends NetworkChromosome {
 
@@ -122,7 +123,7 @@ export class NeatChromosome extends NetworkChromosome {
      * @param connectionMethod determines how the input layer should be connected to the given nodes.
      */
     public connectNodesToInputLayer(nodesToConnect: NodeGene[], connectionMethod: InputConnectionMethod,
-                                    inputRate = 0.3): void {
+        inputRate = 0.3): void {
         switch (connectionMethod) {
             case "sparse":
                 this.connectNodeSpriteSparse(nodesToConnect, inputRate);
@@ -290,6 +291,21 @@ export class NeatChromosome extends NetworkChromosome {
         }
 
         return network;
+    }
+
+    /**
+     * Serializes this network's nodes and enabled connections for the topology/species charts in the UI.
+     * Unlike toJSON() above (the compact save/load format), this always uses the flat {nodes, connections}
+     * shape the UI expects.
+     * @return this network's nodes and connections for a topology snapshot.
+     */
+    public toTopologyNetwork(): { nodes: SerializedNode[]; connections: SerializedConnection[] } {
+        return {
+            nodes: this.getAllNodes().map(n => n.toJSON()),
+            connections: this.connections
+                .filter(c => c.isEnabled)
+                .map(c => c.toJSON())
+        };
     }
 
     getCrossoverOperator(): any {

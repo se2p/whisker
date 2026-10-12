@@ -1,10 +1,10 @@
-import {NeatChromosome} from "../networks/NeatChromosome";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {ManyObjectiveNeatest} from "./ManyObjectiveNeatest";
-import {NeatPopulation} from "../neuroevolutionPopulations/NeatPopulation";
-import {NeatMutation} from "../operators/NeatMutation";
-import {SearchAlgorithmProperties} from "../../../search/SearchAlgorithmProperties";
-import {MioNeatestParameter} from "../hyperparameter/MioNeatestParameter";
+import { NeatChromosome } from "../networks/NeatChromosome";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { ManyObjectiveNeatest } from "./ManyObjectiveNeatest";
+import { NeatPopulation } from "../neuroevolutionPopulations/NeatPopulation";
+import { NeatMutation } from "../operators/NeatMutation";
+import { SearchAlgorithmProperties } from "../../../search/SearchAlgorithmProperties";
+import { MioNeatestParameter } from "../hyperparameter/MioNeatestParameter";
 import logger from "../../../../util/logger";
 import Arrays from "../../../utils/Arrays";
 
@@ -317,6 +317,10 @@ export class MioNeatest extends ManyObjectiveNeatest {
                 this._archive.set(selectedTarget, candidate);
                 this._archiveUncovered.delete(selectedTarget);
                 this._samplingCounter.delete(selectedTarget);
+                if (selectedTarget === this._currentTarget) {
+                    this._emitCoveredNetworkTopology(selectedTarget, candidate);
+                    this._emitCoveredSpeciesTopology(selectedTarget, this._population, candidate);
+                }
                 this.updateBestIndividualAndStatistics();
                 continue;
             }

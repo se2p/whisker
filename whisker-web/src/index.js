@@ -4,10 +4,31 @@ import {NeatestSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suite
 import {QSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/QSuiteExecutor';
 import {StateActionRecorder} from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
+import {StatisticsCollector} from 'whisker-main/src/whisker/utils/StatisticsCollector';
 import {FileSaver} from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
 import {Container} from 'whisker-main/src/whisker/utils/Container';
 import JSZip from 'jszip';
+
+/* Algorithm config map — bundled at build time to avoid CORS issues with file:// */
+window._whiskerConfigMap = {
+    'config/mio.json': JSON.stringify(require('../../config/mio.json')),
+    'config/mosa.json': JSON.stringify(require('../../config/mosa.json')),
+    'config/random.json': JSON.stringify(require('../../config/random.json')),
+    'config/oneplusone.json': JSON.stringify(require('../../config/oneplusone.json')),
+    'config/randomSearch.json': JSON.stringify(require('../../config/randomSearch.json')),
+    'config/Neuroevolution/neatest.json': JSON.stringify(require('../../config/Neuroevolution/neatest.json')),
+    'config/Neuroevolution/neatestBackprop.json': JSON.stringify(require('../../config/Neuroevolution/neatestBackprop.json')),
+    'config/Neuroevolution/mio.json': JSON.stringify(require('../../config/Neuroevolution/mio.json')),
+    'config/Neuroevolution/mosa.json': JSON.stringify(require('../../config/Neuroevolution/mosa.json')),
+    'config/Neuroevolution/cosineNovelty.json': JSON.stringify(require('../../config/Neuroevolution/cosineNovelty.json')),
+    'config/Neuroevolution/eventNovelty.json': JSON.stringify(require('../../config/Neuroevolution/eventNovelty.json')),
+    'config/Neuroevolution/newsd.json': JSON.stringify(require('../../config/Neuroevolution/newsd.json')),
+    'config/Neuroevolution/random.json': JSON.stringify(require('../../config/Neuroevolution/random.json')),
+    'config/Neuroevolution/score.json': JSON.stringify(require('../../config/Neuroevolution/score.json')),
+    'config/Neuroevolution/survive.json': JSON.stringify(require('../../config/Neuroevolution/survive.json')),
+    'config/ReinforcementLearning/dql.json': JSON.stringify(require('../../config/ReinforcementLearning/dql.json'))
+};
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -18,8 +39,6 @@ const snippetsDE = require('./locales/de/snippets.json');
 const snippetsEN = require('./locales/en/snippets.json');
 const tutorialDE = require('./locales/de/tutorial.json');
 const tutorialEN = require('./locales/en/tutorial.json');
-const contactDE = require('./locales/de/contact.json');
-const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
@@ -46,16 +65,35 @@ const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
 require('./components/footer'); // attaches an event listener as side effect
 require('./components/header'); // attaches an event listener as side effect
+const ConfigPanel = require('./components/config-panel');
 const ModelEditor = require('./components/model-editor');
+const NetworkTopology = require('./components/network-topology');
+const SpeciesNetworks = require('./components/species-networks');
+const ConsoleLog = require('./components/console-log');
+const CoverageCurve = require('./components/coverage-curve');
+const FitnessChart = require('./components/fitness-chart');
+const SpeciesPopulationChart = require('./components/species-population-chart');
+const CdgGraph = require('./components/cdg-graph');
+const SourceCode = require('./components/source-code');
 
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
+// Dashboard cards reset/emptied together whenever a new project is loaded or a search run starts.
+const DASHBOARD_CARDS = [
+    'networkTopology', 'speciesNetworks', 'coverageCurve', 'fitnessChart', 'speciesPopulationChart', 'cdgGraph',
+    'sourceCode'
+];
+const resetDashboardCards = () => DASHBOARD_CARDS.forEach(key => Whisker[key] && Whisker[key].reset());
+const startEmptyDashboardCards = (keys = DASHBOARD_CARDS) =>
+    keys.forEach(key => Whisker[key] && Whisker[key].startEmpty());
+
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const accSlider = $('#acceleration-factor').slider();
+const _sliderToAcceleration = val => (val >= 100 ? '∞' : val <= 0 ? parseFloat((1 + val * 0.05).toFixed(2)) : val);
+const accSlider = $('#acceleration-factor').slider({formatter: _sliderToAcceleration});
 
 const useBBTToggle = $('#use-bbt-tests');
 const useBBTAddCommentToggleRow = $('#use-bbt-tests-add-comment-row');
@@ -125,13 +163,32 @@ const loadModelFromString = function (models, userModels) {
     }
 };
 
+// A generated Neuroevolution suite wraps its networks as {Static, Dynamic}; the suite executor wants the Dynamic
+// part ({Configs, Networks}), which is what a saved dynamic.json holds. Returns null if the text isn't JSON.
+const _dynamicSuite = function (suiteText) {
+    try {
+        const suite = JSON.parse(suiteText);
+        return suite.Dynamic || suite;
+    } catch (e) {
+        return null;
+    }
+};
+
+// One table row per network; each is run through the suite executor (see runSingleNetwork).
+const _networkRows = function (dynamicSuite) {
+    return Object.keys((dynamicSuite && dynamicSuite.Networks) || {})
+        .map(name => ({name, description: '', categories: [], type: 'network'}));
+};
+
 const loadTestsFromString = async function (string) {
     // Check for Neuroevolution TestSuites.
     const testString = `${string}`;
     if ((testString.includes('"Static":') && testString.includes('"Dynamic":')) ||
         (testString.toLowerCase().includes('network') && testString.toLowerCase().includes('nodes'))) {
-        Whisker.tests = testString;
+        const dynamicSuite = _dynamicSuite(testString);
+        Whisker.tests = dynamicSuite ? JSON.stringify(dynamicSuite) : testString;
         Whisker.testEditor.setValue(string);
+        Whisker.testTable.setTests(_networkRows(dynamicSuite));
         return testString;
     }
 
@@ -316,21 +373,23 @@ const _disableVMRelatedButtons = function (exception) {
     $(`.vm-related:not(${exception})`).prop('disabled', true);
 };
 
+const _algoRelated = '#whisker-config-panel input, #whisker-config-panel button, #whisker-config-panel select, #run-all-tests, #applyChanges, .editor-save, #bbt-toggles input, #seed';
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
+    $(_algoRelated).prop('disabled', true);
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
-    const configName =
-        Whisker.configFileSelect.hasName() ?
-            Whisker.configFileSelect.getName() :
-            'mio.json';
+    const configName = window._whiskerSelectedConfig ?
+        (JSON.parse(window._whiskerSelectedConfig).algorithm || 'selected') :
+        'mio.json';
     logger.info(`loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
-    const config = await Whisker.configFileSelect.loadAsString();
+    const config = window._whiskerSelectedConfig || window._whiskerConfigMap['config/mio.json'];
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
     const generateBBTs = useBBTToggle.is(':checked');
@@ -545,8 +604,30 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     return [coveragePerTest, timingsPerTest];
 };
 
+// The one network of a Neuroevolution suite that is being run on its own (see runSingleNetwork), if any.
+let singleNetwork = null;
+
+const _networkNames = suiteText => Object.keys(JSON.parse(suiteText).Networks);
+
+// The suite to execute: the loaded one, or only the single network picked to run alone.
+const _suiteToRun = function () {
+    if (singleNetwork === null) {
+        return Whisker.tests;
+    }
+    const suite = JSON.parse(Whisker.tests);
+    return JSON.stringify({...suite, Networks: {[singleNetwork]: suite.Networks[singleNetwork]}});
+};
+
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
+
+    // Several networks run one after another, each on its own.
+    if (singleNetwork === null && Whisker.tests && _isNeatestSuite() && _networkNames(Whisker.tests).length > 1) {
+        for (const name of _networkNames(Whisker.tests)) {
+            await runSingleNetwork({name}); // eslint-disable-line no-use-before-define
+        }
+        return;
+    }
 
     const durationValue = Number(document.querySelector('#model-duration').value);
     Whisker.modelTester.duration = durationValue <= 0 || Number.isNaN() ? 35000 : durationValue * 1000;
@@ -577,6 +658,9 @@ const runAllTests = async function () {
     if (Whisker.tests && _isAgentSuite()) {
         let coverage;
         let summary;
+        const networkNames = _isNeatestSuite() ? _networkNames(_suiteToRun()) : [];
+        const resultsBefore = StatisticsCollector.getInstance().agentSuiteResults.length;
+        Whisker.testTable.showNetworkRuns(networkNames);
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
 
@@ -591,7 +675,8 @@ const runAllTests = async function () {
             const mutantDownload = document.querySelector('#container').downloadMutants;
 
             properties.projectName = Whisker.projectFileSelect.getName();
-            properties.testName = Whisker.testFileSelect.getName();
+            // A suite generated in the app has no test file behind it.
+            properties.testName = Whisker.testFileSelect.hasName() ? Whisker.testFileSelect.getName() : 'generated';
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
@@ -603,13 +688,16 @@ const runAllTests = async function () {
             let suiteExecutor;
             if (_isNeatestSuite()) {
                 suiteExecutor = new NeatestSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties,
-                    Whisker.tests);
+                    _suiteToRun());
             } else {
                 const zip = await JSZip.loadAsync(Whisker.tests);
                 suiteExecutor = new QSuiteExecutor(Whisker.scratch.project, Whisker.scratch.vm, properties, zip);
             }
 
             const [csv, spriteTraces, mutantPrograms] = await suiteExecutor.execute(Whisker.modelTester);
+            // The networks' own results come first, ahead of any mutant runs.
+            Whisker.testTable.setNetworkResults(networkNames,
+                StatisticsCollector.getInstance().agentSuiteResults.slice(resultsBefore));
             summary = Container.vmWrapper.getTestResultsSummary();
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0) {
@@ -623,6 +711,7 @@ const runAllTests = async function () {
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csv);
         } finally {
+            Whisker.testTable.updateAfterAbort(); // clears the spinner if the run failed
             _showRunIcon();
             enableVMRelatedButtons();
             accSlider.slider('enable');
@@ -701,6 +790,20 @@ const runTest = async function (test) {
 };
 
 /**
+ * Runs one network of the loaded Neuroevolution suite, by running the suite with only that network in it.
+ *
+ * @param {object} network The network's table row.
+ */
+const runSingleNetwork = async function (network) {
+    singleNetwork = network.name;
+    try {
+        await runAllTests();
+    } finally {
+        singleNetwork = null;
+    }
+};
+
+/**
  * Runs a single test. Detects if it's a Whisker test or a block-based test.
  *
  * @param {object} test The test object to run.
@@ -708,6 +811,8 @@ const runTest = async function (test) {
 const runSingleTest = async function (test) {
     if (test.type && test.type === 'BBT') {
         await runBBTTest(test);
+    } else if (test.type === 'network') {
+        await runSingleNetwork(test);
     } else {
         await runTest(test);
     }
@@ -891,7 +996,10 @@ const injectTestsFromTestStore = function () {
  */
 const handleOnLoadProjectFile = async function (fileSelect) {
     const project = await fileSelect.loadAsArrayBuffer();
+    resetDashboardCards();
     await Whisker.scratch.loadProject(project);
+    const placeholder = document.getElementById('scratch-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
 
     // BBTs contained in _project_ files are not respected!
     const numberOfContainedBBTs = removeAllBBTTestsFromCurrentProject();
@@ -960,6 +1068,14 @@ const handleOnLoadTestFile = async function (fileSelect) {
     }
 };
 
+const localize = locI18next.init(i18next, {
+    selectorAttr: 'data-i18n', // selector for translating elements
+    targetAttr: 'i18n-target',
+    optionsAttr: 'i18n-options',
+    useOptionsAttr: false,
+    parseDefaultValueFromContent: true
+});
+
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputLog = new Output($('#output-log')[0]);
@@ -977,7 +1093,18 @@ const initComponents = function () {
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => logger.error(result.error));
 
+    Whisker.configPanel = new ConfigPanel(document.getElementById('whisker-config-panel'));
     Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
+    Whisker.consoleLog = new ConsoleLog(document.getElementById('whisker-dashboard-view'));
+    Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'));
+    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'));
+    Whisker.sourceCode = new SourceCode(document.getElementById('whisker-dashboard-view'));
+    Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'));
+    Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'));
+    Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'));
+    Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'));
+    localize('#body'); // translates the data-i18n markup the dashboard cards just built
+
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
@@ -990,7 +1117,17 @@ const initComponents = function () {
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer());
+        async fileSelect => {
+            const str = await fileSelect.loadAsString();
+            Whisker.configPanel.applyUploadedConfig(str, fileSelect.getName());
+        });
+
+    Whisker.groundTruthFileSelect = new FileSelect($('#fileselect-ground-truth')[0],
+        async fileSelect => {
+            document.querySelector('#container').groundTruth = await fileSelect.loadAsString();
+            const span = document.getElementById('ground-truth-filename');
+            if (span) span.textContent = fileSelect.getName();
+        });
 
 
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
@@ -1032,24 +1169,10 @@ const _addFileListeners = function () {
         const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
-    $('#fileselect-project').on('change', event => {
-        const fileName = Whisker.projectFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
+    $('#fileselect-project').on('change', () => {
         if (document.querySelector('#container').stateActionRecorder) {
             Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
         }
-    });
-    $('#fileselect-tests').on('change', event => {
-        const fileName = Whisker.testFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-models').on('change', event => {
         const fileName = Whisker.modelFileSelect.getName();
@@ -1061,13 +1184,16 @@ const _addFileListeners = function () {
     });
 };
 
+const _formatAcceleration = val => _sliderToAcceleration(val);
+
 const initEvents = function () {
+
     $('#acceleration-factor')
         .on('slide', slideEvt => {
-            $('#acceleration-value').text(slideEvt.value);
+            $('#acceleration-value').text(_formatAcceleration(slideEvt.value));
         })
         .on('change', clickEvt => {
-            $('#acceleration-value').text(clickEvt.value.newValue);
+            $('#acceleration-value').text(_formatAcceleration(clickEvt.value.newValue));
         });
     $('#green-flag').on('click', () => {
         if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
@@ -1125,7 +1251,7 @@ const initEvents = function () {
                 FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
-                Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
+                Promise.resolve(window._whiskerSelectedConfig || window._whiskerConfigMap['config/mio.json']).then(config => Whisker.stateActionRecorder.startRecording(config));
                 Whisker.scratch.enableInput();
             }
         } else if (Whisker.inputRecorder.isRecording()) {
@@ -1237,30 +1363,71 @@ const initEvents = function () {
     useBBTToggle.on('change', () => {
         useBBTAddCommentToggleRow.toggle(useBBTToggle.is(':checked'));
     });
+    let _searchActive = false;
+
+    const _resetSearchButton = () => {
+        _searchActive = false;
+        $('#stop-search').hide();
+        $('#run-search').prop('disabled', false)
+            .text(i18next.t('search'));
+        accSlider.slider('enable');
+        _enableVMRelatedButtons();
+        $(_algoRelated).prop('disabled', false);
+        document.getElementById('whisker-tab-search').disabled = false;
+        document.getElementById('whisker-tab-learning').disabled = false;
+        document.getElementById('whisker-tab-editor').disabled = false;
+    };
+
+    const _resetProjectView = () => {
+        Whisker.testTable.setTests([]);
+        if (Whisker.projectFileSelect && Whisker.projectFileSelect.length() > 0) {
+            Whisker.projectFileSelect.loadAsArrayBuffer().then(project =>
+                Whisker.scratch.loadProject(project)
+            );
+        }
+    };
+
+    $('#stop-search').on('click', () => {
+        if (Container.vmWrapper) {
+            Container.vmWrapper.abort();
+        }
+        _resetSearchButton();
+        _resetProjectView();
+    });
+
     $('#run-search')
         .click('click', () => {
             if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t('test-generation'), i18next.t('no-project'));
             } else {
-                $('#run-search').hide();
-                $('#search-running').show();
+                _searchActive = true;
+                if (Whisker.consoleLog) Whisker.consoleLog.clear();
+                const _selectedConfig = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
+                if (Whisker.networkTopology && _selectedConfig.testGenerator !== 'reinforcementLearning') Whisker.networkTopology.startEmpty();
+                else if (Whisker.networkTopology) Whisker.networkTopology.reset();
+                startEmptyDashboardCards(DASHBOARD_CARDS.filter(key => key !== 'networkTopology'));
+                const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
+                document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
+                document.getElementById('whisker-tab-editor').disabled = true;
+                $('#run-search').prop('disabled', true)
+                    .html('<i class="fas fa-circle-notch fa-spin result-spinner"></i>');
+                $('#stop-search').show();
                 const tests = runSearch();
-                tests.then(
-                    result => {
-                        if ('agentTests' in result){
-                            Whisker.testEditor.setAgentTests(result.agentTests);
-                        } else {
-                            loadTestsFromString(result.javaScriptText).then();
-                        }
-                        _jumpTo('#test-table');
-                        $('#run-search').show();
-                        $('#search-running').hide();
+                tests.then(result => {
+                    if (!_searchActive) return;
+                    if ('agentTests' in result) {
+                        Whisker.testEditor.setAgentTests(result.agentTests);
+                    } else {
+                        loadTestsFromString(result.javaScriptText).then();
                     }
-                );
+                    _jumpTo('#test-table');
+                    _resetSearchButton();
+                }).catch(() => {
+                    _resetSearchButton();
+                });
             }
         })
         .show();
-    $('#search-running').hide();
     useBBTAddCommentToggleRow.hide();
     _addFileListeners();
 };
@@ -1273,19 +1440,11 @@ const toggleComponents = function () {
             if (input) $('#toggle-input').click();
             if (accelerationFactor) {
                 accSlider.slider('setValue', accelerationFactor);
-                $('#acceleration-value').text(accelerationFactor);
+                $('#acceleration-value').text(_formatAcceleration(accelerationFactor));
             }
         }
     }
 };
-
-const localize = locI18next.init(i18next, {
-    selectorAttr: 'data-i18n', // selector for translating elements
-    targetAttr: 'i18n-target',
-    optionsAttr: 'i18n-options',
-    useOptionsAttr: false,
-    parseDefaultValueFromContent: true
-});
 
 const _updateLang = () => {
     localize('#body');
@@ -1293,6 +1452,20 @@ const _updateLang = () => {
     if (Whisker.testTable) {
         Whisker.testTable.hideTestDetails();
     }
+    if (Whisker.networkTopology) {
+        Whisker.networkTopology.updateI18n();
+    }
+    if (Whisker.speciesNetworks) {
+        Whisker.speciesNetworks.updateI18n();
+    }
+    if (Whisker.fitnessChart) {
+        Whisker.fitnessChart.updateI18n();
+    }
+    if (Whisker.speciesPopulationChart) {
+        Whisker.speciesPopulationChart.updateI18n();
+    }
+    $('.lang-btn').removeClass('lang-btn-active');
+    $(`.lang-btn[data-lng="${i18next.language}"]`).addClass('lang-btn-active');
 };
 
 const _initLangSelect = function () {
@@ -1337,16 +1510,14 @@ const loadHeader = function () {
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
         $('#tutorial').attr('href', 'tutorial.html');
-        $('#contact').attr('href', 'contact.html');
         $('#about').attr('href', 'about.html');
-        $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
+        $('.whisker-logo-img').attr('src', '../assets/whisker-text-logo.png');
         $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
         $('#tutorial').attr('href', 'html/tutorial.html');
-        $('#contact').attr('href', 'html/contact.html');
         $('#about').attr('href', 'html/about.html');
-        $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
+        $('.whisker-logo-img').attr('src', 'assets/whisker-text-logo.png');
         $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
     $('#tutorial').attr('target', '_blank');
@@ -1385,7 +1556,6 @@ const loadFooter = function () {
 
 $(document)
     .ready(() => {
-        $('#scratch-controls').hide();
         loadHeader();
         loadFooter();
         initScratch();
@@ -1414,7 +1584,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'about', 'snippets', 'tutorial', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
+        ns: ['index', 'about', 'snippets', 'tutorial', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -1425,7 +1595,6 @@ i18next
                 about: aboutDE,
                 snippets: snippetsDE,
                 tutorial: tutorialDE,
-                contact: contactDE,
                 imprint: imprintDE,
                 privacy: privacyDE,
                 footer: footerDE,
@@ -1437,7 +1606,6 @@ i18next
                 about: aboutEN,
                 snippets: snippetsEN,
                 tutorial: tutorialEN,
-                contact: contactEN,
                 imprint: imprintEN,
                 privacy: privacyEN,
                 footer: footerEN,
@@ -1459,20 +1627,22 @@ $('#form-lang').on('change', () => {
     i18next.changeLanguage(lng).then(_updateLang());
 });
 
+$(document).on('click', '.lang-btn', event => {
+    const lng = $(event.currentTarget).data('lng');
+    $('#lang-select').val(lng);
+    $('#form-lang').trigger('change');
+    $('.lang-btn').removeClass('lang-btn-active');
+    $(event.currentTarget).addClass('lang-btn-active');
+});
+
 const _updateFilenameLabels = () => {
-    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
-        $('#project-label').html(Whisker.projectFileSelect.getName());
-    }
-    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
-        $('#tests-label').html(Whisker.testFileSelect.getName());
-    }
-    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
-        $('#config-label').html(Whisker.configFileSelect.getName());
-    }
     if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 };
+
+// Called by the tab bar in index.html after it switches tabs.
+window.Whisker.updateFilenameLabels = _updateFilenameLabels;
 
 $('.nav-link').on('click', event => {
     const lng = $('#lang-select').val();

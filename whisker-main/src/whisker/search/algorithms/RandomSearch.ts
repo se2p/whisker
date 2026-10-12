@@ -18,12 +18,12 @@
  *
  */
 
-import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
-import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import { Chromosome } from '../Chromosome';
+import { SearchAlgorithmProperties } from '../SearchAlgorithmProperties';
+import { ChromosomeGenerator } from '../ChromosomeGenerator';
+import { FitnessFunction } from "../FitnessFunction";
+import { SearchAlgorithmDefault } from "./SearchAlgorithmDefault";
+import { StatisticsCollector } from "../../utils/StatisticsCollector";
 import logger from '../../../util/logger';
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
@@ -73,7 +73,10 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                     this._bestIndividuals = [];
                     this._bestIndividuals.push(bestIndividual);
                 }
+                // Report fitness updates to the UI
+                this._emitFitnessUpdate(bestFitness, undefined, this._fitnessFunction?.toString());
             }
+
             this.updateStatistics();
             this._iterations++;
             logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);
@@ -98,6 +101,10 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this.updateCoverageTimeLine();
+        // Report coverage updates to the UI
+        this._emitCoverageUpdate();
+        // Report the CDG to the UI - RandomSearch has no target, so nothing is marked as "targeted"
+        this._emitCdgUpdate();
     }
 
     getNumberOfIterations(): number {

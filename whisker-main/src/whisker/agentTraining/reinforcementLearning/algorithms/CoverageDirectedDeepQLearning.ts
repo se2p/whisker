@@ -1,11 +1,12 @@
-import {DeepQLearning} from "./DeepQLearning";
-import {DeepQLearningHyperparameter} from "../hyperparameter/DeepQLearningHyperparameter";
-import {RLEnvironment} from "../misc/RLEnvironment";
-import {QNetwork} from "../agents/QNetwork";
+import { DeepQLearning } from "./DeepQLearning";
+import { DeepQLearningHyperparameter } from "../hyperparameter/DeepQLearningHyperparameter";
+import { RLEnvironment } from "../misc/RLEnvironment";
+import { QNetwork } from "../agents/QNetwork";
 import logger from "../../../../util/logger";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import {CoverageReward} from "../rewards/CoverageReward";
-import {StatementFitnessFunction} from "../../../testcase/fitness/StatementFitnessFunction";
+import { StatisticsCollector } from "../../../utils/StatisticsCollector";
+import { CoverageReward } from "../rewards/CoverageReward";
+import { StatementFitnessFunction } from "../../../testcase/fitness/StatementFitnessFunction";
+import { Container } from "../../../utils/Container";
 
 export class CoverageDirectedDeepQLearning extends DeepQLearning {
 
@@ -22,13 +23,27 @@ export class CoverageDirectedDeepQLearning extends DeepQLearning {
     public override async findSolution(): Promise<Map<number, QNetwork>> {
 
         this._startTime = Date.now();
+        // Remembers the objective the previous outer-loop iteration optimized for, so that once we move on
+        // to the next objective below, we can tell whether that previous one ended up covered.
+        let _prevObjectiveKey: number | null = null;
+        let _prevObjectiveLabel: string | null = null;
 
         // Outer Loop: Iterate over all yet uncovered coverage objectives.
         while (this._getUncoveredObjectives().length > 0 && !(await this._stoppingCondition.isFinished(this))) {
+            // Each objective's inner Q-learning loop runs independently, so the fitness chart has no way to
+            // know when one objective's data ends and the next begins - emitting it as covered here lets the
+            // chart (which already listens for this event) archive that objective's history before we start
+            // reporting for the next one.
+            if (_prevObjectiveKey !== null && this._archive.has(_prevObjectiveKey) && Container.vm) {
+                Container.vm.emit('OBJECTIVE_COVERED', { objectiveKey: _prevObjectiveKey, label: _prevObjectiveLabel });
+            }
             this._initialize();
 
             const currentObjective = this._selectNextObjective();
+            this._currentTargetObjective = currentObjective;
             const objectiveKey = this._getKeyForObjective(currentObjective);
+            _prevObjectiveKey = objectiveKey;
+            _prevObjectiveLabel = currentObjective.toString();
             const rewardFunction = new CoverageReward(currentObjective, this._actingNetwork);
 
             logger.info(`Current objective: ${currentObjective}`);
