@@ -15,6 +15,15 @@ const fs = require('fs');
 const URL = 'dist/index.html';
 
 const ACCELERATION = Infinity;
+let pageCrash = null;
+
+function assertNoPageCrash() {
+    const error = pageCrash;
+    pageCrash = null;
+    if (error) throw error;
+}
+
+afterEach(assertNoPageCrash);
 
 /**
  * Uploads a file into one of the GUI's file inputs.
@@ -36,6 +45,14 @@ async function uploadFile(selector, filePath) {
     }
 
     await input.uploadFile(filePath);
+    await page.evaluate(async inputSelector => {
+        const fileSelect = Object.values(window.Whisker).find(value =>
+            value && value.fileselect === document.querySelector(inputSelector));
+        if (!fileSelect) {
+            throw new Error(`No FileSelect component for ${inputSelector}`);
+        }
+        await fileSelect.loadPromise;
+    }, selector);
 }
 
 /**
@@ -94,20 +111,51 @@ async function openWhiskerPage() {
     }
 
     await jestPuppeteer.resetBrowser();
-    page = await browser.newPage();
-
-    page.on('error', msg => console.error(msg.text()))
-        .on('pageerror', async err => {
-            console.error(err.message);
-            // Not very graceful, but immediately shuts the test down. There must be a nicer way?
-            await page.close();
-            return Promise.reject(err);
-        });
+    page.on('error', error => {
+        if (!pageCrash) pageCrash = error;
+    });
 
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 
     await page.waitForFunction(() => window.Whisker && window.Whisker.projectFileSelect &&
         window.Whisker.configFileSelect);
+}
+
+/**
+ * Wait for a browser-side predicate and return its captured output.
+ * @param {Function} predicate returns the output when ready, or false to keep waiting
+ * @param {number} timeout maximum wait in milliseconds
+ * @param {...*} args serializable arguments passed to the predicate
+ * @returns {Promise<*>} the matching output
+ */
+async function waitForOutput(predicate, timeout, ...args) {
+    try {
+        const result = await page.waitForFunction(predicate, {polling: 250, timeout}, ...args);
+        try {
+            return await result.jsonValue();
+        } finally {
+            await result.dispose();
+        }
+    } catch (error) {
+        assertNoPageCrash();
+        throw error;
+    }
+}
+
+/**
+ * Wait for output in the browser without flooding the DevTools connection.
+ * @param {string} selector output element selector
+ * @param {string|string[]} markers completion or error messages to wait for
+ * @param {number} timeout maximum wait in milliseconds
+ * @returns {Promise<string>} the output containing a matching message
+ */
+async function waitForLog(selector, markers, timeout = 90000) {
+    const texts = Array.isArray(markers) ? markers : [markers];
+    return waitForOutput((outputSelector, expected) => {
+        const output = document.querySelector(outputSelector);
+        const log = output && output.innerHTML;
+        return log && expected.some(text => log.includes(text)) ? log : false;
+    }, timeout, selector, texts);
 }
 
 /**
@@ -121,10 +169,13 @@ function sleep(timeout) {
 
 module.exports = {
     ACCELERATION,
+    assertNoPageCrash,
     loadProject,
     openWhiskerPage,
     openSearchTab,
     setAcceleration,
     uploadFile,
+    waitForLog,
+    waitForOutput,
     sleep
 };

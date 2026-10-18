@@ -1,26 +1,19 @@
-const {loadProject, openWhiskerPage, sleep} = require('../utils/whisker-gui');
+const {loadProject, openWhiskerPage, sleep, uploadFile, waitForLog} = require('../utils/whisker-gui');
 
 const timeout = 30000;
 
 async function getLogAfterSearch() {
-    const output = await page.$('#output-log .output-content');
-    while (true) {
-        const log = await (await output.getProperty('innerHTML')).jsonValue();
-        if (log.includes('uncoveredBlocks')) {
-            const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
-            const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex)
-                .join('\n');
-            return JSON.parse(uncoveredBlocksLog);
-        }
-        if (log.includes('empty project')) {
-            return 'empty project';
-        }
-    }
+    const log = await waitForLog('#output-log .output-content', ['uncoveredBlocks', 'empty project'], timeout - 3000);
+    if (log.includes('empty project')) return 'empty project';
+    const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
+    const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex)
+        .join('\n');
+    return JSON.parse(uncoveredBlocksLog);
 }
 
 beforeEach(async () => {
     await openWhiskerPage();
-    await (await page.$('#fileselect-config')).uploadFile('test/integration/testConfigs/random.json');
+    await uploadFile('#fileselect-config', 'test/integration/testConfigs/random.json');
 });
 
 describe('Corner cases handling', () => {

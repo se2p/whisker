@@ -1,27 +1,22 @@
-const {loadProject, openWhiskerPage} = require('../utils/whisker-gui');
+const {loadProject, openWhiskerPage, uploadFile, waitForLog} = require('../utils/whisker-gui');
 
 const timeout = 20000;
 
 async function getCSVResults() {
-    const output = await page.$('#output-log .output-content');
-    while (true) {
-        const log = await (await output.getProperty('innerHTML')).jsonValue();
-        if (log.includes('projectName')) {
-            const logArray = log.trim().split('\n');
-            const csvHeaderIndex = logArray.findIndex(logLine => logLine.includes('statementCoverage'));
-            const csvHeader = logArray[csvHeaderIndex];
-            const originalCSVArray = logArray[csvHeaderIndex + 1].split(',');
-            const mutantCSVArray = logArray[csvHeaderIndex + 2].split(',');
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statementCoverage'));
-            const totalBlocksIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statements'));
-            return {
-                originalTotal: originalCSVArray[totalBlocksIndex],
-                originalCoverage: originalCSVArray[coverageIndex],
-                mutantTotal: mutantCSVArray[totalBlocksIndex],
-                mutantCoverage: mutantCSVArray[coverageIndex]
-            };
-        }
-    }
+    const log = await waitForLog('#output-log .output-content', 'projectName', timeout - 3000);
+    const logArray = log.trim().split('\n');
+    const csvHeaderIndex = logArray.findIndex(logLine => logLine.includes('statementCoverage'));
+    const csvHeader = logArray[csvHeaderIndex];
+    const originalCSVArray = logArray[csvHeaderIndex + 1].split(',');
+    const mutantCSVArray = logArray[csvHeaderIndex + 2].split(',');
+    const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statementCoverage'));
+    const totalBlocksIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statements'));
+    return {
+        originalTotal: originalCSVArray[totalBlocksIndex],
+        originalCoverage: originalCSVArray[coverageIndex],
+        mutantTotal: mutantCSVArray[totalBlocksIndex],
+        mutantCoverage: mutantCSVArray[coverageIndex]
+    };
 }
 
 beforeEach(async () => {
@@ -30,7 +25,7 @@ beforeEach(async () => {
 
 describe('Scratch Mutations', () => {
     test('Key-Replacement-Mutation sensing block', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/PressKeyTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/PressKeyTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['KRM']);
@@ -42,7 +37,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Key-Replacement-Mutation hat block', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/PressKeyTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/PressKeyTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['KRM']);
@@ -54,7 +49,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Single-Block-Deletion-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['SBD']);
@@ -66,7 +61,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Script-Deletion-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['SDM']);
@@ -78,7 +73,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Arithmetic-Operator-Replacement-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['AOR']);
@@ -90,7 +85,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Relational-Operator-Replacement-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['ROR']);
@@ -102,7 +97,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Logical-Operator-Replacement-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['LOR']);
@@ -114,7 +109,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Variable-Replacement-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['VRM']);
@@ -126,7 +121,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Negate-Condition-Mutation', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/mutation/WaitTest.js');
+        await uploadFile('#fileselect-tests', 'test/integration/mutation/WaitTest.js');
         await page.evaluate(m => {
             document.querySelector('#container').mutators = m;
         }, ['NCM']);
