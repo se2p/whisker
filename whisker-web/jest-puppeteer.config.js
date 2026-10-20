@@ -1,4 +1,5 @@
 module.exports = {
+    browserContext: 'incognito',
     launch: {
         headless: process.env.HEADLESS !== 'false',
         slowMo: process.env.SLOWMO ? process.env.SLOWMO : 0,

@@ -1,22 +1,25 @@
-const {loadProject, openWhiskerPage} = require('../utils/whisker-gui');
+const {loadProject, openWhiskerPage, uploadFile, waitForOutput} = require('../utils/whisker-gui');
 
 const timeout = 30000;
 
 /**
  * Reads the distances of fitness, approach level, and branch distance from #output-log
+ * @param {boolean} requireUncoveredBlock wait until at least one uncovered block is present
  */
-async function readFitnessLog() {
-    const output = await page.$('#output-log .output-content');
-    while (true) {
-        const outputContent = await output.getProperty('innerHTML');
-        const log = await outputContent.jsonValue();
-        if (log.includes('uncoveredBlocks')) {
-            const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
-            const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex)
-                .join('\n');
-            return JSON.parse(uncoveredBlocksLog);
+async function readFitnessLog(requireUncoveredBlock = false) {
+    return waitForOutput(requireBlock => {
+        const log = document.querySelector('#output-log .output-content').innerHTML;
+        if (!log.includes('uncoveredBlocks')) return false;
+        const csvHeaderIndex = log.split('\n').findIndex(line => line.includes('projectName'));
+        const json = log.split('\n').slice(0, csvHeaderIndex)
+            .join('\n');
+        try {
+            const result = JSON.parse(json);
+            return !requireBlock || result.uncoveredBlocks.length > 0 ? result : false;
+        } catch (error) {
+            return false; // The log may still contain a partial JSON result.
         }
-    }
+    }, timeout - 3000, requireUncoveredBlock);
 }
 
 /**
@@ -25,10 +28,7 @@ async function readFitnessLog() {
 async function checkFitnessValuesForExecutionHaltingBlocks() {
     const runSearch = await page.$('#run-search');
     await runSearch.evaluate(t => t.click());
-    let log = await readFitnessLog();
-    while (typeof log.uncoveredBlocks[0] === 'undefined') {
-        log = await readFitnessLog();
-    }
+    const log = await readFitnessLog(true);
     const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
     await expect(approachLevel).toBe(0);
     const branchDistance = log.uncoveredBlocks[0].BranchDistance;
@@ -40,7 +40,7 @@ async function checkFitnessValuesForExecutionHaltingBlocks() {
 
 beforeEach(async () => {
     await openWhiskerPage();
-    await (await page.$('#fileselect-config')).uploadFile('test/integration/testConfigs/fitnessTests.json');
+    await uploadFile('#fileselect-config', 'test/integration/testConfigs/fitnessTests.json');
 });
 
 describe('Fitness tests', () => {

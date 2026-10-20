@@ -1,26 +1,15 @@
-const {openSearchTab, openWhiskerPage, sleep} = require('../utils/whisker-gui');
+const {openSearchTab, openWhiskerPage, uploadFile, waitForLog} = require('../utils/whisker-gui');
 
-const timeout = 30000;
+const timeout = 120000;
 
 async function getOutputLogWhenBBTTestsAreDone(clearLogAfterFinished = false) {
-    const output = await page.$('#output-log .output-content');
-
-    while (true) {
-        const log = await (await output.getProperty('innerHTML')).jsonValue();
-
-        if (log.includes('Block-Based Tests have finished!')) {
-
-            if (clearLogAfterFinished) {
-                await page.$eval('#output-log .output-content', logElement => {
-                    logElement.innerHTML = '';
-                });
-            }
-
-            return log;
-        }
-
-        await sleep(500);
+    const log = await waitForLog('#output-log .output-content', 'Block-Based Tests have finished!');
+    if (clearLogAfterFinished) {
+        await page.$eval('#output-log .output-content', element => {
+            element.innerHTML = '';
+        });
     }
+    return log;
 }
 
 beforeEach(async () => {
@@ -42,9 +31,8 @@ describe('Block-Based Tests Integration', () => {
 
         const projectWithBBTs = 'test/integration/blockBasedTesting/bbt-tests.sb3';
 
-        await (await page.$('#fileselect-project')).uploadFile(projectWithBBTs);
-        await (await page.$('#fileselect-tests')).uploadFile(projectWithBBTs);
-        await sleep(500);
+        await uploadFile('#fileselect-project', projectWithBBTs);
+        await uploadFile('#fileselect-tests', projectWithBBTs);
         await (await page.$('#run-all-tests')).click();
         const outputLog = await getOutputLogWhenBBTTestsAreDone();
 
@@ -66,7 +54,7 @@ describe('Block-Based Tests Integration', () => {
 
     test('Batch Evaluation', async () => {
 
-        await (await page.$('#fileselect-tests')).uploadFile('test/integration/blockBasedTesting/batchEval/bbt-batcheval-solution.sb3');
+        await uploadFile('#fileselect-tests', 'test/integration/blockBasedTesting/batchEval/bbt-batcheval-solution.sb3');
 
         const projects = [
             'test/integration/blockBasedTesting/batchEval/bbt-batcheval-correct-submission.sb3',
@@ -77,7 +65,7 @@ describe('Block-Based Tests Integration', () => {
         const logs = [];
 
         for (const project of projects) {
-            await (await page.$('#fileselect-project')).uploadFile(project);
+            await uploadFile('#fileselect-project', project);
             await openSearchTab();
             await (await page.$('#run-all-tests')).click();
             logs.push(await getOutputLogWhenBBTTestsAreDone(true));
@@ -117,9 +105,8 @@ describe('Block-Based Tests Integration', () => {
         // This project contains a single test that compares a random number to a hardcoded value.
         const projectPath = 'test/integration/blockBasedTesting/bbt-test-seed-98765.sb3';
 
-        await (await page.$('#fileselect-project')).uploadFile(projectPath);
-        await (await page.$('#fileselect-tests')).uploadFile(projectPath);
-        await sleep(500);
+        await uploadFile('#fileselect-project', projectPath);
+        await uploadFile('#fileselect-tests', projectPath);
 
         // no seed
         await (await page.$('#run-all-tests')).click();

@@ -10,6 +10,7 @@ class FileSelect {
     constructor(fileselect, onLoad) {
         this.fileselect = fileselect;
         this.files = [];
+        this.loadPromise = Promise.resolve();
 
         $(fileselect).on('change', () => {
             this.files = [...this.fileselect.files];
@@ -38,7 +39,7 @@ class FileSelect {
                 $label.html(label);
             }
 
-            onLoad(this);
+            this.loadPromise = Promise.resolve(onLoad(this));
         });
     }
 
