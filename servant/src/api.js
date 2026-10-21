@@ -1,16 +1,10 @@
 const Whiskers = require("./whiskers");
 const express = require("express");
+const fs = require("node:fs");
 const os = require("node:os");
 const logger = require("./logger");
 const fileUpload = require("express-fileupload");
 const {runTests} = require("./common");
-
-const app = express();
-app.use(fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 },
-    useTempFiles: true,
-    tmpFileDir: os.tmpdir(),
-}));
 
 const opts = require("./cli").opts;
 
@@ -23,8 +17,12 @@ async function configureWhiskerWebInstance(page, testPath) {
 }
 
 async function handleRunTestRequest(pool, req, res) {
-    const testSuite = req.files.testsuite.tempFilePath;
-    const project = req.files.project.tempFilePath;
+    const testSuite = req.files?.testsuite?.tempFilePath;
+    const project = req.files?.project?.tempFilePath;
+    if (!testSuite || !project) {
+        res.status(400).send({message: "Expected the files `project` and `testsuite`"});
+        return;
+    }
 
     const whisker = await pool.acquire();
 
@@ -33,18 +31,32 @@ async function handleRunTestRequest(pool, req, res) {
         const result = await runTests(whisker, project);
         if (result === undefined) {
             res.status(500).send({message: "Whisker crashed"});
+            return;
         }
         const resultReduced = extractTestResults(result);
         res.send(resultReduced);
     } catch (e) {
-        res.status(500).send({message: "Whisker crashed", error: e});
+        // An Error has no enumerable properties, so sending it as is would result in an empty object.
+        res.status(500).send({message: "Whisker crashed", error: String(e)});
     } finally {
         await pool.release(whisker);
     }
 }
 
-async function startServer(pool) {
-    pool.start();
+function deleteUploadedFiles(files) {
+    for (const file of Object.values(files ?? {}).flat()) {
+        fs.rmSync(file.tempFilePath, {force: true});
+    }
+}
+
+function createApp(pool) {
+    const app = express();
+    app.use(fileUpload({
+        limits: { fileSize: 50 * 1024 * 1024 },
+        abortOnLimit: true,
+        useTempFiles: true,
+        tempFileDir: os.tmpdir(),
+    }));
 
     /*
      * Expects a POST request with two files:
@@ -52,10 +64,21 @@ async function startServer(pool) {
      * - `testsuite`: a JS file with the Whisker test suite
      */
     app.post("/test", async (req, res) => {
-        await handleRunTestRequest(pool, req, res);
+        try {
+            await handleRunTestRequest(pool, req, res);
+        } finally {
+            // express-fileupload only deletes the temporary files of failed uploads.
+            deleteUploadedFiles(req.files);
+        }
     })
 
-    return app.listen(opts.port, () => {
+    return app;
+}
+
+async function startServer(pool) {
+    pool.start();
+
+    return createApp(pool).listen(opts.port, () => {
        logger.info(`Listening on port ${opts.port}`);
     });
 }
@@ -118,3 +141,4 @@ async function init() {
 }
 
 module.exports = init;
+module.exports.createApp = createApp;
