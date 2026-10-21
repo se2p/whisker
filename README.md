@@ -167,84 +167,138 @@ Whisker is supported by the project FR 2955/3-1 funded by the
 ## References
 
 ```
-@inproceedings{DBLP:conf/sigsoft/StahlbauerKF19,
-  author    = {Andreas Stahlbauer and
-               Marvin Kreis and
-               Gordon Fraser},
-  title     = {Testing scratch programs automatically},
+@InProceedings{whisker19,
+  author    = {Andreas Stahlbauer and Marvin Kreis and Gordon Fraser},
+  title     = {Testing Scratch Programs Automatically},
   booktitle = {{ESEC/SIGSOFT} {FSE}},
-  pages     = {165--175},
   publisher = {{ACM}},
-  year      = {2019}
+  year      = {2019},
+  doi       = {10.1145/3338906.3338910},
 }
 ```
 
 ```
-@inproceedings{DBLP:conf/ssbse/DeinerFFGZ20,
-  author    = {Adina Deiner and Christoph Fr{\"{a}}drich and
-               Gordon Fraser and Sophia Geserer and
-               Niklas Zantner},
+@InProceedings{whisker20,
+  author    = {Adina Deiner and Christoph Fr{\"{a}}drich and Gordon Fraser and Sophia Geserer and Niklas Zantner},
   title     = {Search-Based Testing for Scratch Programs},
   booktitle = {12th International Symposium on Search-Based Software Engineering},
   series    = {Lecture Notes in Computer Science},
-  volume    = {12420},
-  pages     = {58--72},
   publisher = {Springer},
   year      = {2020},
+  doi       = {10.1007/978-3-030-59762-7_5},
 }
 ```
 
 ```
-@InProceedings{gotz2022model,
+@InProceedings{model22,
   title 		= {Model-based Testing of Scratch Programs},
   author 		= {G{\"o}tz, Katharina and Feldmeier, Patric and Fraser, Gordon},
   booktitle 	= {Proceedings of the International Conference on Software Testing, Verification and Validation (ICST'22)},
-  pages 		= {411--421},
   year 			= {2022},
-  publsiher     = {IEEE},
+  publisher     = {{IEEE}},
   doi 			= {10.1109/ICST53961.2022.00047}
 }
 ```
 
 ```
-@misc{deiner2022automated,
-      title         = {Automated Test Generation for Scratch Programs},
-      author        = {Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
-      year          = {2022},
-      eprint        = {2202.06274},
-      archivePrefix = {arXiv},
-      primaryClass  = {cs.SE}
+@Article{whisker23,
+  author     = {Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
+  journal    = {Empirical Software Engineering},
+  title      = {Automated Test Generation for Scratch Programs},
+  year       = {2023},
+  doi        = {10.1007/S10664-022-10255-X},
+  publisher  = {Springer Netherlands},
 }
 ```
 
 ```
-@InProceedings{feldmeier2022neuroevolution,
+@InProceedings{neuroevolution23,
 	author 		= {Feldmeier, Patric and Fraser, Gordon},
 	booktitle 	= {Proceedings of the International Conference on Automated Software Engineering (ASE'22)},
-	publisher 	= {ACM},
+	publisher 	= {{ACM}},
 	title 		= {Neuroevolution-Based Generation of Tests and Oracles for Games},
 	year 		= {2023},
 	doi 		= {10.1145/3551349.3556939},
-	pages 		= {1--13}
 }
 ```
 
 ```
-@article{feldmeier2023learning,
-  title         = {Learning by Viewing: Generating Test Inputs for Games by Integrating Human Gameplay Traces in Neuroevolution},
-  author        = {Feldmeier, Patric and Fraser, Gordon},
-  journal       = {arXiv preprint arXiv:2304.06413},
-  year          = {2023},
-  doi           = {10.48550/arXiv.2304.06413}
-}
-```
-
-```
-@inproceedings{nuzzlebug24,
+@InProceedings{nuzzlebug24,
   author    = {Adina Deiner and Gordon Fraser},
-  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch },
+  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch},
   booktitle = {ACM/IEEE International Conference on Software Engineering (ICSE)},
   publisher = {{IEEE}},
-  year      = {2024}
+  year      = {2024},
+  doi       = {10.1145/3597503.3623331},
 }
 ```
+
+```
+@InProceedings{blockbased24,
+  author     = {Feldmeier, Patric and Fraser, Gordon and Heuer, Ute and Obermüller, Florian and Steckenbiller, Siegfried},
+  booktitle  = {Proceedings of the 24th Koli Calling International Conference on Computing Education Research},
+  title      = {A Block-Based Testing Framework for Scratch},
+  year       = {2024},
+  doi        = {10.1145/3699538.3699547},
+  publisher  = {{ACM}}
+}
+```
+
+```
+@InProceedings{novelty24,
+  author     = {Feldmeier, Patric and Fraser, Gordon},
+  booktitle  = {Proceedings of the 1st ACM International Workshop on Foundations of Applied Software Engineering for Games},
+  title      = {Combining Neuroevolution with the Search for Novelty to Improve the Generation of Test Inputs for Games},
+  year       = {2024},
+  doi        = {10.1145/3663532.3664467},
+  publisher  = {{IEEE}}
+}
+```
+
+```
+@Article{repurr25,
+  author = {Schweikl, Sebastian and Fraser, Gordon},
+  title = {RePurr: Automated Repair of Block-Based Learners’ Programs},
+  year = {2025},
+  publisher = {{ACM}},
+  doi = {10.1145/3715786},
+}
+```
+
+```
+@InProceedings{manyobjective25,
+  author     = {Feldmeier, Patric and Schmelz, Katrin and Fraser, Gordon},
+  booktitle  = {2025 IEEE Conference on Software Testing, Verification and Validation (ICST)},
+  title      = {Many-Objective Neuroevolution for Testing Games},
+  year       = {2025},
+  doi        = {https://doi.org/10.48550/arXiv.2501.07954},
+  publisher  = {{IEEE}}
+}
+```
+
+```
+@Article{learning26,
+  author     = {Feldmeier, Patric and Fraser, Gordon},
+  journal    = {ACM Transactions on Evolutionary Learning and Optimization},
+  title      = {Learning by Viewing: Generating Test Inputs for Games by Integrating Human Gameplay Traces in Neuroevolution},
+  year       = {2026},
+  doi        = {10.1145/3747189},
+  publisher  = {{ACM}}
+}
+```
+
+```
+@InProceedings{10.1145/3832783.3834618,
+  author = {Fein, Benedikt and Fraser, Gordon},
+  title = {ScratchLog+: Live Analytics of Learners’ Exercise Progress},
+  booktitle = {Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering},
+  year = {2026},
+  publisher = {{ACM}},
+  doi = {10.1145/3832783.3834618},
+}
+```
+
+
+
+
+
