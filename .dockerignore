@@ -16,6 +16,7 @@
 !config
 config/*
 !config/*.json
+!config/**/*.json
 
 # Whitelist source codes for servant.
 !servant
