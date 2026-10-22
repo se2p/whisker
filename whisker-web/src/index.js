@@ -82,13 +82,13 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 // Dashboard cards reset/emptied together whenever a new project is loaded or a search run starts.
-const DASHBOARD_CARDS = [
-    'networkTopology', 'speciesNetworks', 'coverageCurve', 'fitnessChart', 'speciesPopulationChart', 'cdgGraph',
-    'sourceCode'
-];
-const resetDashboardCards = () => DASHBOARD_CARDS.forEach(key => Whisker[key] && Whisker[key].reset());
-const startEmptyDashboardCards = (keys = DASHBOARD_CARDS) =>
-    keys.forEach(key => Whisker[key] && Whisker[key].startEmpty());
+const dashboardCards = [];
+const addDashboardCard = card => {
+    dashboardCards.push(card);
+    return card;
+};
+const resetDashboardCards = () => dashboardCards.forEach(card => card.reset());
+const startEmptyDashboardCards = (cards = dashboardCards) => cards.forEach(card => card.startEmpty());
 
 /* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
@@ -1095,14 +1095,16 @@ const initComponents = function () {
 
     Whisker.configPanel = new ConfigPanel(document.getElementById('whisker-config-panel'));
     Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
-    Whisker.consoleLog = new ConsoleLog(document.getElementById('whisker-dashboard-view'));
-    Whisker.coverageCurve = new CoverageCurve(document.getElementById('whisker-dashboard-view'));
-    Whisker.cdgGraph = new CdgGraph(document.getElementById('whisker-dashboard-view'));
-    Whisker.sourceCode = new SourceCode(document.getElementById('whisker-dashboard-view'));
-    Whisker.fitnessChart = new FitnessChart(document.getElementById('whisker-dashboard-view'));
-    Whisker.networkTopology = new NetworkTopology(document.getElementById('whisker-dashboard-view'));
-    Whisker.speciesNetworks = new SpeciesNetworks(document.getElementById('whisker-dashboard-view'));
-    Whisker.speciesPopulationChart = new SpeciesPopulationChart(document.getElementById('whisker-dashboard-view'));
+    const dashboardView = document.getElementById('whisker-dashboard-view');
+    // Not a regular dashboard card: it is only cleared when a search starts, and keeps its output across project loads.
+    Whisker.consoleLog = new ConsoleLog(dashboardView);
+    Whisker.coverageCurve = addDashboardCard(new CoverageCurve(dashboardView));
+    Whisker.cdgGraph = addDashboardCard(new CdgGraph(dashboardView));
+    Whisker.sourceCode = addDashboardCard(new SourceCode(dashboardView));
+    Whisker.fitnessChart = addDashboardCard(new FitnessChart(dashboardView));
+    Whisker.networkTopology = addDashboardCard(new NetworkTopology(dashboardView));
+    Whisker.speciesNetworks = addDashboardCard(new SpeciesNetworks(dashboardView));
+    Whisker.speciesPopulationChart = addDashboardCard(new SpeciesPopulationChart(dashboardView));
     localize('#body'); // translates the data-i18n markup the dashboard cards just built
 
     Whisker.testTable.setTests([]);
@@ -1405,7 +1407,7 @@ const initEvents = function () {
                 const _selectedConfig = window._whiskerSelectedConfig ? JSON.parse(window._whiskerSelectedConfig) : {};
                 if (Whisker.networkTopology && _selectedConfig.testGenerator !== 'reinforcementLearning') Whisker.networkTopology.startEmpty();
                 else if (Whisker.networkTopology) Whisker.networkTopology.reset();
-                startEmptyDashboardCards(DASHBOARD_CARDS.filter(key => key !== 'networkTopology'));
+                startEmptyDashboardCards(dashboardCards.filter(card => card !== Whisker.networkTopology));
                 const _isLearningTab = document.getElementById('whisker-tab-learning').classList.contains('active');
                 document.getElementById(_isLearningTab ? 'whisker-tab-search' : 'whisker-tab-learning').disabled = true;
                 document.getElementById('whisker-tab-editor').disabled = true;
