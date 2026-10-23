@@ -225,7 +225,52 @@ function forwardConsoleMessages(page, id = "") {
     });
 }
 
+/**
+ * Uploads a file into one of Whisker Web's file inputs and waits until Whisker Web has finished processing it.
+ * Puppeteer's uploadFile() only dispatches the change event. The onLoad handler of the corresponding FileSelect (e.g.,
+ * loading a project into the VM) runs asynchronously afterward and exposes its progress as `loadPromise`. Not waiting
+ * for it races subsequent uploads or test runs against the still loading file.
+ *
+ * @param {import("puppeteer").Page} page The page with Whisker Web loaded
+ * @param {string} selector The selector of the file input, e.g., "#fileselect-project"
+ * @param {string} filePath The path of the file to upload
+ * @param {number} timeout How many milliseconds to wait for Whisker Web to process the file. Use 0 to wait forever.
+ * @return {Promise<void>}
+ */
+async function uploadFile(page, selector, filePath, timeout = 0) {
+    await (await page.$(selector)).uploadFile(filePath);
+
+    const loaded = page.evaluate(async (selector) => {
+        const input = document.querySelector(selector);
+        const fileSelect = Object.values(window.Whisker).find((value) => value && value.fileselect === input);
+
+        if (!fileSelect) {
+            throw new Error(`No FileSelect component for ${selector}`);
+        }
+
+        await fileSelect.loadPromise;
+    }, selector);
+
+    if (timeout < 1) {
+        return loaded;
+    }
+
+    let timer;
+    try {
+        await Promise.race([
+            loaded,
+            new Promise((_resolve, reject) => {
+                timer = setTimeout(() => reject(new puppeteer.TimeoutError(
+                    `Timed out after ${timeout} ms waiting for ${filePath} to be loaded by ${selector}`)), timeout);
+            }),
+        ]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 module.exports = {
     openNewBrowser,
     forwardConsoleMessages,
+    uploadFile,
 };
