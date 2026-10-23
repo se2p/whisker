@@ -97,7 +97,7 @@ Options:
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
-acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
+acceleration factor of at least `10`, but you can also set the acceleration to `Infinity` for maximum acceleration.
 
 For example, the following command runs tests with a 10-fold speedup and two parallel executions in a headless chrome
 instance:
@@ -130,7 +130,7 @@ Details on writing Whisker tests in JavaScript can be found
 ## Generating Tests Automatically
 
 The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate
-search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may
+search configuration (examples can be found in the `config` directory), and click `Start Test Generation`. Warning: This may
 take a while! Once the search has completed, the generated tests are loaded into the editor window.
 
 If you run test generation with Servant (command line option `-g`), at the end of the search a file called `tests.js`
