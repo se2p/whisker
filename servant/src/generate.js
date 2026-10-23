@@ -11,6 +11,7 @@ const {
     keepaliveTimeout
 } = require("./cli").opts;
 const Whiskers = require("./whiskers");
+const {uploadFile} = require("./whisker-web");
 
 // Test generation
 async function generateTests({page}) {
@@ -33,9 +34,9 @@ async function generateTests({page}) {
 async function configureWhiskerWebInstance(whisker) {
     await whisker.uploadProject(scratchPath.path);
     const page = whisker.page;
-    await (await page.$('#fileselect-config')).uploadFile(configPath);
+    await uploadFile(page, '#fileselect-config', configPath);
     if (testPath) {
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await uploadFile(page, '#fileselect-tests', testPath);
     }
     if (groundTruth) {
         await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));

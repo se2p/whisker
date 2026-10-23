@@ -4,6 +4,7 @@ const os = require("node:os");
 const logger = require("./logger");
 const fileUpload = require("express-fileupload");
 const {runTests} = require("./common");
+const {uploadFile} = require("./whisker-web");
 
 const app = express();
 app.use(fileUpload({
@@ -16,7 +17,7 @@ const opts = require("./cli").opts;
 
 async function configureWhiskerWebInstance(page, testPath) {
     try {
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await uploadFile(page, '#fileselect-tests', testPath);
     } catch (e) {
         logger.error(e);
     }

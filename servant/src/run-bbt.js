@@ -2,6 +2,7 @@ const fs = require("fs");
 const logger = require("./logger");
 const {testPath, output} = require("./cli").opts;
 const {getProjectsInScratchPath} = require("./common");
+const {uploadFile} = require("./whisker-web");
 
 async function getOutputLogWhenBBTTestsAreDone(page, clearLogAfterFinished = false) {
     const logOutput = await page.$('#output-log .output-content');
@@ -65,12 +66,12 @@ async function evaluateProjects(pool, projects, testPath) {
             tooltipLink.replaceWith(dummyLink);
         });
 
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await uploadFile(page, '#fileselect-tests', testPath);
 
         logger.info(`Testing project: ${project}`);
         const start = Date.now();
 
-        await (await page.$('#fileselect-project')).uploadFile(project);
+        await uploadFile(page, '#fileselect-project', project);
         await (await page.$('#whisker-tab-search')).evaluate(t => t.click());
         await (await page.$('#run-all-tests')).click();
 

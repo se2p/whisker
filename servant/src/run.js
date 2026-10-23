@@ -10,6 +10,7 @@ const {
     runTests,
 } = require("./common");
 const Whiskers = require("./whiskers");
+const {uploadFile} = require("./whisker-web");
 
 const opts = require("./cli").opts;
 const {
@@ -56,11 +57,11 @@ async function configureWhiskerWebInstance(page) {
     }, opts);
 
     if (testPath) {
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await uploadFile(page, '#fileselect-tests', testPath);
     }
 
     if (opts.modelPath) {
-        await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
+        await uploadFile(page, '#fileselect-models', opts.modelPath);
         await page.evaluate((opts) => {
             document.querySelector('#model-repetitions').value = opts.modelRepetition;
             document.querySelector('#model-duration').value = opts.modelDuration;

@@ -6,6 +6,7 @@ const {
 } = require("./cli").opts;
 const logger = require("./logger");
 const Whiskers = require("./whiskers");
+const {uploadFile} = require("./whisker-web");
 
 async function openWindow({page}) {
 
@@ -58,7 +59,7 @@ async function configureOpen(whisker) {
     if (scratchPath) {
         await whisker.uploadProject(scratchPath.path);
     }
-    await (await whisker.page.$('#fileselect-config')).uploadFile(configPath);
+    await uploadFile(whisker.page, '#fileselect-config', configPath);
 }
 
 // Initialises a single Whisker instance in a browser window based on the provided CLI options

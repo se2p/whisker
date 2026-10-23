@@ -2,6 +2,7 @@ const fs = require("fs");
 const logger = require("./logger");
 const opts = require('./cli').opts
 const Whiskers = require("./whiskers");
+const {uploadFile} = require("./whisker-web");
 
 const {
     scratchPath,
@@ -26,10 +27,10 @@ async function generateDynamicTests(pool) {
 }
 
 async function configureWhiskerWebInstance(page) {
-    await (await page.$('#fileselect-config')).uploadFile(configPath);
-    await (await page.$('#fileselect-tests')).uploadFile(testPath);
+    await uploadFile(page, '#fileselect-config', configPath);
+    await uploadFile(page, '#fileselect-tests', testPath);
     if (modelPath) {
-        await (await page.$('#fileselect-models')).uploadFile(modelPath);
+        await uploadFile(page, '#fileselect-models', modelPath);
     }
 
     await page.evaluate((opts) => {
